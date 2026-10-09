@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10121b">
+  <title>Nexus OS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="os">
+    <header class="top-bar">
+      <div><div id="clock">--:--</div><div id="date">Loading date…</div></div>
+      <div class="status"><span>● Online</span><span>Wi-Fi</span><span>100%</span></div>
+    </header>
+    <section class="welcome">
+      <div><p class="eyebrow">NEXUS OS · PERSONAL WORKSPACE</p><h1 id="greeting">Good day 👋</h1><p>Your smarter, simpler workspace.</p></div>
+      <div class="welcome-orb" aria-hidden="true">✦</div>
+    </section>
+    <section class="search"><label class="sr-only" for="global-search">Search apps</label><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search apps and quick actions…" autocomplete="off"></section>
+    <section class="section-heading"><h2>Your apps</h2><span>12 APPS</span></section>
+    <section class="app-grid" aria-label="Applications">
+      <button class="app" data-app="browser"><span class="app-icon blue">🌐</span><span>Browser</span></button>
+      <button class="app" data-app="files"><span class="app-icon yellow">📁</span><span>Files</span></button>
+      <button class="app" data-app="terminal"><span class="app-icon dark">⌨️</span><span>Terminal</span></button>
+      <button class="app" data-app="calculator"><span class="app-icon purple">🧮</span><span>Calculator</span></button>
+      <button class="app" data-app="weather"><span class="app-icon sky">🌤️</span><span>Weather</span></button>
+      <button class="app" data-app="calendar"><span class="app-icon red">📅</span><span>Calendar</span></button>
+      <button class="app" data-app="gallery"><span class="app-icon pink">🖼️</span><span>Gallery</span></button>
+      <button class="app" data-app="settings"><span class="app-icon slate">⚙️</span><span>Settings</span></button>
+      <button class="app" data-app="music"><span class="app-icon pink">🎵</span><span>Music</span></button>
+      <button class="app" data-app="messages"><span class="app-icon green">💬</span><span>Messages</span></button>
+      <button class="app" data-app="store"><span class="app-icon orange">🏪</span><span>App Store</span></button>
+      <button class="app ai-app" data-app="ai"><span class="app-icon violet">🤖</span><span>Nexus AI</span></button>
+    </section>
+    <section class="section-heading"><h2>At a glance</h2><span>YOUR DASHBOARD</span></section>
+    <section class="widgets">
+      <article class="widget"><p>🌦️ Weather</p><strong>Weather preview</strong><span>Connect a weather service to show live conditions.</span></article>
+      <article class="widget"><p>📅 Today</p><strong id="next-task">No tasks yet</strong><span>Your day planner will appear here.</span><button class="text-button" data-app="calendar">Open planner ↗</button></article>
+      <article class="widget"><p>🎵 Now playing</p><strong id="music-status">Nothing playing</strong><span>A simple music-player placeholder.</span><button class="text-button" data-app="music">Open music ↗</button></article>
+    </section>
+    <button id="ai-companion" class="ai-companion" aria-label="Open Nexus AI"><span class="ai-face">🤖</span><span><b>Nexus AI</b><small>Tap to ask</small></span><span class="online-dot"></span></button>
+    <nav class="dock" aria-label="Quick apps">
+      <button data-app="browser" aria-label="Browser">🌐</button><button data-app="files" aria-label="Files">📁</button><button data-app="terminal" aria-label="Terminal">⌨️</button><button data-app="ai" class="dock-ai" aria-label="Nexus AI">🤖</button><button data-app="gallery" aria-label="Gallery">🖼️</button><button data-app="settings" aria-label="Settings">⚙️</button>
+    </nav>
+  </main>
+  <div id="app-layer" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
