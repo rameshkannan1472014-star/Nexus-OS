@@ -131,7 +131,7 @@ document.addEventListener("click", function(event) {
   if(webShortcut){loadBrowserUrl(webShortcut.dataset.webUrl);return;}
   const browserShortcut=event.target.closest("[data-browser-url]");if(browserShortcut){loadBrowserUrl(browserShortcut.dataset.browserUrl);return;}
   const ytSearch=event.target.closest("[data-youtube-search]");if(ytSearch){openFullSite("https://www.youtube.com/results?search_query="+encodeURIComponent(ytSearch.dataset.youtubeSearch));return;}
-  const external=event.target.closest('[data-action="browser-external"]');if(external){openFullSite($("#browser-url")?.value||$("#browser-frame")?.src);return;}
+  const external=event.target.closest('[data-action="browser-external"]');if(external){openFullSite($("#browser-frame")?.src||$("#browser-url")?.value);return;}
   const service=event.target.closest("[data-music-service]");
   if(service){const q=$("#music-search-query")?.value.trim()||"";const urls={youtube:"https://music.youtube.com/search?q="+encodeURIComponent(q),soundcloud:"https://soundcloud.com/search?q="+encodeURIComponent(q),spotify:"https://open.spotify.com/search/"+encodeURIComponent(q)};openFullSite(urls[service.dataset.musicService]);return;}
   if(event.target.closest('[data-action="browser-back"]')){browserGo(-1);return;}if(event.target.closest('[data-action="browser-forward"]')){browserGo(1);return;}if(event.target.closest('[data-action="browser-reload"]')){const f=$("#browser-frame");if(f&&f.src)f.src=f.src;return;}const paintColor=event.target.closest("[data-paint-color]");
