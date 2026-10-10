@@ -44,6 +44,11 @@
       <button class="app" data-app="timer"><span class="app-icon blue">⏱️</span><span>Timer</span></button>
       <button class="app" data-app="paint"><span class="app-icon pink">🎨</span><span>Paint</span></button>
       <button class="app" data-app="tasks"><span class="app-icon green">✅</span><span>Tasks</span></button>
+      <button class="app" data-app="notes"><span class="app-icon yellow">📝</span><span>Notes</span></button>
+      <button class="app" data-app="camera"><span class="app-icon slate">📷</span><span>Camera</span></button>
+      <button class="app" data-app="timer"><span class="app-icon blue">⏱️</span><span>Timer</span></button>
+      <button class="app" data-app="paint"><span class="app-icon pink">🎨</span><span>Paint</span></button>
+      <button class="app" data-app="tasks"><span class="app-icon green">✅</span><span>Tasks</span></button>
       <button class="app" data-app="recorder"><span class="app-icon orange">🎙️</span><span>Voice Recorder</span></button>
     </section>
     <section class="section-heading"><h2>At a glance</h2><span>YOUR DASHBOARD</span></section>
@@ -58,6 +63,19 @@
     </nav>
   </main>
   <div id="app-layer" aria-live="polite"></div>
+  <section id="control-center" class="control-center" aria-label="Control Center" hidden>
+    <div class="control-head"><div><p class="eyebrow">NEXUS OS</p><h2>Control Center</h2></div><button id="control-center-close" class="close-window" type="button" aria-label="Close Control Center">×</button></div>
+    <p id="control-date" class="control-date">Quick settings</p>
+    <div class="control-tiles">
+      <button class="control-tile active" data-control="wifi" type="button"><span>⌁</span><b>Wi-Fi</b><small id="wifi-state">On · simulated</small></button>
+      <button class="control-tile active" data-control="bluetooth" type="button"><span>ᛒ</span><b>Bluetooth</b><small id="bluetooth-state">On · simulated</small></button>
+      <button class="control-tile" data-control="airplane" type="button"><span>✈</span><b>Airplane mode</b><small id="airplane-state">Off · simulated</small></button>
+      <button class="control-tile active" data-control="theme" type="button"><span>◐</span><b>Appearance</b><small id="theme-state">Dark mode</small></button>
+    </div>
+    <div class="control-slider"><label for="brightness-slider">☀ Screen brightness</label><input id="brightness-slider" type="range" min="65" max="115" value="100"><output id="brightness-value">100%</output></div>
+    <button class="control-wide" data-control="music" type="button">🎵 Open Music Player</button>
+    <p class="control-note">Wi-Fi, Bluetooth and airplane toggles are visual demos; they cannot change Android's real system settings.</p>
+  </section>
   <section id="control-center" class="control-center" aria-label="Control Center" hidden>
     <div class="control-head"><div><p class="eyebrow">NEXUS OS</p><h2>Control Center</h2></div><button id="control-center-close" class="close-window" type="button" aria-label="Close Control Center">×</button></div>
     <p class="control-date" id="control-date">Quick settings</p>
