@@ -79,6 +79,54 @@ $("#global-search").addEventListener("input", event => {
   } else if (visible && empty) empty.remove();
 });
 
+
+function escapeText(value) {
+  return String(value).replace(/[&<>"']/g, function (c) { return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]); });
+}
+function getSavedTasks() {
+  try { return JSON.parse(localStorage.getItem("nexus-tasks") || "[]"); } catch (_) { return []; }
+}
+function renderSavedTasks(target) {
+  if (!target) return;
+  const tasks = getSavedTasks();
+  target.innerHTML = tasks.length ? tasks.map(function (task, i) {
+    return '<label class="task-item"><input type="checkbox" data-task-index="' + i + '" ' + (task.done ? "checked" : "") + '><span class="' + (task.done ? "done" : "") + '">' + escapeText(task.text) + '</span><button type="button" data-delete-task="' + i + '" aria-label="Delete task">×</button></label>';
+  }).join("") : '<p class="hint">No tasks yet. Add one above.</p>';
+}
+function addSavedTask(value) {
+  const task = value.trim();
+  if (!task) return;
+  const tasks = getSavedTasks();
+  tasks.push({text:task, done:false});
+  localStorage.setItem("nexus-tasks", JSON.stringify(tasks));
+  renderSavedTasks($("#task-list"));
+  renderSavedTasks($("#quick-task-list"));
+  const next = tasks.find(function (item) { return !item.done; });
+  $("#next-task").textContent = next ? next.text : "All tasks complete";
+}
+function previewImage(file, target) {
+  if (!file || !file.type.startsWith("image/") || !target) return;
+  const img = document.createElement("img");
+  img.src = URL.createObjectURL(file);
+  img.alt = file.name;
+  img.className = "preview-image";
+  target.replaceChildren(img);
+}
+function initPaint() {
+  const canvas = $("#paint-canvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  let drawing = false;
+  function point(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {x:(e.clientX-rect.left)*canvas.width/rect.width, y:(e.clientY-rect.top)*canvas.height/rect.height};
+  }
+  canvas.onpointerdown = function (e) { drawing = true; canvas.setPointerCapture(e.pointerId); const p=point(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  canvas.onpointermove = function (e) { if (!drawing) return; const p=point(e); ctx.strokeStyle=$("#paint-color").value; ctx.lineWidth=Number($("#paint-size").value); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+  canvas.onpointerup = canvas.onpointercancel = function () { drawing = false; };
+}
+
 $("#app-layer").addEventListener("click", event => {
   const calcKey = event.target.closest("[data-calc-key]");
   if (calcKey) {
@@ -109,6 +157,47 @@ $("#app-layer").addEventListener("click", event => {
   const button = event.target.closest("[data-action]");
   if (!button) return;
   const action = button.dataset.action;
+
+
+  if (action === "save-note") {
+    localStorage.setItem("nexus-note-title", $("#note-title").value);
+    localStorage.setItem("nexus-note-content", $("#note-content").value);
+    $("#note-status").textContent = "Note saved on this browser ✓";
+  }
+  if (action === "load-note") {
+    $("#note-title").value = localStorage.getItem("nexus-note-title") || "";
+    $("#note-content").value = localStorage.getItem("nexus-note-content") || "";
+    $("#note-status").textContent = "Saved note loaded.";
+  }
+  if (action === "play-audio") {
+    const audio = $("#audio-player");
+    if (audio && audio.src) audio.play().catch(function () {});
+    else if ($("#track-subtitle")) $("#track-subtitle").textContent = "Choose an audio file first.";
+  }
+  if (action === "pause-audio") { const audio = $("#audio-player"); if (audio) audio.pause(); }
+  if (action === "start-timer") {
+    if (window.nexusTimer) clearInterval(window.nexusTimer);
+    let remaining = Math.max(1, Math.min(180, Number($("#timer-minutes").value) || 5)) * 60;
+    const draw = function () { $("#timer-display").textContent = String(Math.floor(remaining/60)).padStart(2,"0") + ":" + String(remaining%60).padStart(2,"0"); };
+    draw(); $("#timer-status").textContent = "Timer running…";
+    window.nexusTimer = setInterval(function () {
+      remaining--; draw();
+      if (remaining <= 0) { clearInterval(window.nexusTimer); window.nexusTimer = null; $("#timer-status").textContent = "Time is up! ⏰"; }
+    }, 1000);
+  }
+  if (action === "stop-timer") {
+    if (window.nexusTimer) clearInterval(window.nexusTimer);
+    window.nexusTimer = null; $("#timer-display").textContent = "05:00"; $("#timer-status").textContent = "Timer reset.";
+  }
+  if (action === "clear-paint") {
+    const canvas = $("#paint-canvas"); if (canvas) canvas.getContext("2d").clearRect(0,0,canvas.width,canvas.height);
+  }
+  if (action === "save-paint") {
+    const canvas = $("#paint-canvas"); if (canvas) { const link=document.createElement("a"); link.download="nexus-drawing.png"; link.href=canvas.toDataURL("image/png"); link.click(); }
+  }
+  if (action === "toggle-theme") {
+    document.body.classList.toggle("light-mode");
+  }
 
   if (action === "open-url") {
     let raw = $("#browser-url").value.trim();
