@@ -15,7 +15,7 @@ const appInfo = {
   browser: {title:"Browser", body:'<p>This is the Browser app placeholder.</p><p>Choose a website to open in a new tab.</p><input id="browser-url" type="url" placeholder="https://example.com"><button class="window-action" data-action="open-url">Open website ↗</button>'},
   files: {title:"File Manager", body:'<p>Your future file manager will organise documents, downloads, photos and projects.</p><div class="terminal-box">📁 Documents<br>📁 Downloads<br>🖼️ Pictures<br>💻 Projects</div><p>This prototype does not read your device files.</p>'},
   terminal: {title:"Terminal", body:'<p>A safe demo terminal. It does not execute system commands.</p><div class="terminal-box">Nexus OS [Prototype]\nType help to see demo commands.</div><input id="terminal-input" placeholder="Type help"><button class="window-action" data-action="terminal-run">Run demo command</button><div id="terminal-output" role="status"></div>'},
-  calculator: {title:"Calculator", body:'<p>Try a basic calculation (example: 12 * 8).</p><input id="calc-input" inputmode="decimal" placeholder="12 * 8"><button class="window-action" data-action="calculate">Calculate</button><p id="calc-output" role="status"></p>'},
+  calculator: {title:"Calculator", body:'<div class="calculator"><input id="calc-input" class="calculator-display" inputmode="none" autocomplete="off" aria-label="Calculator display" placeholder="0" readonly><div class="calculator-keys" aria-label="Calculator keypad"><button class="utility" data-calc-key="AC">AC</button><button class="utility" data-calc-key="(">(</button><button class="utility" data-calc-key=")">)</button><button class="operator" data-calc-key="÷">÷</button><button data-calc-key="7">7</button><button data-calc-key="8">8</button><button data-calc-key="9">9</button><button class="operator" data-calc-key="×">×</button><button data-calc-key="4">4</button><button data-calc-key="5">5</button><button data-calc-key="6">6</button><button class="operator" data-calc-key="-">−</button><button data-calc-key="1">1</button><button data-calc-key="2">2</button><button data-calc-key="3">3</button><button class="operator" data-calc-key="+">+</button><button class="utility" data-calc-key="±">±</button><button data-calc-key="0">0</button><button data-calc-key=".">.</button><button class="equals" data-calc-key="=">=</button><button class="utility" data-calc-key="DEL" style="grid-column:span 4">⌫ Delete</button></div><p id="calc-output" class="calculator-result" role="status">Ready</p></div>'},
   weather: {title:"Weather", body:'<p>🌤️ Live weather is not connected yet.</p><p>Later, we can connect a weather API and show your chosen city.</p>'},
   calendar: {title:"Day Planner", body:'<p>Add a task for your prototype dashboard.</p><input id="task-input" placeholder="e.g. Study Python for 20 minutes"><button class="window-action" data-action="save-task">Save task</button><p id="task-output" role="status"></p>'},
   gallery: {title:"Gallery", body:'<p>Gallery preview</p><p>Image importing and device photo access have not been added yet.</p>'},
@@ -78,6 +78,32 @@ $("#app-layer").addEventListener("click", event => {
   const button = event.target.closest("[data-action]");
   if (!button) return;
   const action = button.dataset.action;
+
+  const calcKey = event.target.closest("[data-calc-key]");
+  if (calcKey) {
+    const display = $("#calc-input");
+    const output = $("#calc-output");
+    const key = calcKey.dataset.calcKey;
+    if (key === "AC") { display.value = ""; output.textContent = "Cleared"; }
+    else if (key === "DEL") { display.value = display.value.slice(0, -1); output.textContent = "Ready"; }
+    else if (key === "±") {
+      const current = display.value;
+      if (current && /^-?\\d*\\.?\\d+$/.test(current)) display.value = current.startsWith("-") ? current.slice(1) : "-" + current;
+      else if (current) display.value = current + "(-1)";
+    }
+    else if (key === "=") {
+      let expression = display.value.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-");
+      if (!expression || !/^[\\d\\s()+\\-*/.%]+$/.test(expression)) output.textContent = "Enter a valid calculation.";
+      else {
+        try {
+          const result = Function('"use strict"; return (' + expression + ')')();
+          if (Number.isFinite(result)) { display.value = String(Number(result.toPrecision(12))); output.textContent = "= " + display.value; }
+          else output.textContent = "Cannot divide by zero.";
+        } catch { output.textContent = "Check your expression."; }
+      }
+    } else { display.value += key; output.textContent = "Ready"; }
+    return;
+  }
   if (action === "open-url") {
     let raw = $("#browser-url").value.trim();
     if (!raw) return;
