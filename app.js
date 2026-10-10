@@ -84,12 +84,12 @@ $("#app-layer").addEventListener("click", event => {
     else if (key === "DEL") { display.value = display.value.slice(0, -1); output.textContent = "Ready"; }
     else if (key === "±") {
       const current = display.value;
-      if (current && /^-?\\d*\\.?\\d+$/.test(current)) display.value = current.startsWith("-") ? current.slice(1) : "-" + current;
+      if (current && /^-?[0-9]*\.?[0-9]+$/.test(current)) display.value = current.startsWith("-") ? current.slice(1) : "-" + current;
       else if (current) display.value = current + "(-1)";
     }
     else if (key === "=") {
       let expression = display.value.replace(/×/g, "*").replace(/÷/g, "/").replace(/−/g, "-");
-      if (!expression || !/^[\\d\\s()+\\-*/.%]+$/.test(expression)) output.textContent = "Enter a valid calculation.";
+      if (!expression || !/^[0-9\s()+\-*\/.%]+$/.test(expression)) output.textContent = "Enter a valid calculation.";
       else {
         try {
           const result = Function('"use strict"; return (' + expression + ')')();
