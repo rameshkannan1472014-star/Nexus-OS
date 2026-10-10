@@ -237,6 +237,7 @@ $("#app-layer").addEventListener("click", event => {
     $("#track-output").textContent = "Updated the dashboard preview.";
   }
   if (action === "toggle-theme") document.body.classList.toggle("light-mode");
+  if (action === "open-controls") $("#control-center").hidden = false;
   if (action === "ai-demo") {
     const prompt = $("#ai-prompt").value.trim();
     $("#ai-output").textContent = prompt ? "I’m only a UI demo so far. Next, we can connect a real AI model to answer: “" + prompt + "”" : "Write a question first.";
