@@ -188,13 +188,17 @@ function initPaint() {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   ctx.lineCap = "round"; ctx.lineJoin = "round";
-  let drawing = false;\n  let lastPoint = null;\n  const history = [];\n  function saveState(){history.push(ctx.getImageData(0,0,canvas.width,canvas.height));if(history.length>20)history.shift();}\n  saveState();
+  let drawing = false;
+  const history = [];
+  window.nexusPaintHistory = history;
+  function saveState(){history.push(ctx.getImageData(0,0,canvas.width,canvas.height));if(history.length>20)history.shift();}
+  saveState();
   function point(e) {
     const rect = canvas.getBoundingClientRect();
     return {x:(e.clientX-rect.left)*canvas.width/rect.width, y:(e.clientY-rect.top)*canvas.height/rect.height};
   }
-  canvas.onpointerdown = function (e) { drawing = true; canvas.setPointerCapture(e.pointerId); saveState(); const p=point(e); lastPoint=p; ctx.beginPath(); ctx.moveTo(p.x,p.y); };
-  canvas.onpointermove = function (e) { if (!drawing) return; const p=point(e); const tool=$("#paint-tool")?.value || "pen";ctx.globalCompositeOperation=tool==="eraser"?"destination-out":"source-over";ctx.strokeStyle=$("#paint-color").value;ctx.globalAlpha=tool==="marker"?.35:1;ctx.lineWidth=Number($("#paint-size").value);ctx.lineTo(p.x,p.y);ctx.stroke();lastPoint=p; };
+  canvas.onpointerdown = function (e) { drawing = true; canvas.setPointerCapture(e.pointerId); saveState(); const p=point(e);  ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  canvas.onpointermove = function (e) { if (!drawing) return; const p=point(e); const tool=$("#paint-tool")?.value || "pen";ctx.globalCompositeOperation=tool==="eraser"?"destination-out":"source-over";ctx.strokeStyle=$("#paint-color").value;ctx.globalAlpha = tool === "marker" ? 0.35 : 1;ctx.lineWidth=Number($("#paint-size").value);ctx.lineTo(p.x,p.y);ctx.stroke();lastPoint=p; };
   canvas.onpointerup = canvas.onpointercancel = function () { drawing = false;ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over"; };
 }
 
@@ -278,7 +282,7 @@ $("#app-layer").addEventListener("click", event => {
   if (action === "capture-photo") { const video=$("#camera-video"), canvas=$("#camera-snapshot"), preview=$("#camera-preview");if(video?.videoWidth&&canvas){canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext("2d").drawImage(video,0,0);const img=document.createElement("img");img.src=canvas.toDataURL("image/png");img.alt="Captured photo";img.className="preview-image";preview.replaceChildren(img);$("#camera-status").textContent="Photo captured. Long-press the preview to save it if your browser supports that."; }else if($("#camera-status"))$("#camera-status").textContent="Start the camera first and allow permission."; }
   if (action === "start-recording") { navigator.mediaDevices?.getUserMedia({audio:true}).then(stream=>{const rec=new MediaRecorder(stream);const chunks=[];rec.ondataavailable=e=>chunks.push(e.data);rec.onstop=()=>{const audio=$("#recording-playback");audio.src=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType||"audio/webm"}));stream.getTracks().forEach(t=>t.stop());};window.nexusRecorder=rec;rec.start();$("#recorder-status").textContent="Recording…";}).catch(()=>$("#recorder-status").textContent="Microphone permission was denied or recording is unavailable.");}
   if (action === "stop-recording") { if(window.nexusRecorder?.state==="recording"){window.nexusRecorder.stop();$("#recorder-status").textContent="Recording ready to play."; } }
-  if (action === "undo-paint") { const canvas=$("#paint-canvas");if(canvas){const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);$("#paint-status")?.replaceChildren();} }
+  if (action === "undo-paint") { const canvas=$("#paint-canvas"), history=window.nexusPaintHistory; if(canvas && history && history.length>1){history.pop();canvas.getContext("2d").putImageData(history[history.length-1],0,0);} }
   if (action === "play-audio") {
     const audio = $("#audio-player");
     if (audio && audio.src) audio.play().catch(function () {});
