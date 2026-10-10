@@ -168,6 +168,22 @@ $("#app-layer").addEventListener("click", event => {
   const action = button.dataset.action;
 
 
+
+  if (action === "dial-clear") { $("#dial-display").value = ""; $("#dial-status").textContent = "Demo only — no calls are made."; }
+  if (action === "security-scan") {
+    $("#security-results").innerHTML = '<div>✓ App runs in your browser <span>OK</span></div><div>✓ Saved notes stay in this browser <span>Local</span></div><div>✓ No phone-call permission used <span>OK</span></div><div>ℹ️ Device-wide antivirus scan <span>Not available to a website</span></div>';
+  }
+  if (action === "clean-session") {
+    $(".preview-image").forEach(function (img) { img.remove(); });
+    const audio = $("#audio-player"); if (audio) { audio.pause(); audio.removeAttribute("src"); audio.load(); }
+    $("#cleaner-status").textContent = "Temporary previews cleared. Saved notes and tasks were kept.";
+  }
+  if (action === "reset-game") {
+    const game = $("#match-game");
+    if (game) { game.dataset.open = ""; game.dataset.matched = ""; $("button", game).forEach(function (card) { card.textContent = "?"; card.disabled = false; }); }
+    if ($("#game-status")) $("#game-status").textContent = "Match all four pairs.";
+  }
+
   if (action === "save-note") {
     localStorage.setItem("nexus-note-title", $("#note-title").value);
     localStorage.setItem("nexus-note-content", $("#note-content").value);
@@ -353,3 +369,29 @@ async function loadWeather(city) {
     target.innerHTML = '<p class="error-text">' + escapeText(error.message || "Weather could not load. Check your internet connection.") + '</p>';
   }
 }
+
+
+$("#app-layer").addEventListener("click", function (event) {
+  const dial = event.target.closest("[data-dial]");
+  if (dial) { const display=$("#dial-display"); if (display) display.value += dial.dataset.dial; return; }
+  const card = event.target.closest("[data-match]");
+  if (card && !card.disabled) {
+    const game=$("#match-game");
+    const opened=(game.dataset.open || "").split(",").filter(Boolean);
+    card.textContent=card.dataset.match;
+    if (opened.length === 0) { game.dataset.open=String(Array.from(game.querySelectorAll("button")).indexOf(card)); return; }
+    const firstIndex=Number(opened[0]);
+    const cards=Array.from(game.querySelectorAll("button"));
+    const first=cards[firstIndex];
+    if (first === card) { game.dataset.open=""; card.textContent="?"; return; }
+    if (first.dataset.match === card.dataset.match) {
+      first.disabled=true; card.disabled=true;
+      const matched=cards.filter(function (item) { return item.disabled; }).length;
+      $("#game-status").textContent = matched === cards.length ? "You matched every pair! 🎉" : "Nice match! Keep going.";
+    } else {
+      const second=card;
+      setTimeout(function () { if (first.isConnected && second.isConnected && !first.disabled && !second.disabled) { first.textContent="?"; second.textContent="?"; } }, 650);
+    }
+    game.dataset.open="";
+  }
+});
