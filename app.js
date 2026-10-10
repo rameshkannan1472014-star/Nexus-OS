@@ -300,6 +300,16 @@ $("#brightness-slider").addEventListener("input", function (event) {
   $("#brightness-value").textContent = value + "%";
 });
 $("#app-layer").addEventListener("change", function (event) {
+  if (event.target.id === "files-picker") {
+    const target = $("#files-list");
+    target.replaceChildren();
+    Array.from(event.target.files).forEach(function (file) {
+      const row = document.createElement("div");
+      row.textContent = "📄 " + file.name + " · " + Math.max(1, Math.round(file.size / 1024)) + " KB";
+      target.append(row);
+    });
+    if (!event.target.files.length) target.innerHTML = '<p class="hint">No files selected.</p>';
+  }
   if (event.target.id === "music-file" && event.target.files[0]) {
     const file = event.target.files[0];
     $("#audio-player").src = URL.createObjectURL(file);
