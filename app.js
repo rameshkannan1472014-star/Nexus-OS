@@ -237,3 +237,109 @@ $("#app-layer").addEventListener("click", event => {
     $("#ai-output").textContent = prompt ? "I’m only a UI demo so far. Next, we can connect a real AI model to answer: “" + prompt + "”" : "Write a question first.";
   }
 });
+
+/* Control Center: these switches affect Nexus OS's interface only, not Android settings. */
+const controlCenter = $("#control-center");
+if ($("#control-center-open")) $("#control-center-open").addEventListener("click", function () { controlCenter.hidden = false; });
+if ($("#control-center-close")) $("#control-center-close").addEventListener("click", function () { controlCenter.hidden = true; });
+const quickState = {wifi:true, bluetooth:true, airplane:false};
+$$("[data-control]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    const type = button.dataset.control;
+    if (type === "music") { controlCenter.hidden = true; openApp("music"); return; }
+    if (type === "theme") {
+      document.body.classList.toggle("light-mode");
+      $("#theme-state").textContent = document.body.classList.contains("light-mode") ? "Light mode" : "Dark mode";
+      button.classList.toggle("active", !document.body.classList.contains("light-mode"));
+      return;
+    }
+    quickState[type] = !quickState[type];
+    button.classList.toggle("active", quickState[type]);
+    const text = type === "airplane" ? (quickState[type] ? "On · simulated" : "Off · simulated") : (quickState[type] ? "On · simulated" : "Off · simulated");
+    $("#" + type + "-state").textContent = text;
+    $("#network-status").textContent = quickState.airplane || !quickState.wifi ? "● Offline mode" : "● Online";
+  });
+});
+$("#brightness-slider").addEventListener("input", function (event) {
+  const value = Number(event.target.value);
+  document.documentElement.style.setProperty("--screen-brightness", value / 100);
+  $("#brightness-value").textContent = value + "%";
+});
+$("#app-layer").addEventListener("change", function (event) {
+  if (event.target.id === "music-file" && event.target.files[0]) {
+    const file = event.target.files[0];
+    $("#audio-player").src = URL.createObjectURL(file);
+    $("#track-title").textContent = file.name.replace(/\.[^.]+$/, "");
+    $("#track-subtitle").textContent = "Selected from your device";
+    $("#music-status").textContent = file.name.replace(/\.[^.]+$/, "");
+  }
+  if (event.target.id === "camera-input" && event.target.files[0]) previewImage(event.target.files[0], $("#camera-preview"));
+  if (event.target.id === "gallery-input") {
+    const target = $("#gallery-preview");
+    target.replaceChildren();
+    Array.from(event.target.files).forEach(function (file) {
+      const img = document.createElement("img"); img.src = URL.createObjectURL(file); img.alt = file.name; img.className = "preview-image"; target.append(img);
+    });
+  }
+  if (event.target.matches("[data-task-index]")) {
+    const tasks = getSavedTasks();
+    const index = Number(event.target.dataset.taskIndex);
+    if (tasks[index]) tasks[index].done = event.target.checked;
+    localStorage.setItem("nexus-tasks", JSON.stringify(tasks));
+    renderSavedTasks($("#task-list")); renderSavedTasks($("#quick-task-list"));
+    const next = tasks.find(function (task) { return !task.done; });
+    $("#next-task").textContent = next ? next.text : "All tasks complete";
+  }
+});
+$("#app-layer").addEventListener("submit", function (event) {
+  if (event.target.id === "weather-form") {
+    event.preventDefault();
+    loadWeather($("#weather-city").value.trim());
+  }
+  if (event.target.id === "quick-task-form") {
+    event.preventDefault(); addSavedTask($("#quick-task-input").value);
+    $("#quick-task-input").value = "";
+  }
+});
+$("#app-layer").addEventListener("click", function (event) {
+  const launch = event.target.closest("[data-launch]");
+  if (launch) { openApp(launch.dataset.launch); return; }
+  const remove = event.target.closest("[data-delete-task]");
+  if (remove) {
+    const tasks = getSavedTasks(); tasks.splice(Number(remove.dataset.deleteTask), 1);
+    localStorage.setItem("nexus-tasks", JSON.stringify(tasks));
+    renderSavedTasks($("#task-list")); renderSavedTasks($("#quick-task-list"));
+  }
+});
+function weatherLabel(code) {
+  if (code === 0) return ["☀️","Clear sky"];
+  if ([1,2,3].includes(code)) return ["🌤️","Partly cloudy"];
+  if ([45,48].includes(code)) return ["🌫️","Fog"];
+  if ([51,53,55,56,57].includes(code)) return ["🌦️","Drizzle"];
+  if ([61,63,65,66,67,80,81,82].includes(code)) return ["🌧️","Rain"];
+  if ([71,73,75,77,85,86].includes(code)) return ["❄️","Snow"];
+  if ([95,96,99].includes(code)) return ["⛈️","Thunderstorm"];
+  return ["🌥️","Mixed conditions"];
+}
+async function loadWeather(city) {
+  const target = $("#weather-result");
+  if (!target) return;
+  target.innerHTML = "<p>Checking weather…</p>";
+  try {
+    const geoResponse = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(city) + "&count=1&language=en&format=json");
+    if (!geoResponse.ok) throw new Error("Could not search for that city.");
+    const geo = await geoResponse.json();
+    if (!geo.results || !geo.results.length) throw new Error("City not found. Check the spelling and try again.");
+    const place = geo.results[0];
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + place.latitude + "&longitude=" + place.longitude + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone=auto";
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Weather service is temporarily unavailable.");
+    const data = await response.json();
+    const now = data.current; const label = weatherLabel(now.weather_code);
+    target.innerHTML = '<div class="weather-hero"><span>' + label[0] + '</span><div><h3>' + escapeText(place.name) + ', ' + escapeText(place.country || "") + '</h3><p>' + label[1] + '</p></div></div><div class="weather-temp">' + Math.round(now.temperature_2m) + '°C</div><p>Feels like ' + Math.round(now.apparent_temperature) + '°C</p><div class="weather-stats"><div><small>Humidity</small><b>' + now.relative_humidity_2m + '%</b></div><div><small>Wind</small><b>' + Math.round(now.wind_speed_10m) + ' km/h</b></div><div><small>Today high</small><b>' + Math.round(data.daily.temperature_2m_max[0]) + '°C</b></div><div><small>Today low</small><b>' + Math.round(data.daily.temperature_2m_min[0]) + '°C</b></div></div><p class="hint">Rain chance today: ' + (data.daily.precipitation_probability_max[0] ?? "—") + '%</p>';
+    $("#weather-summary").textContent = Math.round(now.temperature_2m) + "°C · " + label[1];
+    $("#weather-detail").textContent = place.name + " · Wind " + Math.round(now.wind_speed_10m) + " km/h";
+  } catch (error) {
+    target.innerHTML = '<p class="error-text">' + escapeText(error.message || "Weather could not load. Check your internet connection.") + '</p>';
+  }
+}
