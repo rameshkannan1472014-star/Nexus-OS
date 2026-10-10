@@ -120,7 +120,7 @@ $("#app-layer").addEventListener("click", event => {
   }
   if (action === "calculate") {
     const expression = $("#calc-input").value.trim();
-    if (!/^[\d\s()+\-*/.%]+$/.test(expression)) { $("#calc-output").textContent = "Use numbers and basic math operators only."; return; }
+    if (!/^[0-9\s()+\-*\/.%]+$/.test(expression)) { $("#calc-output").textContent = "Use numbers and basic math operators only."; return; }
     try {
       const result = Function('"use strict"; return (' + expression + ')')();
       $("#calc-output").textContent = Number.isFinite(result) ? "= " + result : "Please check that calculation.";
