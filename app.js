@@ -12,7 +12,7 @@ updateClock();
 setInterval(updateClock, 30000);
 
 const appInfo = {
-  browser: {title:"Browser", body:'<p>This is the Browser app placeholder.</p><p>Choose a website to open in a new tab.</p><input id="browser-url" type="url" placeholder="https://example.com"><button class="window-action" data-action="open-url">Open website ↗</button>'},
+  browser: {title:"Web Browser", body:'<div class="browser-toolbar"><button class="browser-nav" data-action="browser-back" aria-label="Back">‹</button><button class="browser-nav" data-action="browser-forward" aria-label="Forward">›</button><form id="browser-form" class="browser-address"><input id="browser-url" type="text" placeholder="Search or enter website address" autocomplete="url" required><button type="submit">Go</button></form></div><div class="browser-home"><h3>Browse the web</h3><p>Search the web or open a website in your default browser.</p><div class="browser-shortcuts"><button data-web-url="https://www.google.com/">Google</button><button data-web-url="https://www.youtube.com/">YouTube</button><button data-web-url="https://en.wikipedia.org/">Wikipedia</button><button data-web-url="https://github.com/">GitHub</button></div><p class="hint">Websites may block being shown inside another app. Nexus OS opens them in your browser for full compatibility.</p></div>'},
   files: {title:"File Manager", body:'<p>Choose files to view their names. Your phone will ask you which files to share with Nexus OS.</p><input id="files-picker" type="file" multiple><div id="files-list" class="file-list"><p class="hint">No files selected.</p></div><p class="hint">For safety, this app only sees files you choose.</p>'},
   terminal: {title:"Terminal", body:'<p>A safe demo terminal. It does not execute system commands.</p><div class="terminal-box">Nexus OS [Prototype]\nType help to see demo commands.</div><input id="terminal-input" placeholder="Type help"><button class="window-action" data-action="terminal-run">Run demo command</button><div id="terminal-output" role="status"></div>'},
   calculator: {title:"Calculator", body:'<div class="calculator"><input id="calc-input" class="calculator-display" inputmode="none" autocomplete="off" aria-label="Calculator display" placeholder="0" readonly><div class="calculator-keys" aria-label="Calculator keypad"><button class="utility" data-calc-key="AC">AC</button><button class="utility" data-calc-key="(">(</button><button class="utility" data-calc-key=")">)</button><button class="operator" data-calc-key="÷">÷</button><button data-calc-key="7">7</button><button data-calc-key="8">8</button><button data-calc-key="9">9</button><button class="operator" data-calc-key="×">×</button><button data-calc-key="4">4</button><button data-calc-key="5">5</button><button data-calc-key="6">6</button><button class="operator" data-calc-key="-">−</button><button data-calc-key="1">1</button><button data-calc-key="2">2</button><button data-calc-key="3">3</button><button class="operator" data-calc-key="+">+</button><button class="utility" data-calc-key="±">±</button><button data-calc-key="0">0</button><button data-calc-key=".">.</button><button class="equals" data-calc-key="=">=</button><button class="utility" data-calc-key="DEL" style="grid-column:span 4">⌫ Delete</button></div><p id="calc-output" class="calculator-result" role="status">Ready</p></div>'},
@@ -20,7 +20,7 @@ const appInfo = {
   calendar: {title:"Day Planner", body:'<p>Add a task for your prototype dashboard.</p><input id="task-input" placeholder="e.g. Study Python for 20 minutes"><button class="window-action" data-action="save-task">Save task</button><p id="task-output" role="status"></p>'},
   gallery: {title:"Gallery", body:'<p>Select photos to preview them here.</p><input id="gallery-input" type="file" accept="image/*" multiple><div id="gallery-preview" class="gallery-preview"></div>'},
   settings: {title:"Settings", body:'<p>Personalise your prototype.</p><button class="window-action" data-action="toggle-theme">Toggle light / dark mode</button><p>Screen and camera permissions are not enabled in this prototype.</p>'},
-  music: {title:"Music Player", body:'<div class="music-card"><div class="album-art">♫</div><h3 id="track-title">Choose your music</h3><p id="track-subtitle">Play an audio file stored on your device</p><input id="music-file" type="file" accept="audio/*"><audio id="audio-player" controls preload="metadata"></audio><div class="music-actions"><button class="window-action" data-action="play-audio">▶ Play</button><button class="window-action secondary-action" data-action="pause-audio">Ⅱ Pause</button></div><p class="hint">Choose an audio file to play it. Nexus OS does not include music tracks.</p></div>'},
+  music: {title:"Online Music", body:'<div class="music-card"><div class="album-art">♫</div><h3>Listen on the internet</h3><p>Search music online and play it through a music service.</p><form id="music-search-form" class="inline-form"><input id="music-search-query" placeholder="Song, artist or genre" required><button class="window-action" type="submit">Search</button></form><div class="online-music-links"><button data-music-service="youtube">YouTube Music</button><button data-music-service="soundcloud">SoundCloud</button><button data-music-service="spotify">Spotify</button></div><p class="hint">Online services open in your browser. Playback, sign-in and availability depend on each service. Nexus OS does not host or download music.</p><details><summary>Play an audio URL</summary><p>Use a direct audio stream URL you have permission to play.</p><input id="online-audio-url" type="url" placeholder="https://example.com/audio.mp3"><button class="window-action" data-action="play-online-audio">Play stream</button><audio id="audio-player" controls preload="none"></audio></details></div>'},
   messages: {title:"Message Drafts", body:'<p>Write and save a message draft. This does not send SMS or access your phone messages.</p><textarea id="message-draft" placeholder="Write your draft…"></textarea><button class="window-action" data-action="save-message">Save draft</button><button class="window-action secondary-action" data-action="load-message">Load draft</button><p id="message-status" role="status"></p>'},
   store: {title:"Nexus Mini Apps", body:'<p>Launch the tools included in this prototype.</p><div class="file-list"><div>🧮 Calculator <button data-launch="calculator">Open</button></div><div>📝 Notes <button data-launch="notes">Open</button></div><div>⏱️ Timer <button data-launch="timer">Open</button></div><div>🎨 Paint <button data-launch="paint">Open</button></div><div>🌦️ Weather <button data-launch="weather">Open</button></div><div>🎵 Music <button data-launch="music">Open</button></div></div>'},
   call: {title:"Phone Dialer Demo", body:'<p>This is a dialer interface only. It cannot place phone calls from the website.</p><input id="dial-display" aria-label="Phone number" placeholder="Enter number" readonly><div class="dial-pad"><button data-dial="1">1</button><button data-dial="2">2</button><button data-dial="3">3</button><button data-dial="4">4</button><button data-dial="5">5</button><button data-dial="6">6</button><button data-dial="7">7</button><button data-dial="8">8</button><button data-dial="9">9</button><button data-dial="*">*</button><button data-dial="0">0</button><button data-dial="#">#</button></div><button class="window-action secondary-action" data-action="dial-clear">Clear</button><p id="dial-status" class="hint">Demo only — no calls are made.</p>'},
@@ -28,10 +28,12 @@ const appInfo = {
   cleaner: {title:"Storage Cleaner", body:'<div class="feature-card"><span class="big-emoji">🧹</span><h3>Browser session helper</h3><p>Clear temporary previews and reset this app window. Your saved notes and tasks will be kept.</p></div><button class="window-action" data-action="clean-session">Clear temporary previews</button><p id="cleaner-status" role="status"></p>'},
   games: {title:"Mini Match", body:'<p>Find matching pairs. Tap two cards to reveal them.</p><div id="match-game" class="match-game"><button data-match="🌟">?</button><button data-match="🚀">?</button><button data-match="🌈">?</button><button data-match="🎧">?</button><button data-match="🎧">?</button><button data-match="🌈">?</button><button data-match="🚀">?</button><button data-match="🌟">?</button></div><button class="window-action secondary-action" data-action="reset-game">Restart game</button><p id="game-status" class="hint">Match all four pairs.</p>'},
   notes: {title:"Notes", body:'<p>Notes are saved on this browser.</p><input id="note-title" placeholder="Note title"><textarea id="note-content" placeholder="Start writing…"></textarea><button class="window-action" data-action="save-note">Save note</button><button class="window-action secondary-action" data-action="load-note">Load saved note</button><p id="note-status" role="status"></p>'},
-  camera: {title:"Camera & Photo Import", body:'<p>Choose a photo, or use the camera option if your browser offers it.</p><input id="camera-input" type="file" accept="image/*" capture="environment"><div id="camera-preview" class="camera-preview">📷 Your selected photo appears here.</div>'},
+  camera: {title:"Camera", body:'<p>Allow camera access when your browser asks. Camera access requires HTTPS and permission.</p><div class="camera-actions"><button class="window-action" data-action="start-camera">Start camera</button><button class="window-action secondary-action" data-action="stop-camera">Stop</button><button class="window-action" data-action="capture-photo">Take photo</button></div><video id="camera-video" class="camera-video" autoplay playsinline muted></video><canvas id="camera-snapshot" hidden></canvas><div id="camera-preview" class="camera-preview">Camera preview will appear here.</div><p id="camera-status" class="hint" role="status">Tap Start camera and allow permission.</p><details><summary>Choose an existing photo instead</summary><input id="camera-input" type="file" accept="image/*" capture="environment"></details>'},
   timer: {title:"Focus Timer", body:'<div class="timer-face" id="timer-display">05:00</div><label>Minutes <input id="timer-minutes" type="number" min="1" max="180" value="5"></label><button class="window-action" data-action="start-timer">▶ Start</button><button class="window-action secondary-action" data-action="stop-timer">Reset</button><p id="timer-status" role="status">Ready when you are.</p>'},
-  paint: {title:"Nexus Paint", body:'<div class="paint-tools"><label>Color <input id="paint-color" type="color" value="#9b8cff"></label><label>Brush <input id="paint-size" type="range" min="2" max="24" value="6"></label><button class="window-action secondary-action" data-action="clear-paint">Clear</button><button class="window-action" data-action="save-paint">Save image</button></div><canvas id="paint-canvas" width="900" height="520"></canvas><p class="hint">Draw with your finger or mouse.</p>'},
+  paint: {title:"Paint", body:'<div class="paint-ribbon"><div class="paint-tools"><label>Tool <select id="paint-tool"><option value="pen">Pencil</option><option value="marker">Marker</option><option value="eraser">Eraser</option></select></label><label>Color <input id="paint-color" type="color" value="#202020"></label><label>Size <input id="paint-size" type="range" min="1" max="48" value="5"></label><output id="paint-size-value">5 px</output><button class="window-action secondary-action" data-action="undo-paint">Undo</button><button class="window-action secondary-action" data-action="clear-paint">Clear</button><button class="window-action" data-action="save-paint">Save image</button></div><div class="paint-swatches"><button data-paint-color="#202020" style="--swatch:#202020" aria-label="Black"></button><button data-paint-color="#ffffff" style="--swatch:#ffffff" aria-label="White"></button><button data-paint-color="#e5484d" style="--swatch:#e5484d" aria-label="Red"></button><button data-paint-color="#2f9e44" style="--swatch:#2f9e44" aria-label="Green"></button><button data-paint-color="#1c7ed6" style="--swatch:#1c7ed6" aria-label="Blue"></button><button data-paint-color="#f08c00" style="--swatch:#f08c00" aria-label="Orange"></button><button data-paint-color="#7950f2" style="--swatch:#7950f2" aria-label="Purple"></button></div></div><canvas id="paint-canvas" width="1200" height="720"></canvas><p class="hint">Paint with touch or mouse, then save your drawing as a PNG.</p>'},
   tasks: {title:"Tasks", body:'<p>Manage a checklist saved in this browser.</p><form id="quick-task-form" class="inline-form"><input id="quick-task-input" placeholder="Add a task…" required><button class="window-action" type="submit">Add</button></form><div id="quick-task-list" class="task-list"></div>'},
+  youtube: {title:"YouTube", body:'<div class="youtube-launch"><div class="youtube-mark">▶</div><h3>YouTube</h3><p>Watch videos, search channels and open your subscriptions on YouTube.</p><button class="window-action" data-action="open-youtube">Open YouTube ↗</button><button class="window-action secondary-action" data-action="open-youtube-music">Open YouTube Music ↗</button><p class="hint">YouTube may not allow its full website to be embedded inside Nexus OS, so it opens in your browser.</p></div>'},
+  recorder: {title:"Voice Recorder", body:'<p>Record audio after granting microphone permission.</p><button class="window-action" data-action="start-recording">Start recording</button><button class="window-action secondary-action" data-action="stop-recording">Stop recording</button><audio id="recording-playback" controls></audio><p id="recorder-status" class="hint">Recording stays in this browser session.</p>'},
   ai: {title:"Nexus AI Companion", body:'<p>Hi! I’m the Nexus AI character 🤖</p><p>This is a UI prototype, so I am not connected to an AI model yet.</p><textarea id="ai-prompt" placeholder="What would you like help with?"></textarea><button class="window-action" data-action="ai-demo">Ask Nexus AI</button><p id="ai-output" role="status"></p>'}
 };
 
@@ -69,7 +71,67 @@ function openApp(name) {
   }
 }
 $$("[data-app]").forEach(button => button.addEventListener("click", () => openApp(button.dataset.app)));
+
 $("#ai-companion").addEventListener("click", () => openApp("ai"));
+function openExternal(url) {
+  if (!/^https:\/\//i.test(url)) return;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+document.addEventListener("click", function(event) {
+  const nav = event.target.closest("[data-system-nav]");
+  if (nav) {
+    const action = nav.dataset.systemNav;
+    if (action === "home") { closeWindow(); $("#control-center").hidden = true; window.scrollTo({top:0,behavior:"smooth"}); }
+    if (action === "back") { if (!$("#app-layer").innerHTML.trim()) $("#control-center").hidden = true; else closeWindow(); }
+    if (action === "recent") { const names = [...document.querySelectorAll(".app-grid .app")].map(b=>b.querySelector("span:last-child")?.textContent).filter(Boolean); alert("Nexus OS apps: " + names.join(", ")); }
+    return;
+  }
+  const webShortcut=event.target.closest("[data-web-url]");
+  if(webShortcut){openExternal(webShortcut.dataset.webUrl);return;}
+  const service=event.target.closest("[data-music-service]");
+  if(service){
+    const q=encodeURIComponent($("#music-search-query")?.value.trim() || "");
+    const urls={youtube:"https://music.youtube.com/search?q="+q,soundcloud:"https://soundcloud.com/search?q="+q,spotify:"https://open.spotify.com/search/"+q};
+    openExternal(urls[service.dataset.musicService]);return;
+  }
+  const paintColor=event.target.closest("[data-paint-color]");
+  if(paintColor && $("#paint-color")){$("#paint-color").value=paintColor.dataset.paintColor;return;}
+});
+document.addEventListener("submit", function(event) {
+  if(event.target.id==="browser-form"){
+    event.preventDefault();
+    let value=$("#browser-url").value.trim();
+    if(!/^https?:\/\//i.test(value)){
+      value=value.includes(".") && !value.includes(" ") ? "https://"+value : "https://www.google.com/search?q="+encodeURIComponent(value);
+    }
+    openExternal(value);
+  }
+  if(event.target.id==="music-search-form"){
+    event.preventDefault();
+    const q=encodeURIComponent($("#music-search-query").value.trim());
+    openExternal("https://music.youtube.com/search?q="+q);
+  }
+});
+let ccTouchStartY=0;
+document.addEventListener("touchstart",e=>{if(e.touches.length===1)ccTouchStartY=e.touches[0].clientY},{passive:true});
+document.addEventListener("touchend",e=>{
+ const endY=e.changedTouches[0]?.clientY ?? 0;
+ if(ccTouchStartY<45 && endY-ccTouchStartY>70){$("#control-center").hidden=false;$("#control-date").textContent=new Date().toLocaleString([], {weekday:"long",month:"short",day:"numeric"});}
+ if(!$("#control-center").hidden && ccTouchStartY-endY>70) $("#control-center").hidden=true;
+},{passive:true});
+$("#control-center-open")?.addEventListener("click",()=>{$("#control-center").hidden=false;$("#control-date").textContent=new Date().toLocaleString([], {weekday:"long",month:"short",day:"numeric"});});
+$("#control-center-close")?.addEventListener("click",()=>$("#control-center").hidden=true);
+$("#control-center")?.addEventListener("click",e=>{
+ const tile=e.target.closest("[data-control]");
+ if(!tile)return;
+ const type=tile.dataset.control;
+ if(type==="music"){ $("#control-center").hidden=true;openApp("music");return;}
+ if(type==="theme"){document.body.classList.toggle("light-mode");$("#theme-state").textContent=document.body.classList.contains("light-mode")?"Light mode":"Dark mode";return;}
+ tile.classList.toggle("active");
+ const state=$("#"+type+"-state"); if(state) state.textContent=(tile.classList.contains("active")?"On":"Off")+" · simulated";
+});
+$("#brightness-slider")?.addEventListener("input",e=>{const value=Number(e.target.value);$("#brightness-value").textContent=value+"%";document.documentElement.style.filter="brightness("+Math.min(1.1,value/100)+")";});
+
 
 $("#global-search").addEventListener("input", event => {
   const query = event.target.value.trim().toLowerCase();
@@ -126,14 +188,14 @@ function initPaint() {
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
   ctx.lineCap = "round"; ctx.lineJoin = "round";
-  let drawing = false;
+  let drawing = false;\n  let lastPoint = null;\n  const history = [];\n  function saveState(){history.push(ctx.getImageData(0,0,canvas.width,canvas.height));if(history.length>20)history.shift();}\n  saveState();
   function point(e) {
     const rect = canvas.getBoundingClientRect();
     return {x:(e.clientX-rect.left)*canvas.width/rect.width, y:(e.clientY-rect.top)*canvas.height/rect.height};
   }
-  canvas.onpointerdown = function (e) { drawing = true; canvas.setPointerCapture(e.pointerId); const p=point(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
-  canvas.onpointermove = function (e) { if (!drawing) return; const p=point(e); ctx.strokeStyle=$("#paint-color").value; ctx.lineWidth=Number($("#paint-size").value); ctx.lineTo(p.x,p.y); ctx.stroke(); };
-  canvas.onpointerup = canvas.onpointercancel = function () { drawing = false; };
+  canvas.onpointerdown = function (e) { drawing = true; canvas.setPointerCapture(e.pointerId); saveState(); const p=point(e); lastPoint=p; ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  canvas.onpointermove = function (e) { if (!drawing) return; const p=point(e); const tool=$("#paint-tool")?.value || "pen";ctx.globalCompositeOperation=tool==="eraser"?"destination-out":"source-over";ctx.strokeStyle=$("#paint-color").value;ctx.globalAlpha=tool==="marker"?.35:1;ctx.lineWidth=Number($("#paint-size").value);ctx.lineTo(p.x,p.y);ctx.stroke();lastPoint=p; };
+  canvas.onpointerup = canvas.onpointercancel = function () { drawing = false;ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over"; };
 }
 
 $("#app-layer").addEventListener("click", event => {
@@ -202,6 +264,21 @@ $("#app-layer").addEventListener("click", event => {
     $("#note-content").value = localStorage.getItem("nexus-note-content") || "";
     $("#note-status").textContent = "Saved note loaded.";
   }
+
+  if (action === "open-url") { const v=$("#browser-url").value.trim(); if(v) openExternal(/^https?:/i.test(v)?v:"https://"+v); }
+  if (action === "open-youtube") openExternal("https://www.youtube.com/");
+  if (action === "open-youtube-music") openExternal("https://music.youtube.com/");
+  if (action === "play-online-audio") { const url=$("#online-audio-url").value.trim(); const audio=$("#audio-player"); if(/^https:\/\//i.test(url)&&audio){audio.src=url;audio.play().catch(()=>{});} }
+  if (action === "start-camera") {
+    const video=$("#camera-video"), status=$("#camera-status");
+    if(!navigator.mediaDevices?.getUserMedia){status.textContent="Camera API is unavailable. Open Nexus OS in an up-to-date browser over HTTPS."; }
+    else navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false}).then(stream=>{window.nexusCameraStream=stream;video.srcObject=stream;video.hidden=false;status.textContent="Camera is on. Tap Take photo to capture.";}).catch(err=>{status.textContent="Camera could not start: "+(err.name==="NotAllowedError"?"permission denied":err.message||"check camera permission");});
+  }
+  if (action === "stop-camera") { if(window.nexusCameraStream) window.nexusCameraStream.getTracks().forEach(t=>t.stop());window.nexusCameraStream=null;if($("#camera-video"))$("#camera-video").srcObject=null;if($("#camera-status"))$("#camera-status").textContent="Camera stopped."; }
+  if (action === "capture-photo") { const video=$("#camera-video"), canvas=$("#camera-snapshot"), preview=$("#camera-preview");if(video?.videoWidth&&canvas){canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext("2d").drawImage(video,0,0);const img=document.createElement("img");img.src=canvas.toDataURL("image/png");img.alt="Captured photo";img.className="preview-image";preview.replaceChildren(img);$("#camera-status").textContent="Photo captured. Long-press the preview to save it if your browser supports that."; }else if($("#camera-status"))$("#camera-status").textContent="Start the camera first and allow permission."; }
+  if (action === "start-recording") { navigator.mediaDevices?.getUserMedia({audio:true}).then(stream=>{const rec=new MediaRecorder(stream);const chunks=[];rec.ondataavailable=e=>chunks.push(e.data);rec.onstop=()=>{const audio=$("#recording-playback");audio.src=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType||"audio/webm"}));stream.getTracks().forEach(t=>t.stop());};window.nexusRecorder=rec;rec.start();$("#recorder-status").textContent="Recording…";}).catch(()=>$("#recorder-status").textContent="Microphone permission was denied or recording is unavailable.");}
+  if (action === "stop-recording") { if(window.nexusRecorder?.state==="recording"){window.nexusRecorder.stop();$("#recorder-status").textContent="Recording ready to play."; } }
+  if (action === "undo-paint") { const canvas=$("#paint-canvas");if(canvas){const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);$("#paint-status")?.replaceChildren();} }
   if (action === "play-audio") {
     const audio = $("#audio-player");
     if (audio && audio.src) audio.play().catch(function () {});
@@ -309,13 +386,6 @@ $("#app-layer").addEventListener("change", function (event) {
       target.append(row);
     });
     if (!event.target.files.length) target.innerHTML = '<p class="hint">No files selected.</p>';
-  }
-  if (event.target.id === "music-file" && event.target.files[0]) {
-    const file = event.target.files[0];
-    $("#audio-player").src = URL.createObjectURL(file);
-    $("#track-title").textContent = file.name.replace(/\.[^.]+$/, "");
-    $("#track-subtitle").textContent = "Selected from your device";
-    $("#music-status").textContent = file.name.replace(/\.[^.]+$/, "");
   }
   if (event.target.id === "camera-input" && event.target.files[0]) previewImage(event.target.files[0], $("#camera-preview"));
   if (event.target.id === "gallery-input") {
