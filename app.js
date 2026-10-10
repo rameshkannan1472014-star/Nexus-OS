@@ -58,6 +58,11 @@ function openApp(name) {
   win.append(head, body);
   layer.replaceChildren(win);
   close.focus();
+  if (name === "paint") initPaint();
+  if (name === "tasks" || name === "calendar") {
+    renderSavedTasks($("#quick-task-list"));
+    renderSavedTasks($("#task-list"));
+  }
 }
 $$("[data-app]").forEach(button => button.addEventListener("click", () => openApp(button.dataset.app)));
 $("#ai-companion").addEventListener("click", () => openApp("ai"));
