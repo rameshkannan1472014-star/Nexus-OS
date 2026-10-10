@@ -12,7 +12,7 @@ updateClock();
 setInterval(updateClock, 30000);
 
 const appInfo = {
-  browser: {title:"Web Browser", body:'<div class="browser-toolbar"><button class="browser-nav" data-action="browser-back" aria-label="Back">‹</button><button class="browser-nav" data-action="browser-forward" aria-label="Forward">›</button><form id="browser-form" class="browser-address"><input id="browser-url" type="text" placeholder="Search or enter website address" autocomplete="url" required><button type="submit">Go</button></form></div><div class="browser-home"><h3>Browse the web</h3><p>Search the web or open a website in your default browser.</p><div class="browser-shortcuts"><button data-web-url="https://www.google.com/">Google</button><button data-web-url="https://www.youtube.com/">YouTube</button><button data-web-url="https://en.wikipedia.org/">Wikipedia</button><button data-web-url="https://github.com/">GitHub</button></div><p class="hint">Websites may block being shown inside another app. Nexus OS opens them in your browser for full compatibility.</p></div>'},
+  browser: {title:"Nexus Browser", body:'<div class="browser-shell"><form id="browser-form" class="browser-toolbar"><button class="browser-nav" type="button" data-action="browser-back">‹</button><button class="browser-nav" type="button" data-action="browser-forward">›</button><button class="browser-nav" type="button" data-action="browser-reload">↻</button><input id="browser-url" type="text" placeholder="Search or enter a website address" required><button type="submit">Go</button></form><div class="browser-home" id="browser-home"><h3>Browse inside Nexus OS</h3><p>Enter a website or choose a shortcut. Pages that allow embedding will appear here.</p><div class="browser-shortcuts"><button type="button" data-browser-url="https://www.wikipedia.org/">Wikipedia</button><button type="button" data-browser-url="https://www.google.com/">Google</button><button type="button" data-browser-url="https://github.com/">GitHub</button><button type="button" data-browser-url="https://www.youtube.com/">YouTube</button></div></div><div id="browser-message" class="browser-message" role="status">Your page will load here.</div><iframe id="browser-frame" title="Web page inside Nexus Browser" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay; encrypted-media; picture-in-picture" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads" hidden></iframe></div>'},
   files: {title:"File Manager", body:'<p>Choose files to view their names. Your phone will ask you which files to share with Nexus OS.</p><input id="files-picker" type="file" multiple><div id="files-list" class="file-list"><p class="hint">No files selected.</p></div><p class="hint">For safety, this app only sees files you choose.</p>'},
   terminal: {title:"Terminal", body:'<p>A safe demo terminal. It does not execute system commands.</p><div class="terminal-box">Nexus OS [Prototype]\nType help to see demo commands.</div><input id="terminal-input" placeholder="Type help"><button class="window-action" data-action="terminal-run">Run demo command</button><div id="terminal-output" role="status"></div>'},
   calculator: {title:"Calculator", body:'<div class="calculator"><input id="calc-input" class="calculator-display" inputmode="none" autocomplete="off" aria-label="Calculator display" placeholder="0" readonly><div class="calculator-keys" aria-label="Calculator keypad"><button class="utility" data-calc-key="AC">AC</button><button class="utility" data-calc-key="(">(</button><button class="utility" data-calc-key=")">)</button><button class="operator" data-calc-key="÷">÷</button><button data-calc-key="7">7</button><button data-calc-key="8">8</button><button data-calc-key="9">9</button><button class="operator" data-calc-key="×">×</button><button data-calc-key="4">4</button><button data-calc-key="5">5</button><button data-calc-key="6">6</button><button class="operator" data-calc-key="-">−</button><button data-calc-key="1">1</button><button data-calc-key="2">2</button><button data-calc-key="3">3</button><button class="operator" data-calc-key="+">+</button><button class="utility" data-calc-key="±">±</button><button data-calc-key="0">0</button><button data-calc-key=".">.</button><button class="equals" data-calc-key="=">=</button><button class="utility" data-calc-key="DEL" style="grid-column:span 4">⌫ Delete</button></div><p id="calc-output" class="calculator-result" role="status">Ready</p></div>'},
@@ -32,7 +32,7 @@ const appInfo = {
   timer: {title:"Focus Timer", body:'<div class="timer-face" id="timer-display">05:00</div><label>Minutes <input id="timer-minutes" type="number" min="1" max="180" value="5"></label><button class="window-action" data-action="start-timer">▶ Start</button><button class="window-action secondary-action" data-action="stop-timer">Reset</button><p id="timer-status" role="status">Ready when you are.</p>'},
   paint: {title:"Paint", body:'<div class="paint-ribbon"><div class="paint-tools"><label>Tool <select id="paint-tool"><option value="pen">Pencil</option><option value="marker">Marker</option><option value="eraser">Eraser</option></select></label><label>Color <input id="paint-color" type="color" value="#202020"></label><label>Size <input id="paint-size" type="range" min="1" max="48" value="5"></label><output id="paint-size-value">5 px</output><button class="window-action secondary-action" data-action="undo-paint">Undo</button><button class="window-action secondary-action" data-action="clear-paint">Clear</button><button class="window-action" data-action="save-paint">Save image</button></div><div class="paint-swatches"><button data-paint-color="#202020" style="--swatch:#202020" aria-label="Black"></button><button data-paint-color="#ffffff" style="--swatch:#ffffff" aria-label="White"></button><button data-paint-color="#e5484d" style="--swatch:#e5484d" aria-label="Red"></button><button data-paint-color="#2f9e44" style="--swatch:#2f9e44" aria-label="Green"></button><button data-paint-color="#1c7ed6" style="--swatch:#1c7ed6" aria-label="Blue"></button><button data-paint-color="#f08c00" style="--swatch:#f08c00" aria-label="Orange"></button><button data-paint-color="#7950f2" style="--swatch:#7950f2" aria-label="Purple"></button></div></div><canvas id="paint-canvas" width="1200" height="720"></canvas><p class="hint">Paint with touch or mouse, then save your drawing as a PNG.</p>'},
   tasks: {title:"Tasks", body:'<p>Manage a checklist saved in this browser.</p><form id="quick-task-form" class="inline-form"><input id="quick-task-input" placeholder="Add a task…" required><button class="window-action" type="submit">Add</button></form><div id="quick-task-list" class="task-list"></div>'},
-  youtube: {title:"YouTube", body:'<div class="youtube-launch"><div class="youtube-mark">▶</div><h3>YouTube</h3><p>Watch videos, search channels and open your subscriptions on YouTube.</p><button class="window-action" data-action="open-youtube">Open YouTube ↗</button><button class="window-action secondary-action" data-action="open-youtube-music">Open YouTube Music ↗</button><p class="hint">YouTube may not allow its full website to be embedded inside Nexus OS, so it opens in your browser.</p></div>'},
+  youtube: {title:"YouTube", body:'<div class="youtube-shell"><div class="youtube-brand"><span class="youtube-mark">▶</span><div><h3>YouTube Player</h3><p>Watch YouTube videos inside Nexus OS.</p></div></div><form id="youtube-form" class="youtube-form"><input id="youtube-url" type="text" placeholder="Paste a YouTube video URL or video ID" required><button class="window-action" type="submit">Play inside Nexus OS</button></form><div class="youtube-presets"><button type="button" data-youtube-search="science experiments">Science</button><button type="button" data-youtube-search="coding tutorials">Coding</button><button type="button" data-youtube-search="space documentaries">Space</button></div><div id="youtube-player-message" class="browser-message" role="status">Paste a YouTube video link or ID to play it here.</div><iframe id="youtube-player" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen hidden></iframe><p class="hint">YouTube blocks its full homepage and search pages from embedding in many sites. Videos can play here if embedding is allowed by the video owner.</p></div>'},
   recorder: {title:"Voice Recorder", body:'<p>Record audio after granting microphone permission.</p><button class="window-action" data-action="start-recording">Start recording</button><button class="window-action secondary-action" data-action="stop-recording">Stop recording</button><audio id="recording-playback" controls></audio><p id="recorder-status" class="hint">Recording stays in this browser session.</p>'},
   ai: {title:"Nexus AI Companion", body:'<p>Hi! I’m the Nexus AI character 🤖</p><p>This is a UI prototype, so I am not connected to an AI model yet.</p><textarea id="ai-prompt" placeholder="What would you like help with?"></textarea><button class="window-action" data-action="ai-demo">Ask Nexus AI</button><p id="ai-output" role="status"></p>'}
 };
@@ -73,10 +73,28 @@ function openApp(name) {
 $$("[data-app]").forEach(button => button.addEventListener("click", () => openApp(button.dataset.app)));
 
 $("#ai-companion").addEventListener("click", () => openApp("ai"));
-function openExternal(url) {
-  if (!/^https:\/\//i.test(url)) return;
-  window.open(url, "_blank", "noopener,noreferrer");
+function openExternal(url) { return loadBrowserUrl(url); }
+const browserHistory=[]; let browserHistoryIndex=-1;
+function extractYouTubeId(value){
+ const raw=String(value||"").trim();if(/^[a-zA-Z0-9_-]{11}$/.test(raw))return raw;
+ try{const u=new URL(/^https?:\/\//i.test(raw)?raw:"https://"+raw);
+ if(u.hostname.endsWith("youtu.be"))return u.pathname.split("/").filter(Boolean)[0]||"";
+ if(u.hostname.includes("youtube.com")||u.hostname.includes("youtube-nocookie.com")){if(u.pathname==="/watch")return u.searchParams.get("v")||"";const p=u.pathname.split("/").filter(Boolean);if(["embed","shorts","live"].includes(p[0]))return p[1]||"";}}
+ catch(_){}return "";
 }
+function loadBrowserUrl(raw,push=true){
+ const input=String(raw||"").trim();if(!input)return;let url=input;
+ if(!/^https?:\/\//i.test(url))url=url.includes(".")&&!/\s/.test(url)?"https://"+url:"https://www.google.com/search?q="+encodeURIComponent(url);
+ let parsed;try{parsed=new URL(url)}catch(_){const m=$("#browser-message");if(m){m.hidden=false;m.textContent="Invalid address. Try a website URL or search words."}return}
+ if(!["https:","http:"].includes(parsed.protocol))return;
+ const id=extractYouTubeId(url);if(id)url="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);
+ const frame=$("#browser-frame");if(!frame)return;frame.src=url;frame.hidden=false;
+ const home=$("#browser-home");if(home)home.hidden=true;
+ const msg=$("#browser-message");if(msg){msg.hidden=false;msg.textContent="Loading inside Nexus OS. Some sites block embedding and may not display."}
+ const address=$("#browser-url");if(address)address.value=input;
+ if(push){browserHistory.splice(browserHistoryIndex+1);browserHistory.push(url);browserHistoryIndex=browserHistory.length-1}
+}
+function browserGo(delta){const n=browserHistoryIndex+delta;if(n<0||n>=browserHistory.length)return;browserHistoryIndex=n;const frame=$("#browser-frame");if(frame)frame.src=browserHistory[n]}
 document.addEventListener("click", function(event) {
   const nav = event.target.closest("[data-system-nav]");
   if (nav) {
@@ -87,30 +105,18 @@ document.addEventListener("click", function(event) {
     return;
   }
   const webShortcut=event.target.closest("[data-web-url]");
-  if(webShortcut){openExternal(webShortcut.dataset.webUrl);return;}
+  if(webShortcut){loadBrowserUrl(webShortcut.dataset.webUrl);return;}
+  const browserShortcut=event.target.closest("[data-browser-url]");if(browserShortcut){loadBrowserUrl(browserShortcut.dataset.browserUrl);return;}
+  const ytSearch=event.target.closest("[data-youtube-search]");if(ytSearch){const m=$("#youtube-player-message");if(m){m.hidden=false;m.textContent="Paste a YouTube video link to play it here. YouTube search pages cannot be embedded reliably.";}return;}
   const service=event.target.closest("[data-music-service]");
-  if(service){
-    const q=encodeURIComponent($("#music-search-query")?.value.trim() || "");
-    const urls={youtube:"https://music.youtube.com/search?q="+q,soundcloud:"https://soundcloud.com/search?q="+q,spotify:"https://open.spotify.com/search/"+q};
-    openExternal(urls[service.dataset.musicService]);return;
-  }
-  const paintColor=event.target.closest("[data-paint-color]");
+  if(service){const q=encodeURIComponent($("#music-search-query")?.value.trim()||"");const urls={youtube:"https://music.youtube.com/search?q="+q,soundcloud:"https://soundcloud.com/search?q="+q,spotify:"https://open.spotify.com/search/"+q};loadBrowserUrl(urls[service.dataset.musicService]);return;}
+  if(event.target.closest('[data-action="browser-back"]')){browserGo(-1);return;}if(event.target.closest('[data-action="browser-forward"]')){browserGo(1);return;}if(event.target.closest('[data-action="browser-reload"]')){const f=$("#browser-frame");if(f&&f.src)f.src=f.src;return;}const paintColor=event.target.closest("[data-paint-color]");
   if(paintColor && $("#paint-color")){$("#paint-color").value=paintColor.dataset.paintColor;return;}
 });
-document.addEventListener("submit", function(event) {
-  if(event.target.id==="browser-form"){
-    event.preventDefault();
-    let value=$("#browser-url").value.trim();
-    if(!/^https?:\/\//i.test(value)){
-      value=value.includes(".") && !value.includes(" ") ? "https://"+value : "https://www.google.com/search?q="+encodeURIComponent(value);
-    }
-    openExternal(value);
-  }
-  if(event.target.id==="music-search-form"){
-    event.preventDefault();
-    const q=encodeURIComponent($("#music-search-query").value.trim());
-    openExternal("https://music.youtube.com/search?q="+q);
-  }
+document.addEventListener("submit",function(event){
+ if(event.target.id==="browser-form"){event.preventDefault();loadBrowserUrl($("#browser-url").value);}
+ if(event.target.id==="youtube-form"){event.preventDefault();const id=extractYouTubeId($("#youtube-url").value.trim()),p=$("#youtube-player"),m=$("#youtube-player-message");if(!id){if(m){m.hidden=false;m.textContent="Enter a valid YouTube video URL or 11-character video ID."}return;}p.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);p.hidden=false;if(m)m.hidden=true;}
+ if(event.target.id==="music-search-form"){event.preventDefault();const q=encodeURIComponent($("#music-search-query").value.trim());loadBrowserUrl("https://music.youtube.com/search?q="+q);}
 });
 let ccTouchStartY=0;
 document.addEventListener("touchstart",e=>{if(e.touches.length===1)ccTouchStartY=e.touches[0].clientY},{passive:true});
@@ -270,8 +276,8 @@ $("#app-layer").addEventListener("click", event => {
   }
 
   if (action === "open-url") { const v=$("#browser-url").value.trim(); if(v) openExternal(/^https?:/i.test(v)?v:"https://"+v); }
-  if (action === "open-youtube") openExternal("https://www.youtube.com/");
-  if (action === "open-youtube-music") openExternal("https://music.youtube.com/");
+  if (action === "open-youtube") openApp("youtube");
+  if (action === "open-youtube-music") openApp("music");
   if (action === "play-online-audio") { const url=$("#online-audio-url").value.trim(); const audio=$("#audio-player"); if(/^https:\/\//i.test(url)&&audio){audio.src=url;audio.play().catch(()=>{});} }
   if (action === "start-camera") {
     const video=$("#camera-video"), status=$("#camera-status");
