@@ -325,7 +325,7 @@ $("#app-layer").addEventListener("click", event => {
     if (!/^https?:\/\//i.test(raw)) raw = "https://" + raw;
     try {
       const url = new URL(raw);
-      if (url.protocol === "https:" || url.protocol === "http:") window.open(url.href, "_blank", "noopener,noreferrer");
+      if (url.protocol === "https:" || url.protocol === "http:") loadBrowserUrl(url.href);
     } catch { alert("Please enter a valid website address."); }
   }
   if (action === "terminal-run") {
