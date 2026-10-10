@@ -75,10 +75,6 @@ $("#global-search").addEventListener("input", event => {
 });
 
 $("#app-layer").addEventListener("click", event => {
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
-  const action = button.dataset.action;
-
   const calcKey = event.target.closest("[data-calc-key]");
   if (calcKey) {
     const display = $("#calc-input");
@@ -104,6 +100,11 @@ $("#app-layer").addEventListener("click", event => {
     } else { display.value += key; output.textContent = "Ready"; }
     return;
   }
+
+  const button = event.target.closest("[data-action]");
+  if (!button) return;
+  const action = button.dataset.action;
+
   if (action === "open-url") {
     let raw = $("#browser-url").value.trim();
     if (!raw) return;
