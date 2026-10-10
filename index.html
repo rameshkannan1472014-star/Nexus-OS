@@ -12,7 +12,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=10">
 </head>
 <body>
   <main id="os">
@@ -25,8 +25,9 @@
       <div class="welcome-orb" aria-hidden="true">✦</div>
     </section>
     <section class="search"><label class="sr-only" for="global-search">Search apps</label><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search apps and quick actions…" autocomplete="off"></section>
-    <section class="section-heading"><h2>Your apps</h2><span id="app-count">18 APPS</span></section>
+    <section class="section-heading"><h2>Your apps</h2><span id="app-count">23 APPS</span></section>
     <section class="app-grid" aria-label="Applications">
+      <button class="app" data-app="youtube"><span class="app-icon red">▶</span><span>YouTube</span></button>
       <button class="app" data-app="browser"><span class="app-icon blue">🌐</span><span>Browser</span></button>
       <button class="app" data-app="files"><span class="app-icon yellow">📁</span><span>Files</span></button>
       <button class="app" data-app="terminal"><span class="app-icon dark">⌨️</span><span>Terminal</span></button>
@@ -48,11 +49,11 @@
       <button class="app" data-app="security"><span class="app-icon blue">🛡️</span><span>Security</span></button>
       <button class="app" data-app="cleaner"><span class="app-icon sky">🧹</span><span>Cleaner</span></button>
       <button class="app" data-app="games"><span class="app-icon orange">🧩</span><span>Mini Match</span></button>
-      <button class="app" data-app="notes"><span class="app-icon yellow">📝</span><span>Notes</span></button>
-      <button class="app" data-app="camera"><span class="app-icon slate">📷</span><span>Camera</span></button>
-      <button class="app" data-app="timer"><span class="app-icon blue">⏱️</span><span>Timer</span></button>
-      <button class="app" data-app="paint"><span class="app-icon pink">🎨</span><span>Paint</span></button>
-      <button class="app" data-app="tasks"><span class="app-icon green">✅</span><span>Tasks</span></button>
+
+
+
+
+
       <button class="app" data-app="recorder"><span class="app-icon orange">🎙️</span><span>Voice Recorder</span></button>
     </section>
     <section class="section-heading"><h2>At a glance</h2><span>YOUR DASHBOARD</span></section>
@@ -64,7 +65,7 @@
     <button id="ai-companion" class="ai-companion" aria-label="Open Nexus AI"><span class="ai-face">🤖</span><span><b>Nexus AI</b><small>Tap to ask</small></span><span class="online-dot"></span></button>
     <nav class="dock" aria-label="Quick apps">
       <button data-app="browser" aria-label="Browser">🌐</button><button data-app="files" aria-label="Files">📁</button><button data-app="terminal" aria-label="Terminal">⌨️</button><button data-app="ai" class="dock-ai" aria-label="Nexus AI">🤖</button><button data-app="gallery" aria-label="Gallery">🖼️</button><button data-app="settings" aria-label="Settings">⚙️</button>
-    </nav>
+    <button data-system-nav="home" aria-label="Home" title="Home">⌂</button><button data-system-nav="back" aria-label="Back" title="Back">‹</button><button data-system-nav="recent" aria-label="Recent apps" title="Recent apps">▢</button></nav>
   </main>
   <div id="app-layer" aria-live="polite"></div>
   <section id="control-center" class="control-center" aria-label="Control Center" hidden>
@@ -80,20 +81,8 @@
     <button class="control-wide" data-control="music" type="button">🎵 Open Music Player</button>
     <p class="control-note">Wi-Fi, Bluetooth and airplane toggles are visual demos; they cannot change Android's real system settings.</p>
   </section>
-  <section id="control-center" class="control-center" aria-label="Control Center" hidden>
-    <div class="control-head"><div><p class="eyebrow">NEXUS OS</p><h2>Control Center</h2></div><button id="control-center-close" class="close-window" type="button" aria-label="Close Control Center">×</button></div>
-    <p class="control-date" id="control-date">Quick settings</p>
-    <div class="control-tiles">
-      <button class="control-tile active" data-control="wifi" type="button"><span>⌁</span><b>Wi-Fi</b><small id="wifi-state">On · simulated</small></button>
-      <button class="control-tile active" data-control="bluetooth" type="button"><span>ᛒ</span><b>Bluetooth</b><small id="bluetooth-state">On · simulated</small></button>
-      <button class="control-tile" data-control="airplane" type="button"><span>✈</span><b>Airplane mode</b><small id="airplane-state">Off · simulated</small></button>
-      <button class="control-tile active" data-control="theme" type="button"><span>◐</span><b>Appearance</b><small id="theme-state">Dark mode</small></button>
-    </div>
-    <div class="control-slider"><label for="brightness-slider">☀ Screen brightness</label><input id="brightness-slider" type="range" min="65" max="115" value="100"><output id="brightness-value">100%</output></div>
-    <button class="control-wide" data-control="music" type="button">🎵 Open Music Player</button>
-    <p class="control-note">Quick toggles are visual controls inside Nexus OS. They do not change your phone's actual Wi-Fi, Bluetooth or airplane settings.</p>
-  </section>
-  <script src="./app.js"></script>
+
+  <script src="./app.js?v=10"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       window.addEventListener("load", () => {
