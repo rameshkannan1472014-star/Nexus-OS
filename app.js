@@ -60,15 +60,6 @@ function saveCameraPhoto(data){
  catch(_){photos.shift();try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return false}catch(__){return false}}
 }
 function openApp(name) {
-  // Prefer YouTube's web experience and ask for its desktop web mode.
-  // Android may still hand YouTube links to the installed app; the device's
-  // supported-link setting controls that behavior.
-  if (name === "youtube") {
-    const youtubeWebUrl = "https://www.youtube.com/?app=desktop";
-    const tab = window.open(youtubeWebUrl, "_blank", "noopener");
-    if (!tab) window.location.href = youtubeWebUrl;
-    return;
-  }
   const app = appInfo[name];
   if (!app) return;
   const layer = $("#app-layer");
