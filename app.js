@@ -60,6 +60,7 @@ function saveCameraPhoto(data){
  catch(_){photos.shift();try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return false}catch(__){return false}}
 }
 function openApp(name) {
+  // YouTube is an in-OS app window; never redirect its app icon to the native YouTube app.
   const app = appInfo[name];
   if (!app) return;
   const layer = $("#app-layer");
