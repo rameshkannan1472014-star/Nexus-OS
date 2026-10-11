@@ -38,6 +38,27 @@ const appInfo = {
 };
 
 function closeWindow() { $("#app-layer").replaceChildren(); }
+function getCameraPhotos(){try{return JSON.parse(localStorage.getItem("nexus-camera-photos")||"[]")}catch(_){return []}}
+function renderCameraGallery(){
+ const target=$("#gallery-preview");if(!target)return;target.replaceChildren();
+ const photos=getCameraPhotos();
+ if(!photos.length){const note=document.createElement("p");note.className="hint";note.textContent="Photos you take with Nexus Camera will appear here.";target.append(note);return;}
+ photos.slice().reverse().forEach((photo,index)=>{
+  const card=document.createElement("article");card.className="camera-gallery-item";
+  const img=document.createElement("img");img.src=photo.data;img.alt=photo.name||"Nexus photo";img.className="preview-image";
+  const caption=document.createElement("p");caption.textContent=photo.name||"Nexus photo";
+  const save=document.createElement("a");save.href=photo.data;save.download=(photo.name||"nexus-photo.jpg");save.textContent="Save to device";
+  const remove=document.createElement("button");remove.type="button";remove.className="window-action secondary-action";remove.textContent="Delete";
+  remove.addEventListener("click",()=>{const all=getCameraPhotos();const actual=all.findIndex(p=>p.id===photo.id);if(actual>=0)all.splice(actual,1);localStorage.setItem("nexus-camera-photos",JSON.stringify(all));renderCameraGallery();});
+  card.append(img,caption,save,remove);target.append(card);
+ });
+}
+function saveCameraPhoto(data){
+ const photos=getCameraPhotos();
+ photos.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),name:"Nexus-"+new Date().toISOString().replace(/[:.]/g,"-")+".jpg",data});
+ try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return true;}
+ catch(_){photos.shift();try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return false}catch(__){return false}}
+}
 function openApp(name) {
   const app = appInfo[name];
   if (!app) return;
@@ -62,7 +83,13 @@ function openApp(name) {
   body.className = "window-body";
   body.innerHTML = app.body;
   win.append(head, body);
+  const bottomNav = document.createElement("nav");
+  bottomNav.className = "app-bottom-nav";
+  bottomNav.setAttribute("aria-label", "App navigation");
+  bottomNav.innerHTML = '<button type="button" data-system-nav="back" aria-label="Back"><span>‹</span><small>Back</small></button><button type="button" data-system-nav="home" aria-label="Home"><span>⌂</span><small>Home</small></button><button type="button" data-system-nav="recent" aria-label="Recent apps"><span>▢</span><small>Recent</small></button>';
+  win.append(bottomNav);
   layer.replaceChildren(win);
+  if (name === "gallery") renderCameraGallery();
   close.focus();
   if (name === "paint") initPaint();
   if (name === "tasks" || name === "calendar") {
@@ -343,7 +370,7 @@ $("#app-layer").addEventListener("click", event => {
     else navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false}).then(stream=>{window.nexusCameraStream=stream;video.srcObject=stream;video.hidden=false;status.textContent="Camera is on. Tap Take photo to capture.";}).catch(err=>{status.textContent="Camera could not start: "+(err.name==="NotAllowedError"?"permission denied":err.message||"check camera permission");});
   }
   if (action === "stop-camera") { if(window.nexusCameraStream) window.nexusCameraStream.getTracks().forEach(t=>t.stop());window.nexusCameraStream=null;if($("#camera-video"))$("#camera-video").srcObject=null;if($("#camera-status"))$("#camera-status").textContent="Camera stopped."; }
-  if (action === "capture-photo") { const video=$("#camera-video"), canvas=$("#camera-snapshot"), preview=$("#camera-preview");if(video?.videoWidth&&canvas){canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext("2d").drawImage(video,0,0);const img=document.createElement("img");img.src=canvas.toDataURL("image/png");img.alt="Captured photo";img.className="preview-image";preview.replaceChildren(img);$("#camera-status").textContent="Photo captured. Long-press the preview to save it if your browser supports that."; }else if($("#camera-status"))$("#camera-status").textContent="Start the camera first and allow permission."; }
+  if (action === "capture-photo") { const video=$("#camera-video"), canvas=$("#camera-snapshot"), preview=$("#camera-preview"), status=$("#camera-status");if(video?.videoWidth&&canvas){const scale=Math.min(1,1280/video.videoWidth);canvas.width=Math.round(video.videoWidth*scale);canvas.height=Math.round(video.videoHeight*scale);canvas.getContext("2d").drawImage(video,0,0,canvas.width,canvas.height);const data=canvas.toDataURL("image/jpeg",0.78);const img=document.createElement("img");img.src=data;img.alt="Captured photo";img.className="preview-image";preview.replaceChildren(img);const saved=saveCameraPhoto(data);status.textContent=saved?"Photo captured and saved to Nexus Gallery ✓":"Photo captured, but browser storage is full. Delete some Gallery photos and try again."; }else if(status)status.textContent="Start the camera first and allow permission."; }
   if (action === "start-recording") { navigator.mediaDevices?.getUserMedia({audio:true}).then(stream=>{const rec=new MediaRecorder(stream);const chunks=[];rec.ondataavailable=e=>chunks.push(e.data);rec.onstop=()=>{const audio=$("#recording-playback");audio.src=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType||"audio/webm"}));stream.getTracks().forEach(t=>t.stop());};window.nexusRecorder=rec;rec.start();$("#recorder-status").textContent="Recording…";}).catch(()=>$("#recorder-status").textContent="Microphone permission was denied or recording is unavailable.");}
   if (action === "stop-recording") { if(window.nexusRecorder?.state==="recording"){window.nexusRecorder.stop();$("#recorder-status").textContent="Recording ready to play."; } }
   if (action === "undo-paint") { const canvas=$("#paint-canvas"), history=window.nexusPaintHistory; if(canvas && history && history.length>1){history.pop();canvas.getContext("2d").putImageData(history[history.length-1],0,0);} }
@@ -455,7 +482,11 @@ $("#app-layer").addEventListener("change", function (event) {
     });
     if (!event.target.files.length) target.innerHTML = '<p class="hint">No files selected.</p>';
   }
-  if (event.target.id === "camera-input" && event.target.files[0]) previewImage(event.target.files[0], $("#camera-preview"));
+  if (event.target.id === "camera-input" && event.target.files[0]) {
+    const file=event.target.files[0],reader=new FileReader();
+    reader.onload=()=>{const data=String(reader.result||"");const img=document.createElement("img");img.src=data;img.alt=file.name;img.className="preview-image";$("#camera-preview")?.replaceChildren(img);if(saveCameraPhoto(data)){const s=$("#camera-status");if(s)s.textContent="Photo saved to Nexus Gallery ✓";}};
+    reader.readAsDataURL(file);
+  }
   if (event.target.id === "gallery-input") {
     const target = $("#gallery-preview");
     target.replaceChildren();
