@@ -60,10 +60,13 @@ function saveCameraPhoto(data){
  catch(_){photos.shift();try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return false}catch(__){return false}}
 }
 function openApp(name) {
-  // Use YouTube's own interface for authentic Shorts scrolling and controls.
-  // A custom embedded feed cannot reproduce the official YouTube app UI.
+  // Prefer YouTube's web experience and ask for its desktop web mode.
+  // Android may still hand YouTube links to the installed app; the device's
+  // supported-link setting controls that behavior.
   if (name === "youtube") {
-    window.open("https://www.youtube.com/shorts", "_blank");
+    const youtubeWebUrl = "https://www.youtube.com/?app=desktop";
+    const tab = window.open(youtubeWebUrl, "_blank", "noopener");
+    if (!tab) window.location.href = youtubeWebUrl;
     return;
   }
   const app = appInfo[name];
