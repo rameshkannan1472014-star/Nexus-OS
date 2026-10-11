@@ -11,6 +11,26 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 30000);
 
+// Restore and save appearance preferences between visits on this device.
+function restoreNexusAppearance() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("nexus-appearance") || "{}");
+    if (saved.bg) document.documentElement.style.setProperty("--bg", saved.bg);
+    if (saved.accent) document.documentElement.style.setProperty("--accent", saved.accent);
+    if (saved.light) document.body.classList.add("light-mode");
+  } catch (_) {}
+}
+function saveNexusAppearance() {
+  try {
+    localStorage.setItem("nexus-appearance", JSON.stringify({
+      bg: getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(),
+      accent: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
+      light: document.body.classList.contains("light-mode")
+    }));
+  } catch (_) {}
+}
+restoreNexusAppearance();
+
 const appInfo = {
   browser: {title:"Nexus Browser", body:'<div class="browser-shell"><form id="browser-form" class="browser-toolbar"><button class="browser-nav" type="button" data-action="browser-back">‹</button><button class="browser-nav" type="button" data-action="browser-forward">›</button><button class="browser-nav" type="button" data-action="browser-reload">↻</button><input id="browser-url" type="text" placeholder="Search or enter a website address" required><button type="submit">Go</button></form><div class="browser-home" id="browser-home"><h3>Browse inside Nexus OS</h3><p>Enter a website or choose a shortcut. Pages that allow embedding will appear here.</p><div class="browser-shortcuts"><button type="button" data-browser-url="https://www.wikipedia.org/">Wikipedia</button><button type="button" data-browser-url="https://www.google.com/">Google</button><button type="button" data-browser-url="https://github.com/">GitHub</button><button type="button" data-browser-url="https://www.youtube.com/">YouTube</button></div></div><div id="browser-message" class="browser-message" role="status">Your page will load here. If a site blocks embedding, use Open full site.</div><button id="browser-external" class="window-action secondary-action" type="button" data-action="browser-external" hidden>Open full site in browser</button><iframe id="browser-frame" title="Web page inside Nexus Browser" referrerpolicy="strict-origin-when-cross-origin" allow="fullscreen; autoplay; encrypted-media; picture-in-picture" sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-downloads" hidden></iframe></div>'},
   files: {title:"File Manager", body:'<p>Choose files to view their names. Your phone will ask you which files to share with Nexus OS.</p><input id="files-picker" type="file" multiple><div id="files-list" class="file-list"><p class="hint">No files selected.</p></div><p class="hint">For safety, this app only sees files you choose.</p>'},
@@ -19,7 +39,7 @@ const appInfo = {
   weather: {title:"Live Weather", body:'<p>Current conditions and today’s forecast for a city.</p><form id="weather-form" class="inline-form"><input id="weather-city" placeholder="Enter city (e.g. Chennai)" value="Chennai" required><button class="window-action" type="submit">Get weather</button></form><div id="weather-result" class="weather-result"><p>Search a city to load weather. Internet required.</p></div><p class="attribution">Weather data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a></p>'},
   calendar: {title:"Day Planner", body:'<p>Add a task for your prototype dashboard.</p><input id="task-input" placeholder="e.g. Study Python for 20 minutes"><button class="window-action" data-action="save-task">Save task</button><p id="task-output" role="status"></p>'},
   gallery: {title:"Gallery", body:'<p>Select photos to preview them here.</p><input id="gallery-input" type="file" accept="image/*" multiple><div id="gallery-preview" class="gallery-preview"></div>'},
-  settings: {title:"Settings", body:'<p>Personalise your prototype.</p><button class="window-action" data-action="toggle-theme">Toggle light / dark mode</button><p>Screen and camera permissions are not enabled in this prototype.</p>'},
+  settings: {title:"Settings", body:'<p>Personalise Nexus OS and review what this web prototype can access.</p><button class="window-action" data-action="toggle-theme">Toggle light / dark mode</button><div class="file-list"><div>🎨 Appearance <span>Saved on this device</span></div><div>📷 Camera and microphone <span>Browser permission required</span></div><div>📞 Calls and SMS <span>Phone app confirmation required</span></div><div>📡 Wi-Fi and Bluetooth <span>Visual demo only</span></div><div>🛡️ Device-wide security scan <span>Not available to websites</span></div></div><p class="hint">Nexus OS is a web-based prototype. Real Android system controls require a native Android app and appropriate permissions.</p>'},
   music: {title:"Online Music", body:'<div class="music-card"><div class="album-art">♫</div><h3>Listen on the internet</h3><p>Search music online and play it through a music service.</p><form id="music-search-form" class="inline-form"><input id="music-search-query" placeholder="Song, artist or genre" required><button class="window-action" type="submit">Search</button></form><div class="online-music-links"><button type="button" data-music-service="youtube">Search YouTube</button><button type="button" data-music-service="soundcloud">Open SoundCloud</button><button type="button" data-music-service="spotify">Open Spotify</button></div><div id="music-results" class="music-results" role="status"><p class="hint">Search to find tracks with playable previews. Full catalogs and some tracks require the music service itself.</p></div><p class="hint">Track previews are provided by the iTunes Search service. Full songs may require opening the original service.</p><details><summary>Play an audio URL</summary><p>Use a direct audio stream URL you have permission to play.</p><input id="online-audio-url" type="url" placeholder="https://example.com/audio.mp3"><button class="window-action" data-action="play-online-audio">Play stream</button><audio id="audio-player" controls preload="none"></audio></details></div>'},
   messages: {title:"Message Drafts", body:'<p>Write a message, add a recipient, then open your phone’s SMS app to review and send it.</p><label for="message-recipient">Recipient phone number</label><input id="message-recipient" type="tel" inputmode="tel" placeholder="+91…" autocomplete="tel"><textarea id="message-draft" placeholder="Write your draft…"></textarea><button class="window-action" data-action="save-message">Save draft</button><button class="window-action secondary-action" data-action="load-message">Load draft</button><button class="window-action" data-action="send-message">Open SMS app to send</button><p id="message-status" role="status"></p>'},
   store: {title:"Nexus Mini Apps", body:'<p>Launch the tools included in this prototype.</p><div class="file-list"><div>🧮 Calculator <button data-launch="calculator">Open</button></div><div>📝 Notes <button data-launch="notes">Open</button></div><div>⏱️ Timer <button data-launch="timer">Open</button></div><div>🎨 Paint <button data-launch="paint">Open</button></div><div>🌦️ Weather <button data-launch="weather">Open</button></div><div>🎵 Music <button data-launch="music">Open</button></div></div>'},
@@ -269,6 +289,7 @@ $("#global-search").addEventListener("input", event => {
     empty.textContent = "No matching apps. Try another search.";
     $(".app-grid").append(empty);
   } else if (visible && empty) empty.remove();
+  if (!query && empty) empty.remove();
 });
 
 
@@ -432,6 +453,7 @@ $("#app-layer").addEventListener("click", event => {
   }
   if (action === "toggle-theme") {
     document.body.classList.toggle("light-mode");
+    saveNexusAppearance();
   }
 
   if (action === "open-url") {
@@ -663,7 +685,8 @@ document.addEventListener("click", async function(event) {
     const themes={violet:["#0c0e16","#9b8cff"],ocean:["#071722","#54c7ec"],sunset:["#1b1018","#ff9b72"],default:["#0c0e16","#9b8cff"]};
     const [bg,accent]=themes[preset.dataset.themePreset]||themes.default;
     document.documentElement.style.setProperty("--bg",bg);document.documentElement.style.setProperty("--accent",accent);
-    const status=document.createElement("p");status.className="hint";status.textContent="Theme applied to Nexus OS.";preset.parentElement.append(status);return;
+    saveNexusAppearance();
+    let status=preset.parentElement.querySelector(".theme-status");if(!status){status=document.createElement("p");status.className="hint theme-status";preset.parentElement.append(status);}status.textContent="Theme saved on this device ✓";return;
   }
   if(event.target.closest('[data-action="make-poster"]')){
     const canvas=$("#studio-canvas");if(!canvas)return;const ctx=canvas.getContext("2d"),color=$("#studio-color")?.value||"#6757d9";
