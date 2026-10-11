@@ -139,8 +139,8 @@ async function searchYouTube(query, append=false){
   const data=await response.json();
   if(!response.ok)throw new Error(data.detail||"YouTube search is unavailable.");
   if(!Array.isArray(data.items)||!data.items.length){message.textContent="No videos found. Try another search.";return;}
-  youtubeNextPageToken=data.nextPageToken||"";const more=$("#youtube-load-more");if(more)more.hidden=!youtubeNextPageToken;
-  message.textContent=youtubeMode==="shorts"?"Shorts results — tap Play here to watch.":"Choose a video to play inside Nexus OS.";
+  youtubeNextPageToken=data.nextPageToken||"";const more=$("#youtube-load-more");if(more){more.hidden=!youtubeNextPageToken;more.textContent=youtubeMode==="shorts"?"Load more Shorts":"Load more videos";}
+  message.textContent=youtubeMode==="shorts"?"Shorts-style results — tap Play here to watch.":"Choose a video to play inside Nexus OS.";
   data.items.forEach(item=>{
    const card=document.createElement("article");card.className="youtube-result";
    const image=document.createElement("img");image.className="youtube-thumb";image.loading="lazy";image.alt="";image.src=item.thumbnail||"";
@@ -198,13 +198,17 @@ document.addEventListener("click", function(event) {
   const external=event.target.closest('[data-action="browser-external"]');if(external){openFullSite($("#browser-frame")?.src||$("#browser-url")?.value);return;}
   const service=event.target.closest("[data-music-service]");
   if(service){const q=$("#music-search-query")?.value.trim()||"";const urls={youtube:"https://music.youtube.com/search?q="+encodeURIComponent(q),soundcloud:"https://soundcloud.com/search?q="+encodeURIComponent(q),spotify:"https://open.spotify.com/search/"+encodeURIComponent(q)};openFullSite(urls[service.dataset.musicService]);return;}
-  if(event.target.closest('[data-action="browser-back"]')){browserGo(-1);return;}if(event.target.closest('[data-action="browser-forward"]')){browserGo(1);return;}if(event.target.closest('[data-action="browser-reload"]')){const f=$("#browser-frame");if(f&&f.src)f.src=f.src;return;}const paintColor=event.target.closest("[data-paint-color]");
+  if(event.target.closest('[data-action="dial-call"]')){const number=$("#dial-display")?.value||"";if(!/^[+0-9*#]{3,20}$/.test(number)){const s=$("#dial-status");if(s)s.textContent="Enter a valid phone number first.";return;}window.location.href="tel:"+number;return;}
+   if(event.target.closest('[data-action="dial-sms"]')){const number=$("#dial-display")?.value||"";if(!/^[+0-9*#]{3,20}$/.test(number)){const s=$("#dial-status");if(s)s.textContent="Enter a valid phone number first.";return;}window.location.href="sms:"+number;return;}
+   if(event.target.closest('[data-action="send-message"]')){const draft=$("#message-draft")?.value||"";try{localStorage.setItem("nexus-message-draft",draft)}catch(_){}window.location.href="sms:?body="+encodeURIComponent(draft);const s=$("#message-status");if(s)s.textContent="Opening your phone's SMS app. Review the message and send it there.";return;}
+   if(event.target.closest('[data-action="browser-back"]')){browserGo(-1);return;}if(event.target.closest('[data-action="browser-forward"]')){browserGo(1);return;}if(event.target.closest('[data-action="browser-reload"]')){const f=$("#browser-frame");if(f&&f.src)f.src=f.src;return;}const paintColor=event.target.closest("[data-paint-color]");
   if(paintColor && $("#paint-color")){$("#paint-color").value=paintColor.dataset.paintColor;return;}
 });
 document.addEventListener("submit",function(event){
  if(event.target.id==="browser-form"){event.preventDefault();loadBrowserUrl($("#browser-url").value);}
  if(event.target.id==="youtube-form"){event.preventDefault();const value=$("#youtube-url").value.trim(),id=extractYouTubeId(value),p=$("#youtube-player"),m=$("#youtube-player-message");youtubeQuery=value;if(id){p.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);p.hidden=false;const fs=$("#youtube-fullscreen");if(fs)fs.hidden=false;if(m){m.hidden=false;m.textContent="Loading video…"}const results=$("#youtube-results");if(results)results.replaceChildren();}else{if(youtubeMode==="shorts"&&!/shorts/i.test(value))youtubeQuery=value+" shorts";searchYouTube(youtubeQuery);}}
  if(event.target.id==="music-search-form"){event.preventDefault();searchMusic($("#music-search-query").value.trim());}
+  if(event.target.id==="youtube-form"){ /* handled by the main YouTube submit listener below */ }
 });
 let ccTouchStartY=0;
 document.addEventListener("touchstart",e=>{if(e.touches.length===1)ccTouchStartY=e.touches[0].clientY},{passive:true});
