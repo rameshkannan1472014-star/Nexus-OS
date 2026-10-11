@@ -60,6 +60,12 @@ function saveCameraPhoto(data){
  catch(_){photos.shift();try{localStorage.setItem("nexus-camera-photos",JSON.stringify(photos));return false}catch(__){return false}}
 }
 function openApp(name) {
+  // Use YouTube's own interface for authentic Shorts scrolling and controls.
+  // A custom embedded feed cannot reproduce the official YouTube app UI.
+  if (name === "youtube") {
+    window.open("https://www.youtube.com/shorts", "_blank");
+    return;
+  }
   const app = appInfo[name];
   if (!app) return;
   const layer = $("#app-layer");
