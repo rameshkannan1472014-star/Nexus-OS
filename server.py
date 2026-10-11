@@ -26,7 +26,7 @@ def health():
     return {"status": "ok", "service": "nexus-os-api"}
 
 @app.get("/api/youtube/search")
-def youtube_search(q: str = Query(min_length=1, max_length=100)):
+def youtube_search(q: str = Query(min_length=1, max_length=100), mode: str = "videos", pageToken: str | None = None):
     api_key = os.getenv("YOUTUBE_API_KEY")
     if not api_key:
         raise HTTPException(
@@ -39,7 +39,9 @@ def youtube_search(q: str = Query(min_length=1, max_length=100)):
             params={
                 "part": "snippet",
                 "type": "video",
-                "maxResults": 8,
+                "maxResults": 20,
+                "pageToken": pageToken,
+                "videoDuration": "short" if mode == "shorts" else "any",
                 "safeSearch": "strict",
                 "q": q,
                 "key": api_key,
@@ -50,11 +52,13 @@ def youtube_search(q: str = Query(min_length=1, max_length=100)):
             raise HTTPException(status_code=502, detail="YouTube search request failed.")
         payload = response.json()
         return {
+            "nextPageToken": payload.get("nextPageToken"),
             "items": [
                 {
                     "videoId": item.get("id", {}).get("videoId"),
                     "title": item.get("snippet", {}).get("title", ""),
                     "channel": item.get("snippet", {}).get("channelTitle", ""),
+                    "channelId": item.get("snippet", {}).get("channelId", ""),
                     "thumbnail": item.get("snippet", {}).get("thumbnails", {}).get("medium", {}).get("url", ""),
                 }
                 for item in payload.get("items", [])
