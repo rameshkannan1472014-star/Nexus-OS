@@ -91,6 +91,10 @@ function openApp(name) {
   win.append(bottomNav);
   layer.replaceChildren(win);
   if (name === "gallery") renderCameraGallery();
+  if (name === "reminder") renderReminders();
+  if (name === "planner") renderPlanner();
+  if (name === "feedback") renderFeedback();
+  if (name === "clock") { const now=new Date(); if($("#clock-live"))$("#clock-live").textContent=now.toLocaleTimeString(); if($("#clock-live-date"))$("#clock-live-date").textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"}); }
   close.focus();
   if (name === "paint") initPaint();
   if (name === "tasks" || name === "calendar") {
@@ -592,3 +596,111 @@ $("#app-layer").addEventListener("click", function (event) {
     game.dataset.open="";
   }
 });
+
+
+// --- Expanded 33-app workspace features (web-prototype capabilities) ---
+let nexusAlarmInterval = null;
+let nexusScreenStream = null;
+function renderReminders() {
+  const box = $("#reminder-list"); if (!box) return;
+  let items=[]; try { items=JSON.parse(localStorage.getItem("nexus-reminders")||"[]"); } catch(_){}
+  box.replaceChildren();
+  if (!items.length) { box.innerHTML='<p class="hint">No reminders saved yet.</p>'; return; }
+  items.forEach((item,index)=>{
+    const row=document.createElement("div"); row.className="reminder-row";
+    const label=document.createElement("span"); label.textContent=item.text+" · "+new Date(item.time).toLocaleString();
+    const remove=document.createElement("button"); remove.className="window-action secondary-action"; remove.textContent="Delete";
+    remove.addEventListener("click",()=>{const current=JSON.parse(localStorage.getItem("nexus-reminders")||"[]");current.splice(index,1);localStorage.setItem("nexus-reminders",JSON.stringify(current));renderReminders();});
+    row.append(label,remove);box.append(row);
+  });
+}
+function renderPlanner() {
+  const box=$("#planner-list"); if(!box)return;
+  let items=[];try{items=JSON.parse(localStorage.getItem("nexus-planner")||"[]")}catch(_){}
+  box.replaceChildren();
+  if(!items.length){box.innerHTML='<p class="hint">Your plan is empty. Add a task above.</p>';return;}
+  items.forEach((item,index)=>{
+    const row=document.createElement("label");row.className="planner-row";
+    const check=document.createElement("input");check.type="checkbox";check.checked=!!item.done;
+    check.addEventListener("change",()=>{const all=JSON.parse(localStorage.getItem("nexus-planner")||"[]");all[index].done=check.checked;localStorage.setItem("nexus-planner",JSON.stringify(all));renderPlanner();});
+    const text=document.createElement("span");text.textContent=item.task+" · "+item.priority+(item.done?" · Done":"");
+    row.append(check,text);box.append(row);
+  });
+}
+function renderFeedback() {
+  const box=$("#feedback-list");if(!box)return;
+  let items=[];try{items=JSON.parse(localStorage.getItem("nexus-feedback")||"[]")}catch(_){}
+  box.replaceChildren();
+  items.slice().reverse().forEach(item=>{const row=document.createElement("div");row.className="feedback-item";const title=document.createElement("strong");title.textContent=item.topic;const body=document.createElement("p");body.textContent=item.text;row.append(title,body);box.append(row);});
+}
+function openInNexusBrowser(url) {
+  closeWindow();openApp("browser");
+  setTimeout(()=>loadBrowserUrl(url),50);
+}
+document.addEventListener("click", async function(event) {
+  const openUrl=event.target.closest("[data-open-url]");
+  if(openUrl){openInNexusBrowser(openUrl.dataset.openUrl);return;}
+  const radio=event.target.closest("[data-radio-url]");
+  if(radio){openInNexusBrowser(radio.dataset.radioUrl);return;}
+  const preset=event.target.closest("[data-theme-preset]");
+  if(preset){
+    const themes={violet:["#0c0e16","#9b8cff"],ocean:["#071722","#54c7ec"],sunset:["#1b1018","#ff9b72"],default:["#0c0e16","#9b8cff"]};
+    const [bg,accent]=themes[preset.dataset.themePreset]||themes.default;
+    document.documentElement.style.setProperty("--bg",bg);document.documentElement.style.setProperty("--accent",accent);
+    const status=document.createElement("p");status.className="hint";status.textContent="Theme applied to Nexus OS.";preset.parentElement.append(status);return;
+  }
+  const widget=event.target.closest("[data-widget-toggle]");
+  if(widget){const card=document.querySelector(".widgets .widget:nth-child("+(widget.dataset.widgetToggle==="weather"?1:widget.dataset.widgetToggle==="tasks"?2:3)+")");if(card)card.hidden=!widget.checked;return;}
+  if(event.target.closest('[data-action="make-poster"]')){
+    const canvas=$("#studio-canvas");if(!canvas)return;const ctx=canvas.getContext("2d"),color=$("#studio-color")?.value||"#6757d9";
+    ctx.fillStyle=color;ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="rgba(255,255,255,.14)";ctx.beginPath();ctx.arc(720,220,250,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="bold 64px system-ui";ctx.fillText(($("#studio-title")?.value||"MY IDEA").slice(0,24),450,530,780);
+    ctx.font="32px system-ui";ctx.fillText(($("#studio-subtitle")?.value||"").slice(0,50),450,600,780);
+    const link=$("#studio-download");if(link){link.href=canvas.toDataURL("image/png");link.hidden=false;}return;
+  }
+  if(event.target.closest('[data-action="start-screen-share"]')){
+    const status=$("#casting-status");try{if(!navigator.mediaDevices?.getDisplayMedia)throw new Error("Screen sharing is not supported in this browser.");nexusScreenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});const video=$("#screen-preview");video.srcObject=nexusScreenStream;video.hidden=false;status.textContent="Screen preview is active. Stop sharing whenever you are done.";nexusScreenStream.getVideoTracks()[0].addEventListener("ended",()=>{status.textContent="Screen sharing stopped.";nexusScreenStream=null;});}catch(error){if(status)status.textContent=error.message||"Screen sharing was cancelled or blocked.";}return;
+  }
+  if(event.target.closest('[data-action="stop-screen-share"]')){if(nexusScreenStream)nexusScreenStream.getTracks().forEach(t=>t.stop());nexusScreenStream=null;if($("#screen-preview"))$("#screen-preview").srcObject=null;if($("#casting-status"))$("#casting-status").textContent="Screen sharing stopped.";return;}
+  if(event.target.closest('[data-action="maps-location"]')){const status=$("#maps-status");if(!navigator.geolocation){status.textContent="Location is not supported in this browser.";return;}status.textContent="Requesting location permission…";navigator.geolocation.getCurrentPosition(pos=>{const {latitude,longitude}=pos.coords;openInNexusBrowser("https://www.google.com/maps/search/?api=1&query="+latitude+","+longitude);},()=>{status.textContent="Location was unavailable or permission was denied. You can search a place manually."},{enableHighAccuracy:false,timeout:10000});return;}
+  if(event.target.closest('[data-action="find-shops"]')){const q=$("#shop-query")?.value.trim()||"shops";openInNexusBrowser("https://www.google.com/maps/search/"+encodeURIComponent(q+" near me"));return;}
+  if(event.target.closest('[data-action="save-sos"]')){const number=$("#sos-number")?.value.trim()||"";if(!/^[+0-9 ()-]{5,24}$/.test(number)){if($("#sos-status"))$("#sos-status").textContent="Enter a valid trusted contact number.";return;}localStorage.setItem("nexus-sos-contact",number);$("#sos-status").textContent="Trusted contact saved on this browser.";return;}
+  if(event.target.closest('[data-action="sos-call"]')){const number=localStorage.getItem("nexus-sos-contact");if(!number){$("#sos-status").textContent="Save a trusted contact first.";return;}if(confirm("Open your phone app to call your saved trusted contact?"))window.location.href="tel:"+number.replace(/[^+0-9]/g,"");return;}
+});
+document.addEventListener("change", function(event) {
+  if(event.target.id==="pdf-file"){
+    const file=event.target.files?.[0],frame=$("#pdf-frame"),status=$("#pdf-status");if(!file||!frame)return;
+    if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){status.textContent="Please choose a PDF file.";return;}
+    if(frame.dataset.objectUrl)URL.revokeObjectURL(frame.dataset.objectUrl);
+    const url=URL.createObjectURL(file);frame.dataset.objectUrl=url;frame.src=url;frame.hidden=false;status.textContent="Opened "+file.name;
+  }
+  if(event.target.id==="book-file"){
+    const file=event.target.files?.[0],box=$("#book-content");if(!file||!box)return;
+    if(file.name.toLowerCase().endsWith(".epub")){box.textContent="EPUB preview is not built into this lightweight prototype. Choose a .txt or .md book file.";return;}
+    const reader=new FileReader();reader.onload=()=>{box.textContent=String(reader.result||"");};reader.onerror=()=>{box.textContent="Could not read this file.";};reader.readAsText(file);
+  }
+  if(event.target.id==="book-size"){$("#book-content")?.style.setProperty("font-size",event.target.value+"px");}
+});
+document.addEventListener("submit",function(event){
+  if(event.target.id==="reminder-form"){
+    event.preventDefault();const text=$("#reminder-text").value.trim(),time=$("#reminder-time").value;if(!text||!time)return;
+    const items=JSON.parse(localStorage.getItem("nexus-reminders")||"[]");items.push({text,time});localStorage.setItem("nexus-reminders",JSON.stringify(items));renderReminders();$("#reminder-status").textContent="Reminder saved in this browser. Keep Nexus OS open for any in-session reminder behaviour.";event.target.reset();
+  }
+  if(event.target.id==="alarm-form"){
+    event.preventDefault();if(nexusAlarmInterval)clearInterval(nexusAlarmInterval);
+    let seconds=Math.max(1,Math.min(240,Number($("#alarm-minutes").value)||1))*60;const status=$("#alarm-status");
+    const tick=()=>{seconds--;status.textContent="Time remaining: "+Math.floor(seconds/60)+":"+String(seconds%60).padStart(2,"0");if(seconds<=0){clearInterval(nexusAlarmInterval);nexusAlarmInterval=null;status.textContent="⏰ Countdown complete!";if("Notification"in window&&Notification.permission==="granted")new Notification("Nexus Clock",{body:"Your countdown is complete."});}};
+    status.textContent="Countdown started.";nexusAlarmInterval=setInterval(tick,1000);
+  }
+  if(event.target.id==="news-form"){event.preventDefault();openInNexusBrowser("https://news.google.com/search?q="+encodeURIComponent($("#news-query").value.trim()));}
+  if(event.target.id==="maps-form"){event.preventDefault();openInNexusBrowser("https://www.google.com/maps/search/"+encodeURIComponent($("#maps-query").value.trim()));}
+  if(event.target.id==="planner-form"){
+    event.preventDefault();const task=$("#planner-task").value.trim();if(!task)return;const items=JSON.parse(localStorage.getItem("nexus-planner")||"[]");items.push({task,priority:$("#planner-priority").value,done:false});localStorage.setItem("nexus-planner",JSON.stringify(items));renderPlanner();event.target.reset();
+  }
+  if(event.target.id==="feedback-form"){
+    event.preventDefault();const text=$("#feedback-text").value.trim();if(!text)return;const items=JSON.parse(localStorage.getItem("nexus-feedback")||"[]");items.push({topic:$("#feedback-topic").value,text,created:Date.now()});localStorage.setItem("nexus-feedback",JSON.stringify(items));$("#feedback-status").textContent="Thanks! Your feedback is saved locally on this device.";renderFeedback();$("#feedback-text").value="";
+  }
+});
+const liveClockTimer=setInterval(()=>{const target=$("#clock-live");if(target){const now=new Date();target.textContent=now.toLocaleTimeString();$("#clock-live-date").textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});}},1000);
+const previousOpenApp=window.openApp;
