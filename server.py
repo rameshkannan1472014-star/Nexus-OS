@@ -26,7 +26,7 @@ def health():
     return {"status": "ok", "service": "nexus-os-api"}
 
 @app.get("/api/youtube/search")
-def youtube_search(q: str = Query(min_length=1, max_length=100), mode: str = "videos", pageToken: str | None = None):
+def youtube_search(q: str = Query(default="", max_length=100), mode: str = "videos", pageToken: str | None = None, channelId: str | None = None):
     api_key = os.getenv("YOUTUBE_API_KEY")
     if not api_key:
         raise HTTPException(
@@ -43,7 +43,8 @@ def youtube_search(q: str = Query(min_length=1, max_length=100), mode: str = "vi
                 "pageToken": pageToken,
                 "videoDuration": "short" if mode == "shorts" else "any",
                 "safeSearch": "strict",
-                "q": q,
+                "q": q or None,
+                "channelId": channelId,
                 "key": api_key,
             },
             timeout=15,
