@@ -12,7 +12,7 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css?v=25">
+  <link rel="stylesheet" href="./style.css?v=26">
 </head>
 <body>
   <main id="os">
@@ -20,47 +20,18 @@
       <div><div id="clock">--:--</div><div id="date">Loading date…</div></div>
       <div class="status"><span id="network-status">● Online</span><button id="control-center-open" class="control-center-open" type="button" aria-label="Open Control Center">☷ Control</button><span id="battery-label">🔋 100%</span></div>
     </header>
-    <section class="welcome">
-      <div><p class="eyebrow">NEXUS OS · PERSONAL WORKSPACE</p><h1 id="greeting">Good day 👋</h1><p>Your smarter, simpler workspace.</p></div>
-      <div class="welcome-orb" aria-hidden="true">✦</div>
-    </section>
-    <section class="search"><label class="sr-only" for="global-search">Search apps</label><span aria-hidden="true">⌕</span><input id="global-search" type="search" placeholder="Search apps and quick actions…" autocomplete="off"></section>
-    <section class="section-heading"><h2>Your apps</h2><span id="app-count">33 APPS</span></section>
+    <section class="home-brand"><div class="brand-mark"><i></i><i></i><i></i><i></i></div><div class="brand-copy"><h1>Custom OS</h1><p>Smarter · Faster · Yours</p></div><button class="home-ai-button" data-app="ai" aria-label="Open AI Assistant">✦<small>AI</small></button></section>
+    <section class="search home-search"><label class="sr-only" for="global-search">Search apps</label><span>⌕</span><input id="global-search" type="search" placeholder="Search apps, files, web…" autocomplete="off"></section>
+    <section class="weather-hero" data-app="weather" role="button" tabindex="0" aria-label="Open weather"><div class="weather-art"></div><div class="weather-time"><strong id="hero-clock">--:--</strong><span id="hero-date">Loading date…</span></div><div class="hero-weather-icon">🌤️</div><div class="hero-weather-copy"><strong id="hero-temp">Weather</strong><span id="hero-condition">Tap to check forecast</span><small>📍 Your location</small></div><div class="hero-high-low"><span>H: —°</span><span>L: —°</span></div></section>
+    <section class="section-heading app-section-heading"><h2>Your apps</h2><span id="app-count">33 APPS</span></section>
     <section class="app-grid" aria-label="Applications">
-      <button class="app" data-app="youtube"><span class="app-icon red">▶</span><span>YouTube</span></button>
-      <button class="app" data-app="files"><span class="app-icon yellow">📁</span><span>File Manager</span></button>
-      <button class="app" data-app="terminal"><span class="app-icon dark">⌨️</span><span>Terminal</span></button>
-      <button class="app" data-app="browser"><span class="app-icon blue">🌐</span><span>Browser</span></button>
-      <button class="app" data-app="calculator"><span class="app-icon purple">🧮</span><span>Calculator</span></button>
-      <button class="app" data-app="reminder"><span class="app-icon green">🔔</span><span>Reminder</span></button>
-      <button class="app" data-app="weather"><span class="app-icon sky">🌤️</span><span>Weather</span></button>
-      <button class="app" data-app="settings"><span class="app-icon slate">⚙️</span><span>Settings</span></button>
-      <button class="app" data-app="music"><span class="app-icon pink">🎵</span><span>Music</span></button>
-      <button class="app" data-app="clock"><span class="app-icon blue">🕒</span><span>Clock</span></button>
-      <button class="app" data-app="news"><span class="app-icon red">📰</span><span>News</span></button>
-      <button class="app" data-app="camera"><span class="app-icon slate">📷</span><span>Camera</span></button>
-      <button class="app" data-app="messages"><span class="app-icon green">💬</span><span>Messages</span></button>
-      <button class="app" data-app="call"><span class="app-icon green">📞</span><span>Calls</span></button>
-      <button class="app" data-app="gallery"><span class="app-icon pink">🖼️</span><span>Gallery</span></button>
-      <button class="app" data-app="themes"><span class="app-icon violet">🎨</span><span>Themes</span></button>
-      <button class="app" data-app="widgets"><span class="app-icon blue">▦</span><span>Widgets</span></button>
-      <button class="app ai-app" data-app="ai"><span class="app-icon violet">🤖</span><span>AI Assistant</span></button>
-      <button class="app" data-app="paint"><span class="app-icon pink">🖌️</span><span>Paint</span></button>
-      <button class="app" data-app="pdf"><span class="app-icon red">📄</span><span>PDF Viewer</span></button>
-      <button class="app" data-app="maps"><span class="app-icon sky">📍</span><span>Maps</span></button>
-      <button class="app" data-app="generator"><span class="app-icon orange">✨</span><span>Photo & Video</span></button>
-      <button class="app" data-app="books"><span class="app-icon yellow">📚</span><span>Book Reader</span></button>
-      <button class="app" data-app="games"><span class="app-icon orange">🧩</span><span>Games</span></button>
-      <button class="app" data-app="casting"><span class="app-icon dark">📺</span><span>Mirror Casting</span></button>
-      <button class="app" data-app="shop"><span class="app-icon green">🛍️</span><span>Shop Finder</span></button>
-      <button class="app" data-app="store"><span class="app-icon orange">🏪</span><span>App Store</span></button>
-      <button class="app" data-app="sos"><span class="app-icon red">🆘</span><span>SOS</span></button>
-      <button class="app" data-app="planner"><span class="app-icon green">🗓️</span><span>Day Planner</span></button>
-      <button class="app" data-app="feedback"><span class="app-icon blue">✉️</span><span>Feedback</span></button>
-      <button class="app" data-app="security"><span class="app-icon blue">🛡️</span><span>Security</span></button>
-      <button class="app" data-app="calendar"><span class="app-icon red">📅</span><span>Calendar</span></button>
-      <button class="app" data-app="radio"><span class="app-icon pink">📻</span><span>FM Radio</span></button>
+      <button class="app" data-app="youtube"><span class="app-icon red">▶</span><span>YouTube</span></button><button class="app" data-app="browser"><span class="app-icon blue">🌐</span><span>Browser</span></button><button class="app" data-app="files"><span class="app-icon blue">📁</span><span>Files</span></button><button class="app" data-app="gallery"><span class="app-icon violet">✿</span><span>Gallery</span></button><button class="app" data-app="camera"><span class="app-icon slate">📷</span><span>Camera</span></button>
+      <button class="app" data-app="notes"><span class="app-icon yellow">▤</span><span>Notes</span></button><button class="app" data-app="calculator"><span class="app-icon slate">▦</span><span>Calculator</span></button><button class="app" data-app="settings"><span class="app-icon slate">⚙</span><span>Settings</span></button><button class="app" data-app="security"><span class="app-icon green">⬡</span><span>Security</span></button><button class="app" data-app="store"><span class="app-icon violet">▣</span><span>Store</span></button>
+      <button class="app" data-app="music"><span class="app-icon pink">♫</span><span>Music</span></button><button class="app" data-app="weather"><span class="app-icon blue">🌤️</span><span>Weather</span></button><button class="app" data-app="calendar"><span class="app-icon red">📅</span><span>Calendar</span></button><button class="app" data-app="clock"><span class="app-icon dark">◷</span><span>Clock</span></button><button class="app more-app" data-action="show-all-apps"><span class="app-icon dark">⠿</span><span>More</span></button>
+      <button class="app extra-app" data-app="terminal"><span class="app-icon dark">⌨</span><span>Terminal</span></button><button class="app extra-app" data-app="maps"><span class="app-icon sky">📍</span><span>Maps</span></button><button class="app extra-app" data-app="messages"><span class="app-icon blue">💬</span><span>Messages</span></button><button class="app extra-app" data-app="call"><span class="app-icon green">📞</span><span>Phone</span></button><button class="app extra-app" data-app="widgets"><span class="app-icon blue">▦</span><span>Widgets</span></button><button class="app extra-app" data-app="reminder"><span class="app-icon green">🔔</span><span>Reminder</span></button><button class="app extra-app" data-app="news"><span class="app-icon red">📰</span><span>News</span></button><button class="app extra-app" data-app="themes"><span class="app-icon violet">🎨</span><span>Themes</span></button><button class="app extra-app" data-app="paint"><span class="app-icon pink">🖌️</span><span>Paint</span></button><button class="app extra-app" data-app="pdf"><span class="app-icon red">📄</span><span>PDF Viewer</span></button><button class="app extra-app" data-app="generator"><span class="app-icon orange">✨</span><span>Photo & Video</span></button><button class="app extra-app" data-app="books"><span class="app-icon yellow">📚</span><span>Book Reader</span></button><button class="app extra-app" data-app="games"><span class="app-icon orange">🧩</span><span>Games</span></button><button class="app extra-app" data-app="casting"><span class="app-icon dark">📺</span><span>Mirror Casting</span></button><button class="app extra-app" data-app="shop"><span class="app-icon green">🛍️</span><span>Shop Finder</span></button><button class="app extra-app" data-app="sos"><span class="app-icon red">🆘</span><span>SOS</span></button><button class="app extra-app" data-app="planner"><span class="app-icon green">🗓️</span><span>Day Planner</span></button><button class="app extra-app" data-app="feedback"><span class="app-icon blue">✉️</span><span>Feedback</span></button><button class="app extra-app" data-app="radio"><span class="app-icon pink">📻</span><span>FM Radio</span></button>
     </section>
+    <section class="home-panels"><article class="home-panel quick-tools"><h2><span>ϟ</span> Quick Tools</h2><div class="quick-grid"><button data-app="terminal"><b>›_</b><span>Terminal</span></button><button data-app="maps"><b>📍</b><span>Maps</span></button><button data-app="messages"><b>▤</b><span>Messages</span></button><button data-app="call"><b>☎</b><span>Phone</span></button><button data-app="feedback"><b>●</b><span>Contacts</span></button><button data-app="radio"><b>♫</b><span>FM Radio</span></button></div></article><article class="home-panel home-ai"><h2><span>✦</span> AI Assistant <button data-app="ai" aria-label="Open AI Assistant">›</button></h2><div class="ai-welcome"><div class="ai-avatar">🤖</div><div><strong>Nexus AI</strong><span>How can I help you today?</span></div></div><button class="ai-ask" data-app="ai">☏ &nbsp; Ask anything</button><div class="ai-actions"><button data-app="generator">▧ &nbsp; Generate image</button><button data-app="terminal">‹/› &nbsp; Help me code</button></div></article></section>
+    <section class="home-bottom-panels"><article class="home-panel recent-panel"><h2>◷ &nbsp; Recent Apps <button data-action="show-all-apps">›</button></h2><div class="recent-apps"><button data-app="browser"><b>🌐</b><span>Browser</span></button><button data-app="gallery"><b>✿</b><span>Gallery</span></button><button data-app="youtube"><b>▶</b><span>YouTube</span></button><button data-app="files"><b>📁</b><span>Files</span></button></div></article><article class="home-panel storage-panel"><h2>▤ &nbsp; Storage</h2><div class="storage-track"><span></span></div><div class="storage-meta"><strong>14.2 GB / 64 GB</strong><span>22%</span></div></article></section>
     <section class="section-heading"><h2>At a glance</h2><span>YOUR DASHBOARD</span></section>
     <section class="widgets">
       <article class="widget"><p>🌦️ Weather</p><strong id="weather-summary">Weather at a glance</strong><span id="weather-detail">Open Weather to check a city forecast.</span><button class="text-button" data-app="weather">Check weather ↗</button></article>
@@ -87,7 +58,7 @@
     <p class="control-note">Wi-Fi, Bluetooth and airplane toggles are visual demos; they cannot change Android's real system settings.</p>
   </section>
 
-  <script src="./app.js?v=25"></script>
+  <script src="./app.js?v=26"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       window.addEventListener("load", () => {
