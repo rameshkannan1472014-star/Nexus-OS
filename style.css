@@ -76,3 +76,21 @@
 .app-window{display:flex;flex-direction:column;min-height:0;overflow:hidden;touch-action:pan-y}.window-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;touch-action:pan-y;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;padding-bottom:28px}.app-bottom-nav{flex:0 0 auto;position:relative;bottom:auto;margin:0;border-radius:0;background:#151925;backdrop-filter:blur(18px);padding-bottom:calc(8px + env(safe-area-inset-bottom))}.youtube-mode-tabs{display:flex;gap:8px;margin:14px 0}.youtube-mode-tabs button{flex:1;padding:10px;border:1px solid var(--line);border-radius:12px;background:#202538;color:var(--muted)}.youtube-mode-tabs button.active{background:#7866dc;color:#fff;border-color:#9b8cff}.youtube-channel-link{font-size:12px;color:#aebfff;text-decoration:none}.youtube-channel-link:hover{text-decoration:underline}.youtube-result{touch-action:pan-y}.youtube-result button{touch-action:manipulation}@media(max-width:720px){.app-window{height:100dvh;min-height:0}.window-body{padding:16px;touch-action:pan-y}.app-bottom-nav{padding-bottom:calc(8px + env(safe-area-inset-bottom))}}
 
 /* Mobile scroll and touch fixes */html,body{min-height:100%;overflow-x:hidden;overscroll-behavior-y:auto}body{overflow-y:auto;touch-action:pan-y}.app-grid,.app-grid .app,.youtube-results,.youtube-result,.youtube-result-info{touch-action:pan-y}.app-grid .app{user-select:none;-webkit-tap-highlight-color:transparent}.app-window{touch-action:pan-y;overscroll-behavior:contain}.window-body{display:block;flex:1 1 0;height:0;min-height:0;overflow-y:auto!important;overflow-x:hidden;touch-action:pan-y!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}.app-bottom-nav{position:relative!important;flex:0 0 auto;z-index:20}.youtube-shell{padding-bottom:18px}.youtube-results{padding-bottom:12px}.youtube-result{min-height:92px}.youtube-channel-link{display:block;max-width:100%;overflow-wrap:anywhere}.youtube-mode-tabs button,.youtube-presets button,#youtube-load-more,.youtube-result button{touch-action:manipulation;position:relative;z-index:1}.youtube-result-info button{align-self:flex-start}.youtube-result-info a{padding:5px 0}@media(max-width:720px){.app-window{display:flex!important;overflow:hidden!important}.window-body{height:0;flex:1 1 0;padding:16px 14px 30px!important}.app-grid .app{touch-action:pan-y}.app-bottom-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom))}}
+
+
+/* v16: reliable mobile scrolling, Shorts tabs, and in-app channel browsing */
+html,body{height:auto;min-height:100%;overflow-y:auto!important;overflow-x:hidden!important;touch-action:pan-y!important}
+#os{min-height:100dvh;overflow:visible}
+#app-layer{overflow:hidden;touch-action:pan-y}
+.app-window{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:0!important;overflow:hidden!important;touch-action:pan-y!important}
+.window-head{flex:0 0 auto!important}
+.window-body{display:block!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;overflow-y:scroll!important;overflow-x:hidden!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;padding-bottom:36px!important}
+.app-bottom-nav{flex:0 0 auto!important;position:relative!important}
+.youtube-mode-tabs button{min-height:44px;font-weight:700}
+.youtube-mode-tabs button[data-youtube-mode="shorts"].active{background:#e62117;border-color:#ff7770}
+.youtube-channel-link{border:0;background:transparent;color:#aebfff;text-align:left;font:inherit;font-size:12px;line-height:1.5;padding:7px 0;cursor:pointer;touch-action:manipulation}
+.youtube-result-info button{max-width:100%;white-space:normal}
+.youtube-result-info .youtube-channel-link{overflow-wrap:anywhere}
+.youtube-result-info .window-action{min-height:42px}
+.dial-pad button,.window-body button,.window-body a{touch-action:manipulation}
+@media(max-width:720px){.window-body{padding:16px 14px 40px!important}.youtube-result{grid-template-columns:minmax(100px,38%) minmax(0,1fr)}.youtube-results{padding-bottom:22px}}
