@@ -5,6 +5,8 @@ function updateClock() {
   const now = new Date();
   $("#clock").textContent = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
   $("#date").textContent = now.toLocaleDateString([], {weekday:"long", month:"long", day:"numeric"});
+  const heroClock = $("#hero-clock"); if (heroClock) heroClock.textContent = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  const heroDate = $("#hero-date"); if (heroDate) heroDate.textContent = now.toLocaleDateString([], {weekday:"short", day:"numeric", month:"short", year:"numeric"});
   const hour = now.getHours();
   $("#greeting").textContent = hour < 12 ? "Good morning ☀️" : hour < 18 ? "Good afternoon 👋" : "Good evening 🌙";
 }
@@ -226,6 +228,8 @@ function loadBrowserUrl(raw,push=true){
 }
 function browserGo(delta){const n=browserHistoryIndex+delta;if(n<0||n>=browserHistory.length)return;browserHistoryIndex=n;const frame=$("#browser-frame");if(frame)frame.src=browserHistory[n]}
 document.addEventListener("click", function(event) {
+  const showAll = event.target.closest('[data-action="show-all-apps"]');
+  if (showAll) { const grid = $(".app-grid"); grid?.classList.toggle("show-all"); if (grid?.classList.contains("show-all")) document.querySelector(".app-section-heading")?.scrollIntoView({behavior:"smooth",block:"start"}); return; }
   const nav = event.target.closest("[data-system-nav]");
   if (nav) {
     const action = nav.dataset.systemNav;
@@ -277,7 +281,9 @@ $("#brightness-slider")?.addEventListener("input",e=>{const value=Number(e.targe
 $("#global-search").addEventListener("input", event => {
   const query = event.target.value.trim().toLowerCase();
   let visible = 0;
-  $$(".app-grid .app").forEach(button => {
+  const appGrid = $(".app-grid");
+  if (appGrid) appGrid.classList.toggle("show-all", Boolean(query));
+  $(".app-grid .app").forEach(button => {
     const matches = button.textContent.toLowerCase().includes(query);
     button.hidden = !matches;
     if (matches) visible++;
