@@ -665,8 +665,6 @@ document.addEventListener("click", async function(event) {
     document.documentElement.style.setProperty("--bg",bg);document.documentElement.style.setProperty("--accent",accent);
     const status=document.createElement("p");status.className="hint";status.textContent="Theme applied to Nexus OS.";preset.parentElement.append(status);return;
   }
-  const widget=event.target.closest("[data-widget-toggle]");
-  if(widget){const card=document.querySelector(".widgets .widget:nth-child("+(widget.dataset.widgetToggle==="weather"?1:widget.dataset.widgetToggle==="tasks"?2:3)+")");if(card)card.hidden=!widget.checked;return;}
   if(event.target.closest('[data-action="make-poster"]')){
     const canvas=$("#studio-canvas");if(!canvas)return;const ctx=canvas.getContext("2d"),color=$("#studio-color")?.value||"#6757d9";
     ctx.fillStyle=color;ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -685,6 +683,7 @@ document.addEventListener("click", async function(event) {
   if(event.target.closest('[data-action="sos-call"]')){const number=localStorage.getItem("nexus-sos-contact");if(!number){$("#sos-status").textContent="Save a trusted contact first.";return;}if(confirm("Open your phone app to call your saved trusted contact?"))window.location.href="tel:"+number.replace(/[^+0-9]/g,"");return;}
 });
 document.addEventListener("change", function(event) {
+  if(event.target.matches("[data-widget-toggle]")){const key=event.target.dataset.widgetToggle;const card=document.querySelector(".widgets .widget:nth-child("+(key==="weather"?1:key==="tasks"?2:3)+")");if(card)card.hidden=!event.target.checked;}
   if(event.target.id==="pdf-file"){
     const file=event.target.files?.[0],frame=$("#pdf-frame"),status=$("#pdf-status");if(!file||!frame)return;
     if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){status.textContent="Please choose a PDF file.";return;}
