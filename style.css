@@ -123,3 +123,30 @@ html,body{height:auto;min-height:100%;overflow-y:auto!important;overflow-x:hidde
  .youtube-result-info strong{font-size:14px}
  .youtube-result-info .window-action{font-size:12px;padding:9px}
 }
+
+
+/* v18: YouTube-inspired feed and vertical Shorts browsing */
+.youtube-brand{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.youtube-mark{display:inline-grid;place-items:center;width:38px;height:28px;flex:0 0 38px;border-radius:9px;background:#f00;color:#fff;font-size:17px}
+.youtube-brand h3{margin:0;font-size:19px;color:var(--text)}
+.youtube-brand p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.youtube-form{display:flex;gap:8px;position:sticky;top:0;z-index:5;padding:8px 0;background:var(--panel-bg,#121522)}
+.youtube-form input{min-width:0;flex:1}
+.youtube-presets{display:flex;gap:8px;overflow-x:auto;padding:6px 0 10px;white-space:nowrap}
+.youtube-presets button{flex:0 0 auto;border:0;border-radius:9px;background:#292d35;color:var(--text);padding:9px 13px}
+.youtube-mode-tabs{display:flex;gap:0;position:sticky;top:54px;z-index:4;background:var(--panel-bg,#121522);border-bottom:1px solid var(--line);margin:0 0 12px;padding:0}
+.youtube-mode-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--muted);padding:13px 8px;border-bottom:3px solid transparent}
+.youtube-mode-tabs button.active{background:transparent;color:var(--text);border-bottom-color:#f00}
+.youtube-short-card{width:min(100%,430px);margin:0 auto 22px;border:0;border-radius:14px;overflow:hidden;background:#08090d;box-shadow:0 4px 18px #0002}
+.youtube-short-player{display:block;width:100%;height:auto;aspect-ratio:9/16;max-height:68dvh;border:0;background:#000;object-fit:contain}
+.youtube-short-caption{display:flex;flex-direction:column;gap:9px;padding:12px 14px;color:#fff}
+.youtube-short-caption strong{font-size:14px;line-height:1.4}
+.youtube-short-caption .youtube-channel-link{color:#fff;font-size:13px;padding:4px 0}
+#youtube-player[hidden]{display:none!important}
+#youtube-fullscreen{display:none!important}
+#youtube-load-more{margin:12px 0 24px}
+@media(max-width:720px){
+ .youtube-short-card{width:100%;margin-bottom:18px}
+ .youtube-short-player{max-height:62dvh;aspect-ratio:9/16}
+ .youtube-form .window-action{padding:9px 10px;font-size:12px}
+}
