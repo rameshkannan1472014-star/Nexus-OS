@@ -140,21 +140,23 @@ async function searchYouTube(query, append=false){
   if(!response.ok)throw new Error(data.detail||"YouTube search is unavailable.");
   if(!Array.isArray(data.items)||!data.items.length){message.textContent="No videos found. Try another search.";return;}
   youtubeNextPageToken=data.nextPageToken||"";const more=$("#youtube-load-more");if(more){more.hidden=!youtubeNextPageToken;more.textContent=youtubeMode==="shorts"?"Load more Shorts":"Load more videos";}
-  message.textContent=youtubeMode==="shorts"?"Shorts feed · swipe by scrolling, or tap Play here.":"Video results · scroll for more, or tap a channel name to browse its videos.";
+  message.textContent=youtubeMode==="shorts"?"Shorts · swipe up/down to browse. Tap a video to use its player controls; it will not force full screen.":"Videos · scroll for more, or tap a channel name to browse its videos.";
   data.items.forEach(item=>{
-   const card=document.createElement("article");card.className="youtube-result";
-   const image=document.createElement("img");image.className="youtube-thumb";image.loading="lazy";image.alt="";image.src=item.thumbnail||"";
+   const isShort=youtubeMode==="shorts";
+   const card=document.createElement("article");card.className=isShort?"youtube-short-card":"youtube-result";
    const details=document.createElement("div");details.className="youtube-result-info";
    const title=document.createElement("strong");title.textContent=item.title||"Untitled video";
-   const channel=document.createElement("span");channel.textContent=item.channel||"YouTube";
-   const play=document.createElement("button");play.type="button";play.className="window-action";play.textContent="▶ Play here";
-   play.addEventListener("click",()=>{
-    const id=String(item.videoId||"");if(!/^[a-zA-Z0-9_-]{11}$/.test(id))return;
-    player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);
-    player.hidden=false;const fs=$("#youtube-fullscreen");if(fs)fs.hidden=false;message.hidden=false;message.textContent="Loading video…";
-    player.scrollIntoView({behavior:"smooth",block:"nearest"});
-   });
-   const channelLink=document.createElement("button");channelLink.type="button";channelLink.className="youtube-channel-link";channelLink.textContent="👤 "+(item.channel||"YouTube channel")+" · View channel";channelLink.addEventListener("click",()=>{if(!item.channelId)return;youtubeChannelId=item.channelId;youtubeQuery="";const input=$("#youtube-url");if(input)input.value="";message.textContent="Loading videos from "+(item.channel||"this channel")+"…";const tabs=$(".youtube-mode-tabs button");tabs.forEach(b=>b.classList.toggle("active",b.dataset.youtubeMode==="videos"));youtubeMode="videos";searchYouTube("",false);});details.append(title,channelLink,play);card.append(image,details);box.append(card);
+   const channelLink=document.createElement("button");channelLink.type="button";channelLink.className="youtube-channel-link";channelLink.textContent="👤 "+(item.channel||"YouTube channel")+" · View channel";channelLink.addEventListener("click",()=>{if(!item.channelId)return;youtubeChannelId=item.channelId;youtubeQuery="";const input=$("#youtube-url");if(input)input.value="";message.textContent="Loading videos from "+(item.channel||"this channel")+"…";const tabs=$(".youtube-mode-tabs button");tabs.forEach(b=>b.classList.toggle("active",b.dataset.youtubeMode==="videos"));youtubeMode="videos";searchYouTube("",false);});
+   if(isShort){
+    const frame=document.createElement("iframe");frame.className="youtube-short-player";frame.title=item.title||"YouTube Short";frame.loading="lazy";frame.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(item.videoId)+"?playsinline=1&rel=0";frame.allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";frame.allowFullscreen=true;
+    const caption=document.createElement("div");caption.className="youtube-short-caption";caption.append(title,channelLink);card.append(frame,caption);
+   }else{
+    const image=document.createElement("img");image.className="youtube-thumb";image.loading="lazy";image.alt="";image.src=item.thumbnail||"";
+    const play=document.createElement("button");play.type="button";play.className="window-action";play.textContent="▶ Play here";
+    play.addEventListener("click",()=>{const id=String(item.videoId||"");if(!/^[a-zA-Z0-9_-]{11}$/.test(id))return;player.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id)+"?playsinline=1&rel=0";player.hidden=false;message.hidden=false;message.textContent="Loading video…";player.scrollIntoView({behavior:"smooth",block:"nearest"});});
+    details.append(title,channelLink,play);card.append(image,details);
+   }
+   box.append(card);
   });
  }catch(error){
   message.hidden=false;
@@ -194,7 +196,7 @@ document.addEventListener("click", function(event) {
   const webShortcut=event.target.closest("[data-web-url]");
   if(webShortcut){loadBrowserUrl(webShortcut.dataset.webUrl);return;}
   const browserShortcut=event.target.closest("[data-browser-url]");if(browserShortcut){loadBrowserUrl(browserShortcut.dataset.browserUrl);return;}
-  const ytMode=event.target.closest("[data-youtube-mode]");if(ytMode){youtubeChannelId="";youtubeMode=ytMode.dataset.youtubeMode;$("[data-youtube-mode]").forEach(b=>b.classList.toggle("active",b===ytMode));const input=$("#youtube-url");youtubeQuery=input?.value.trim()|| (youtubeMode==="shorts"?"trending shorts":"science experiments");if(youtubeMode==="shorts"&&!/shorts/i.test(youtubeQuery))youtubeQuery+=" shorts";searchYouTube(youtubeQuery);return;}const ytMore=event.target.closest("#youtube-load-more");if(ytMore){searchYouTube(youtubeQuery,true);return;}const ytSearch=event.target.closest("[data-youtube-search]");if(ytSearch){youtubeChannelId="";youtubeMode="videos";youtubeQuery=ytSearch.dataset.youtubeSearch;$("[data-youtube-mode]").forEach(b=>b.classList.toggle("active",b.dataset.youtubeMode==="videos"));searchYouTube(youtubeQuery);return;}const fullscreen=event.target.closest("#youtube-fullscreen");if(fullscreen){const player=$("#youtube-player");if(player?.requestFullscreen)player.requestFullscreen().catch(()=>{});else if(player)player.style.height="80vh";return;}
+  const ytMode=event.target.closest("[data-youtube-mode]");if(ytMode){youtubeChannelId="";youtubeMode=ytMode.dataset.youtubeMode;$("[data-youtube-mode]").forEach(b=>b.classList.toggle("active",b===ytMode));const input=$("#youtube-url");youtubeQuery=input?.value.trim()|| (youtubeMode==="shorts"?"trending shorts":"science experiments");if(youtubeMode==="shorts"&&!/shorts/i.test(youtubeQuery))youtubeQuery+=" #shorts";searchYouTube(youtubeQuery);return;}const ytMore=event.target.closest("#youtube-load-more");if(ytMore){searchYouTube(youtubeQuery,true);return;}const ytSearch=event.target.closest("[data-youtube-search]");if(ytSearch){youtubeChannelId="";youtubeMode="videos";youtubeQuery=ytSearch.dataset.youtubeSearch;$("[data-youtube-mode]").forEach(b=>b.classList.toggle("active",b.dataset.youtubeMode==="videos"));searchYouTube(youtubeQuery);return;}const fullscreen=event.target.closest("#youtube-fullscreen");if(fullscreen){const player=$("#youtube-player");if(player?.requestFullscreen)player.requestFullscreen().catch(()=>{});else if(player)player.style.height="80vh";return;}
   const external=event.target.closest('[data-action="browser-external"]');if(external){openFullSite($("#browser-frame")?.src||$("#browser-url")?.value);return;}
   const service=event.target.closest("[data-music-service]");
   if(service){const q=$("#music-search-query")?.value.trim()||"";const urls={youtube:"https://music.youtube.com/search?q="+encodeURIComponent(q),soundcloud:"https://soundcloud.com/search?q="+encodeURIComponent(q),spotify:"https://open.spotify.com/search/"+encodeURIComponent(q)};openFullSite(urls[service.dataset.musicService]);return;}
@@ -206,7 +208,7 @@ document.addEventListener("click", function(event) {
 });
 document.addEventListener("submit",function(event){
  if(event.target.id==="browser-form"){event.preventDefault();loadBrowserUrl($("#browser-url").value);}
- if(event.target.id==="youtube-form"){event.preventDefault();const value=$("#youtube-url").value.trim(),id=extractYouTubeId(value),p=$("#youtube-player"),m=$("#youtube-player-message");youtubeQuery=value;youtubeChannelId="";if(id){p.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);p.hidden=false;const fs=$("#youtube-fullscreen");if(fs)fs.hidden=false;if(m){m.hidden=false;m.textContent="Loading video…"}const results=$("#youtube-results");if(results)results.replaceChildren();}else{if(youtubeMode==="shorts"&&!/shorts/i.test(value))youtubeQuery=value+" shorts";searchYouTube(youtubeQuery);}}
+ if(event.target.id==="youtube-form"){event.preventDefault();const value=$("#youtube-url").value.trim(),id=extractYouTubeId(value),p=$("#youtube-player"),m=$("#youtube-player-message");youtubeQuery=value;youtubeChannelId="";if(id){p.src="https://www.youtube-nocookie.com/embed/"+encodeURIComponent(id);p.hidden=false;const fs=$("#youtube-fullscreen");if(fs)fs.hidden=false;if(m){m.hidden=false;m.textContent="Loading video…"}const results=$("#youtube-results");if(results)results.replaceChildren();}else{if(youtubeMode==="shorts"&&!/shorts/i.test(value))youtubeQuery=value+" #shorts";searchYouTube(youtubeQuery);}}
  if(event.target.id==="music-search-form"){event.preventDefault();searchMusic($("#music-search-query").value.trim());}
   if(event.target.id==="youtube-form"){ /* handled by the main YouTube submit listener below */ }
 });
