@@ -1,9 +1,9 @@
-const CACHE_NAME = "nexus-os-v19";
+const CACHE_NAME = "nexus-os-v20";
 const APP_SHELL = [
   "./",
-  "./index.html?v=19",
-  "./style.css?v=19",
-  "./app.js?v=19",
+  "./index.html?v=20",
+  "./style.css?v=20",
+  "./app.js?v=20",
   "./manifest.json",
   "./icon.svg"
 ];
