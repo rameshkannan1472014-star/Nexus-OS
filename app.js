@@ -75,7 +75,17 @@ const appInfo = {
   radio: {title:"FM & Internet Radio", body:'<p>Online radio stations require an internet connection. FM tuner access is not available to a normal browser app.</p><div class="file-list"><button class="window-action" data-radio-url="https://www.radioindia.in/">India Radio</button><button class="window-action secondary-action" data-radio-url="https://onlineradiobox.com/in/">Online Radio Box India</button><button class="window-action secondary-action" data-radio-url="https://www.bbc.co.uk/sounds">BBC Sounds</button></div><p class="hint">Choose a station directory to listen on its official website.</p>'}
 };
 
-function closeWindow() { $("#app-layer").replaceChildren(); }
+function closeWindow() {
+  const layer = $("#app-layer");
+  const win = layer?.querySelector(".app-window");
+  if (!layer || !win) return;
+  win.classList.add("is-closing");
+  win.addEventListener("animationend", () => {
+    if (win.parentNode === layer) layer.replaceChildren();
+  }, { once: true });
+  // Fallback for reduced-motion or browsers that skip animation events.
+  setTimeout(() => { if (win.parentNode === layer) layer.replaceChildren(); }, 220);
+}
 function getCameraPhotos(){try{return JSON.parse(localStorage.getItem("nexus-camera-photos")||"[]")}catch(_){return []}}
 function renderCameraGallery(){
  const target=$("#gallery-preview");if(!target)return;target.replaceChildren();
@@ -134,7 +144,7 @@ function openApp(name) {
   if (name === "feedback") renderFeedback();
   if (name === "clock") { const now=new Date(); if($("#clock-live"))$("#clock-live").textContent=now.toLocaleTimeString(); if($("#clock-live-date"))$("#clock-live-date").textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"}); }
   close.focus();
-  if (name === "paint") initPaint();
+  if (name === "paint") initPaint();\n  if (name === "youtube") { const input=$("#youtube-url"); if(input) input.setAttribute("autocomplete","off"); }
   if (name === "tasks" || name === "calendar") {
     renderSavedTasks($("#quick-task-list"));
     renderSavedTasks($("#task-list"));
@@ -746,5 +756,5 @@ document.addEventListener("submit",function(event){
     event.preventDefault();const text=$("#feedback-text").value.trim();if(!text)return;const items=JSON.parse(localStorage.getItem("nexus-feedback")||"[]");items.push({topic:$("#feedback-topic").value,text,created:Date.now()});localStorage.setItem("nexus-feedback",JSON.stringify(items));$("#feedback-status").textContent="Thanks! Your feedback is saved locally on this device.";renderFeedback();$("#feedback-text").value="";
   }
 });
-const liveClockTimer=setInterval(()=>{const target=$("#clock-live");if(target){const now=new Date();target.textContent=now.toLocaleTimeString();$("#clock-live-date").textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});}},1000);
+const liveClockTimer=setInterval(()=>{const target=$("#clock-live");if(target){const now=new Date();target.textContent=now.toLocaleTimeString();const date=$("#clock-live-date");if(date)date.textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"});}},1000);
 const previousOpenApp=window.openApp;
