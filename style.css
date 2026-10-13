@@ -355,3 +355,20 @@ button:active{transform:scale(.975)}
  .app-content .feature-card,.app-content .music-result,.app-content .youtube-result{border-radius:15px}
 }
 @media(prefers-reduced-motion:reduce){.app-content{animation:none!important}.app-window{backface-visibility:visible}}
+
+
+/* v32 — reference-style app surfaces and smoother mobile rendering */
+:root{--nexus-ease:cubic-bezier(.22,.75,.25,1)}
+@media(hover:none){.app:hover,.app:focus-visible{transform:none}.window-body{scrollbar-width:none}.window-body::-webkit-scrollbar{display:none}}
+.app-window{isolation:isolate;backface-visibility:hidden}
+.window-head,.app-bottom-nav{flex-shrink:0}
+.window-body{overscroll-behavior:contain;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#1769c7 transparent}
+.app-content{animation:nexusContentIn .18s var(--nexus-ease) both}
+.app-content h3{font-size:16px;letter-spacing:-.015em}
+.app-content form{max-width:100%}
+.app-content button:focus-visible,.app-content a:focus-visible,.app-bottom-nav button:focus-visible{outline:2px solid #51c4ff;outline-offset:2px}
+.app-content img,.app-content video,.app-content iframe{max-width:100%}
+.app-content canvas{max-width:100%;height:auto}
+.app-content input[type=file]{width:100%;padding:10px;border:1px dashed #22578b;border-radius:13px;background:#06172d;color:#b8d5f6}
+@media(max-width:600px){.app-window{height:100dvh;min-height:100%;padding-bottom:env(safe-area-inset-bottom)}.window-body{min-height:0;overscroll-behavior-y:contain}.app-content{animation:none}}
+@media(prefers-reduced-motion:reduce){.app-content{animation:none!important}.app-window{backface-visibility:visible}}
