@@ -243,3 +243,54 @@ button,[role="button"]{touch-action:manipulation}
 #app-layer:empty{display:none}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 @media(max-width:520px){.app-window{transform:none;transition:opacity .14s ease-out}.app-window.is-open{transform:none}.app-window.is-closing{transform:none}.window-body{padding-bottom:max(24px,env(safe-area-inset-bottom))}}
+
+
+/* v30 — unified electric-blue app shell inspired by the Custom OS reference */
+:root{--bg:#06142b;--panel:#071a33;--line:rgba(57,145,255,.32);--text:#f4f8ff;--muted:#9db5d7;--accent:#168cff;--radius:18px;scroll-behavior:smooth}
+body{background:radial-gradient(ellipse at 50% -18%,#123c77 0,transparent 54%),linear-gradient(180deg,#06152d,#030b19 75%);-webkit-tap-highlight-color:transparent}
+button,input,textarea,select{touch-action:manipulation}
+button{transition:background-color .16s ease,border-color .16s ease,transform .16s ease,filter .16s ease}
+button:active{transform:scale(.975)}
+.home-brand{border-bottom:1px solid #147be0;padding-bottom:16px}
+.brand-mark i{background:linear-gradient(145deg,#29b6ff,#0875ed);box-shadow:0 0 14px #168cff55}
+.home-search,.search{border-color:#164a86;background:#071a33}
+.home-search:focus-within,.search:focus-within{border-color:#299cff;box-shadow:0 0 0 3px #168cff22}
+.weather-hero,.home-panel,.app-window,.control-center,.widget{border:1px solid #1a5ba0;background:linear-gradient(150deg,rgba(7,29,57,.98),rgba(4,15,32,.99));box-shadow:0 10px 28px #0004}
+.app-grid{gap:8px}
+.app{border:1px solid transparent;border-radius:16px;min-height:90px;gap:8px;color:#edf5ff}
+.app:hover,.app:focus-visible{border-color:#258df0;background:#0a2a50;transform:translateY(-2px)}
+.app-icon{border-radius:14px;box-shadow:0 0 0 1px #ffffff18,inset 0 1px #ffffff3b}
+.app-window{inset:0!important;display:flex;flex-direction:column;background:linear-gradient(180deg,#061a35,#030b18);border:1px solid #167de4!important;border-radius:0!important;opacity:0;transform:translateY(10px) scale(.99);transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1)}
+.app-window.is-open{opacity:1;transform:translateY(0) scale(1)}
+.window-head{flex:0 0 auto;min-height:66px;padding:calc(12px + env(safe-area-inset-top)) 18px 12px;border-bottom:1px solid #16569a;background:linear-gradient(100deg,#09274d,#07162e)}
+.window-head h2{font-size:17px;letter-spacing:.01em}
+.close-window{background:#0c2b50;border-color:#2878c6;color:#e9f5ff}
+.window-body{flex:1;min-height:0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));color:#e8f2ff;line-height:1.55}
+.window-body h3,.window-body h2{color:#f4f8ff}
+.window-body p{color:#a9bedb}
+.window-body input,.window-body textarea,.window-body select{border-color:#1b518a;border-radius:13px;background:#07162b;color:#f3f8ff}
+.window-body input:focus,.window-body textarea:focus,.window-body select:focus{border-color:#289cff;box-shadow:0 0 0 3px #168cff1b}
+.window-action{background:linear-gradient(100deg,#087eea,#239eff);border:1px solid #49b1ff55;border-radius:12px;font-weight:650;box-shadow:0 5px 18px #087eea20}
+.secondary-action{background:#102d50!important;border:1px solid #23578d!important}
+.app-bottom-nav{flex:0 0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom));border-top:1px solid #174b83;background:#041329}
+.app-bottom-nav button{display:flex;align-items:center;justify-content:center;gap:7px;min-height:42px;border:1px solid transparent;border-radius:12px;background:transparent;color:#9fc8f8}
+.app-bottom-nav button:hover,.app-bottom-nav button:focus-visible{background:#0b2c52;border-color:#1d65a7;outline:none}
+.app-bottom-nav span{font-size:22px}.app-bottom-nav small{font-size:11px}
+.dock{border-color:#1c5b9b;background:#04162df2;box-shadow:0 10px 35px #0008}
+.dock button{border-radius:13px}.dock button:hover{background:#0d3764}
+.control-center{border-radius:22px}
+.control-tile{border-color:#20568d;background:#0b2748}.control-tile.active{background:linear-gradient(140deg,#087eea,#164b91)}
+.terminal-box{border:1px solid #15508b;background:#020b17;color:#8bf5b6}
+.file-list>div,.task-item,.reminder-row,.planner-row,.feedback-item,.music-result,.youtube-result{border-color:#1a4b7c;background:#071b34}
+.browser-toolbar,.youtube-form,.inline-form{gap:8px}
+.browser-toolbar button,.browser-shortcuts button,.youtube-mode-tabs button,.youtube-presets button{border:1px solid #1c5a96;border-radius:11px;background:#0b2a4d;color:#eaf5ff;padding:9px 12px}
+#browser-frame{width:100%;min-height:48vh;border:1px solid #1b4f82;border-radius:14px;background:#fff}
+#youtube-player{width:100%;aspect-ratio:16/9;border:1px solid #1b4f82;border-radius:14px;background:#000}
+.youtube-thumb{width:100%;border-radius:13px;object-fit:cover}
+.youtube-result{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:12px;border:1px solid #1a4b7c;border-radius:16px;margin:12px 0}
+.youtube-result-info{display:grid;gap:7px}
+.youtube-channel-link{width:max-content;max-width:100%;border:0;background:none;color:#7dc2ff;text-align:left}
+.app-is-open{overflow:hidden}
+@media(min-width:760px){.app-window{inset:3vh max(12vw,calc((100vw - 780px)/2))!important;width:auto;height:94vh!important;border-radius:24px!important;border:1px solid #258df0!important}.window-head{border-radius:23px 23px 0 0}}
+@media(max-width:420px){.window-body{padding:14px 12px calc(16px + env(safe-area-inset-bottom))}.app-bottom-nav{padding-left:8px;padding-right:8px}.app-grid{gap:2px}.app{font-size:11px;min-height:84px}}
+@media(prefers-reduced-motion:reduce){:root{scroll-behavior:auto}button,.app-window{transition:none!important}}
