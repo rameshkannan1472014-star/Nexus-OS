@@ -224,3 +224,22 @@ img{content-visibility:auto}
  html{scroll-behavior:auto}
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+
+/* v29 smoothness pass: mobile-friendly motion, scrolling and tap response */
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{overscroll-behavior-y:contain}
+button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
+button,[role="button"]{touch-action:manipulation}
+.app-window{opacity:0;transform:translate3d(0,12px,0) scale(.985);transition:opacity .16s ease-out,transform .2s cubic-bezier(.2,.75,.25,1);will-change:opacity,transform;contain:layout paint}
+.app-window.is-open{opacity:1;transform:translate3d(0,0,0) scale(1)}
+.app-window.is-closing{opacity:0;transform:translate3d(0,8px,0) scale(.99);pointer-events:none}
+.app-is-open{overflow:hidden}
+.window-body{scroll-behavior:smooth;scrollbar-gutter:stable}
+.app,.quick-grid button,.recent-apps button,.dock button,.control-tile{transition:transform .14s ease-out,background-color .14s ease-out,border-color .14s ease-out}
+.app:active,.quick-grid button:active,.recent-apps button:active,.dock button:active,.control-tile:active{transform:scale(.97)}
+.app-grid .app-icon{transition:transform .16s ease-out,filter .16s ease-out}
+.app-grid .app:active .app-icon{transform:scale(.94);filter:brightness(1.08)}
+#app-layer:empty{display:none}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(max-width:520px){.app-window{transform:none;transition:opacity .14s ease-out}.app-window.is-open{transform:none}.app-window.is-closing{transform:none}.window-body{padding-bottom:max(24px,env(safe-area-inset-bottom))}}
