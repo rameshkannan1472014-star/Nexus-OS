@@ -205,3 +205,22 @@ body{background:radial-gradient(ellipse at 50% 0%,#092b5a 0,transparent 44%),#02
 @media(min-width:721px){#os{max-width:1100px}.app-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.weather-hero{min-height:175px}}
 @media(max-width:600px){#os{padding:18px 15px 100px}.top-bar{font-size:11px}.status{gap:6px}.control-center-open{padding:6px 8px}.home-brand{margin:14px 0 12px;gap:11px}.brand-mark{width:42px;height:42px}.brand-copy h1{font-size:23px}.brand-copy p{font-size:11px}.home-ai-button{width:48px;height:48px}.weather-hero{grid-template-columns:1fr auto;gap:8px 12px;min-height:155px;padding:17px;border-radius:23px}.weather-time strong{font-size:36px}.weather-time span{font-size:12px}.hero-weather-icon{font-size:37px}.hero-weather-copy{grid-column:1;grid-row:2}.hero-weather-copy strong{font-size:23px}.hero-weather-copy span{font-size:12px}.hero-weather-copy small{font-size:10px}.hero-high-low{grid-column:2;grid-row:2;font-size:11px}.app-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px 2px}.app{min-height:83px;font-size:10px;gap:6px}.app-icon{width:48px;height:48px;border-radius:15px;font-size:22px}.home-panels{gap:9px}.home-panel{padding:12px;border-radius:20px}.home-panel h2{font-size:13px;margin-bottom:12px}.quick-grid{gap:11px 2px}.quick-grid b{width:42px;height:42px;font-size:20px}.quick-grid button{font-size:9px}.ai-avatar{width:49px;height:49px;font-size:26px}.ai-welcome{gap:8px}.ai-welcome strong{font-size:13px}.ai-welcome span{font-size:10px}.ai-ask,.ai-actions button{font-size:10px;padding:9px 7px}.ai-actions{flex-direction:column}.home-bottom-panels{grid-template-columns:1.1fr .9fr;gap:9px}.recent-apps b{width:34px;height:34px;font-size:18px}.recent-apps button{font-size:8px}.storage-meta{font-size:9px;flex-wrap:wrap}.dock{left:15px;right:15px;bottom:max(10px,env(safe-area-inset-bottom));padding:7px}.dock button{width:39px;height:40px;font-size:19px}}
 @media(max-width:370px){.app-icon{width:42px;height:42px}.app{min-height:76px}.home-panels{grid-template-columns:1fr}.ai-actions{flex-direction:row}.weather-time strong{font-size:31px}}
+
+
+/* v28: lightweight, touch-first motion and smoother app transitions */
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{overscroll-behavior-y:contain}
+button,.app,.dock button,.home-panel,.weather-hero{touch-action:manipulation}
+.app-window{opacity:0;transform:translateY(12px) scale(.985);transition:opacity .18s ease,transform .22s cubic-bezier(.2,.75,.25,1);will-change:opacity,transform}
+.app-window.is-open{opacity:1;transform:translateY(0) scale(1)}
+.app-window.is-closing{opacity:0;transform:translateY(8px) scale(.99);pointer-events:none}
+.app,.quick-grid button,.recent-apps button,.dock button{transition:transform .16s ease,background-color .16s ease,border-color .16s ease}
+.app:active,.quick-grid button:active,.recent-apps button:active,.dock button:active{transform:scale(.96)}
+.app-layer,.app-window{overscroll-behavior:contain}
+.app-window .window-body{scrollbar-width:thin;scrollbar-color:#1769c7 transparent;-webkit-overflow-scrolling:touch}
+.app-window input,.app-window textarea,.app-window select{max-width:100%}
+img{content-visibility:auto}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
