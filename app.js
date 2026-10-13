@@ -8,7 +8,8 @@ function updateClock() {
   const heroClock = $("#hero-clock"); if (heroClock) heroClock.textContent = now.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
   const heroDate = $("#hero-date"); if (heroDate) heroDate.textContent = now.toLocaleDateString([], {weekday:"short", day:"numeric", month:"short", year:"numeric"});
   const hour = now.getHours();
-  $("#greeting").textContent = hour < 12 ? "Good morning ☀️" : hour < 18 ? "Good afternoon 👋" : "Good evening 🌙";
+  const greeting = $("#greeting");
+  if (greeting) greeting.textContent = hour < 12 ? "Good morning ☀️" : hour < 18 ? "Good afternoon 👋" : "Good evening 🌙";
 }
 updateClock();
 setInterval(updateClock, 30000);
@@ -80,11 +81,15 @@ function closeWindow() {
   const win = layer?.querySelector(".app-window");
   if (!layer || !win) return;
   win.classList.add("is-closing");
-  win.addEventListener("animationend", () => {
+  const finishClose = () => {
     if (win.parentNode === layer) layer.replaceChildren();
+    document.body.classList.remove("app-is-open");
+  };
+  win.addEventListener("transitionend", (event) => {
+    if (event.target === win && event.propertyName === "opacity") finishClose();
   }, { once: true });
-  // Fallback for reduced-motion or browsers that skip animation events.
-  setTimeout(() => { if (win.parentNode === layer) layer.replaceChildren(); }, 220);
+  // Fallback for reduced-motion or browsers that skip transition events.
+  setTimeout(finishClose, 260);
 }
 function getCameraPhotos(){try{return JSON.parse(localStorage.getItem("nexus-camera-photos")||"[]")}catch(_){return []}}
 function renderCameraGallery(){
@@ -138,6 +143,7 @@ function openApp(name) {
   bottomNav.innerHTML = '<button type="button" data-system-nav="back" aria-label="Back"><span>‹</span><small>Back</small></button><button type="button" data-system-nav="home" aria-label="Home"><span>⌂</span><small>Home</small></button><button type="button" data-system-nav="recent" aria-label="Recent apps"><span>▢</span><small>Recent</small></button>';
   win.append(bottomNav);
   layer.replaceChildren(win);
+  document.body.classList.add("app-is-open");
   requestAnimationFrame(() => win.classList.add("is-open"));
   if (name === "gallery") renderCameraGallery();
   if (name === "reminder") renderReminders();
@@ -145,7 +151,8 @@ function openApp(name) {
   if (name === "feedback") renderFeedback();
   if (name === "clock") { const now=new Date(); if($("#clock-live"))$("#clock-live").textContent=now.toLocaleTimeString(); if($("#clock-live-date"))$("#clock-live-date").textContent=now.toLocaleDateString([], {weekday:"long",year:"numeric",month:"long",day:"numeric"}); }
   close.focus();
-  if (name === "paint") initPaint();\n  if (name === "youtube") { const input=$("#youtube-url"); if(input) input.setAttribute("autocomplete","off"); }
+  if (name === "paint") initPaint();
+  if (name === "youtube") { const input=$("#youtube-url"); if(input) input.setAttribute("autocomplete","off"); }
   if (name === "tasks" || name === "calendar") {
     renderSavedTasks($("#quick-task-list"));
     renderSavedTasks($("#task-list"));
