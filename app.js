@@ -138,6 +138,7 @@ function openApp(name) {
   bottomNav.innerHTML = '<button type="button" data-system-nav="back" aria-label="Back"><span>‹</span><small>Back</small></button><button type="button" data-system-nav="home" aria-label="Home"><span>⌂</span><small>Home</small></button><button type="button" data-system-nav="recent" aria-label="Recent apps"><span>▢</span><small>Recent</small></button>';
   win.append(bottomNav);
   layer.replaceChildren(win);
+  requestAnimationFrame(() => win.classList.add("is-open"));
   if (name === "gallery") renderCameraGallery();
   if (name === "reminder") renderReminders();
   if (name === "planner") renderPlanner();
