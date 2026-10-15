@@ -1,11 +1,18 @@
-const CACHE_NAME = "nexus-os-v40";
+const CACHE_NAME = "nexus-os-v41";
 const APP_SHELL = [
   "./",
-  "./index.html?v=40",
-  "./style.css?v=40",
-  "./app.js?v=40",
-  "./nexus-apps.css?v=40",
-  "./nexus-apps.js?v=40",
+  "./index.html?v=41",
+  "./style.css?v=41",
+  "./app.js?v=41",
+  "./nexus-apps.css?v=41",
+  "./nexus-apps-more.css?v=41",
+  "./nexus-apps.js?v=41",
+  "./nexus-apps-2.js?v=41",
+  "./nexus-apps-3.js?v=41",
+  "./nexus-apps-4.js?v=41",
+  "./nexus-apps-5.js?v=41",
+  "./nexus-apps-6.js?v=41",
+  "./nexus-apps-7.js?v=41",
   "./manifest.json",
   "./icon.svg"
 ];

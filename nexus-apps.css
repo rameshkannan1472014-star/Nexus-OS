@@ -63,7 +63,7 @@
 }
 .nx-app *, .nx-app *::before, .nx-app *::after { box-sizing: border-box; }
 .nx-app :where(button, input, select, textarea) { font: inherit; color: inherit; }
-.nx-app :where(button) { cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.nx-app :where(button) { cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; background: none; border: 0; padding: 0; margin: 0; }
 .nx-app [hidden] { display: none !important; }
 .nx-app :focus-visible { outline: 2px solid var(--nx-accent); outline-offset: 2px; }
 

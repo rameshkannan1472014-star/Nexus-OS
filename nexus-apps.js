@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Nexus OS — Batch 1 apps (v40)
+   Nexus OS — shared framework + Batch 1 apps (v41)
    YouTube · Files · Terminal · Browser · Calculator · Reminder · Weather · Settings
    Loaded after app.js. It replaces openApp() for these 8 apps only; every other
    app keeps using the original window from app.js.
@@ -955,7 +955,7 @@
       case "whoami": out(userName().toLowerCase().replace(/[^a-z0-9]/g, "")); break;
       case "hostname": out("nexus"); break;
       case "uname": out(args.includes("-a") ? "NexusOS nexus 2.0.0-web #40 " + (navigator.platform || "web") + " JavaScript" : "NexusOS"); break;
-      case "nexus": out("Nexus OS 2.0 · web edition · build v40", "d"); out("Made by " + userName() + ". 33 apps. Batch 1 apps redesigned.", "m"); break;
+      case "nexus": out("Nexus OS 2.0 · web edition · build v41", "d"); out("Made by " + userName() + ". 38 apps, all in the new Nexus design.", "m"); break;
       case "neofetch": {
         const logo = ["   ▄▄▄▄   ▄▄▄▄ ", "   █  █   █  █ ", "   ▀▀▀▀   ▀▀▀▀ ", "   ▄▄▄▄   ▄▄▄▄ ", "   █  █   █  █ ", "   ▀▀▀▀   ▀▀▀▀ "];
         const u = userName().toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -1889,5 +1889,14 @@
   };
   // eslint-disable-next-line no-global-assign
   try { openApp = window.openApp; } catch (_) {}
-  window.NexusApps = { APPS, MathEngine, version: "2.0" };
+  function openUrl(url) {
+    nxOpen("browser");
+    const win = document.querySelector("#app-layer .nx-browser");
+    if (win && url) brGo(win, brNormalize(url) || url);
+  }
+  window.NexusApps = {
+    APPS, MathEngine, version: "2.0", I, ic, esc, uid, store, toast, openSheet, closeSheet, setActive, showView, selectNav, selectTab,
+    fmtBytes, timeStr, userName, FilesDB, fileCat, API_BASE, tick, remNotify, showBanner, openUrl, open: nxOpen,
+    register(name, def) { APPS[name] = def; }
+  };
 })();
