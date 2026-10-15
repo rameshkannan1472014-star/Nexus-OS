@@ -136,7 +136,7 @@ function openApp(name) {
   titleStack.className = "window-title-stack";
   const brand = document.createElement("span");
   brand.className = "window-brand";
-  brand.textContent = "NEXUS OS  /  APP";
+  brand.textContent = "CUSTOM OS  •  APP";
   const title = document.createElement("h2");
   title.textContent = app.title;
   titleStack.append(brand, title);
@@ -145,7 +145,7 @@ function openApp(name) {
   headActions.className = "window-head-actions";
   const ready = document.createElement("span");
   ready.className = "window-ready";
-  ready.innerHTML = '<i></i> READY';
+  ready.innerHTML = '<i></i> ACTIVE';
   const close = document.createElement("button");
   close.className = "close-window";
   close.type = "button";
