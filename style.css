@@ -567,3 +567,57 @@ button:active{transform:scale(.975)}
  .youtube-result{grid-template-columns:minmax(95px,36%) minmax(0,1fr)!important}
 }
 @media(prefers-reduced-motion:reduce){.app-window,.app-content *{transition:none!important;animation:none!important}}
+
+
+/* v36 — reference-inspired, app-specific mobile layouts */
+:root{--ref-bg:#041329;--ref-panel:#071d38;--ref-line:#174d83;--ref-blue:#138bff;--ref-text:#eaf4ff;--ref-muted:#8eafd3}
+.app-window{background:linear-gradient(180deg,#06172d 0%,#031023 100%)!important;border:1px solid #1a5da0!important;box-shadow:0 22px 65px #0009,0 0 0 1px #167bda20!important}
+.window-head{background:linear-gradient(100deg,#071b36,#09284b)!important;border-bottom:1px solid #15518a!important;min-height:68px!important}
+.window-brand{color:#55baff!important;letter-spacing:.13em!important;font-size:9px!important}
+.window-title-stack h2{font-size:17px!important;color:#f2f8ff!important}
+.window-app-icon{background:linear-gradient(145deg,#0d9cff,#1261d4)!important;box-shadow:0 5px 18px #0789ff30!important;border-radius:11px!important}
+.window-ready{color:#83b6e8!important;font-size:9px!important}
+.window-ready i{background:#24d89b!important;box-shadow:0 0 8px #24d89b77!important}
+.close-window{border:1px solid #1c4d7c!important;background:#09213e!important;color:#d8eaff!important;border-radius:12px!important}
+.window-body{background:#041329!important;padding:14px 13px 20px!important}
+.reference-tabs{display:flex;gap:7px;overflow-x:auto;white-space:nowrap;padding:0 0 13px;margin:0 0 12px;scrollbar-width:none;overscroll-behavior-x:contain}
+.reference-tabs::-webkit-scrollbar{display:none}
+.reference-tab{flex:0 0 auto;min-height:34px;padding:0 14px;border-radius:10px;border:1px solid #153f6a;background:#081f3b;color:#a8c9ed;font-size:12px;font-weight:650;transition:background .16s,border-color .16s,transform .16s}
+.reference-tab.active{background:linear-gradient(135deg,#0878e5,#159dff);border-color:#42b5ff;color:white;box-shadow:0 4px 15px #078aff24}
+.app-content{color:var(--ref-text);font-size:13px;line-height:1.5}
+.app-content h3{color:#f3f8ff;font-size:16px;font-weight:750;margin:10px 0}
+.app-content p,.app-content .hint{color:#9bb9da}
+.app-content input:not([type=checkbox]):not([type=range]):not([type=color]),.app-content textarea,.app-content select{background:#071e3a!important;border:1px solid #1a4c7b!important;color:#eaf4ff!important;border-radius:12px!important;min-height:43px;padding:10px 12px}
+.app-content textarea{min-height:100px}
+.app-content button.window-action,.app-content button:not(.reference-tab){border-radius:11px}
+.app-content .window-action:not(.secondary-action){background:linear-gradient(135deg,#0876df,#159bff)!important;border:1px solid #37aaff!important;color:#fff!important;box-shadow:0 5px 15px #008aff18}
+.app-content .secondary-action{background:#0a2342!important;border:1px solid #1c4e7c!important;color:#c9e3ff!important}
+.app-content .feature-card,.app-content .calculator,.app-content .music-card,.app-content .terminal-box,.app-content .weather-result,.app-content .book-content,.app-content .browser-home,.app-content .browser-message{background:linear-gradient(145deg,#08203d,#06172d)!important;border:1px solid #174777!important;border-radius:16px!important;padding:13px}
+.app-content .calculator-display{background:#06172d!important;border:1px solid #1d5689!important;border-radius:14px!important;color:#f4f9ff!important;font-size:32px!important;min-height:72px!important;text-align:right!important}
+.app-content .calculator-keys button{background:#0b294a!important;border:1px solid #174b7d!important;color:#edf7ff!important;box-shadow:0 3px 0 #031020!important}
+.app-content .calculator-keys button.operator,.app-content .calculator-keys button.equals{background:linear-gradient(135deg,#0877e6,#149cff)!important;border-color:#41b5ff!important}
+.app-content .terminal-box{color:#69e7b0!important;font-family:ui-monospace,monospace;white-space:pre-wrap;min-height:170px}
+.app-content .youtube-brand{border-bottom:1px solid #164777;padding-bottom:10px}
+.app-content .youtube-brand h3{margin:0}
+.app-content .youtube-form{display:flex;gap:8px;margin:12px 0}
+.app-content .youtube-form input{flex:1;min-width:0}
+.app-content .youtube-mode-tabs{display:flex;gap:8px;margin:12px 0}
+.app-content .youtube-mode-tabs button{flex:1;min-height:38px}
+.app-content .browser-toolbar{display:grid;grid-template-columns:36px 36px 36px minmax(0,1fr) auto;gap:5px;padding:6px}
+.app-content .browser-toolbar input{width:100%;min-width:0}
+.app-content .file-list>div,.app-content .task-item,.app-content .music-result,.app-content .youtube-result,.app-content .news-item,.app-content .map-result,.app-content .store-item,.app-content .contact-row,.app-content .call-row,.app-content .radio-station{box-shadow:0 5px 14px #0002}
+.app-content .gallery-preview img{border:1px solid #1b5285;border-radius:13px}
+.app-content .paint-ribbon,.app-content .paint-tools{background:#071d38;border-color:#164875;border-radius:14px}
+.app-bottom-nav{padding-bottom:env(safe-area-inset-bottom)!important;background:#031126!important;border-top:1px solid #164777!important}
+.app-bottom-nav button{transition:background .14s,color .14s}
+.app-bottom-nav button:active{transform:scale(.97)}
+@media(max-width:520px){
+ .window-head{min-height:61px!important}
+ .window-body{padding:12px 11px calc(18px + env(safe-area-inset-bottom))!important}
+ .reference-tabs{margin-right:-2px}
+ .reference-tab{min-height:33px;padding:0 12px;font-size:11px}
+ .app-content .calculator-keys{gap:7px}
+ .app-content .calculator-keys button{min-height:51px}
+ .app-content .youtube-results{gap:10px}
+}
+@media(prefers-reduced-motion:reduce){.reference-tab,.app-bottom-nav button{transition:none!important}}
