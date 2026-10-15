@@ -12,7 +12,8 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css?v=39">
+  <link rel="stylesheet" href="./style.css?v=40">
+  <link rel="stylesheet" href="./nexus-apps.css?v=40">
 </head>
 <body>
   <main id="os">
@@ -20,7 +21,7 @@
       <div><div id="clock">--:--</div><div id="date">Loading date…</div></div>
       <div class="status"><span id="network-status">● Online</span><button id="control-center-open" class="control-center-open" type="button" aria-label="Open Control Center">☷ Control</button><span id="battery-label">🔋 100%</span></div>
     </header>
-    <section class="home-brand"><div class="brand-mark"><i></i><i></i><i></i><i></i></div><div class="brand-copy"><h1>Custom OS</h1><p>Smarter · Faster · Yours</p></div><button class="home-ai-button" data-app="ai" aria-label="Open AI Assistant">✦<small>AI</small></button></section>
+    <section class="home-brand"><div class="brand-mark"><i></i><i></i><i></i><i></i></div><div class="brand-copy"><h1>Nexus OS</h1><p>Smarter · Faster · Yours</p></div><button class="home-ai-button" data-app="ai" aria-label="Open AI Assistant">✦<small>AI</small></button></section>
     <section class="search home-search"><label class="sr-only" for="global-search">Search apps</label><span>⌕</span><input id="global-search" type="search" placeholder="Search apps, files, web…" autocomplete="off"></section>
     <section class="weather-hero" data-app="weather" role="button" tabindex="0" aria-label="Open weather"><div class="weather-art"></div><div class="weather-time"><strong id="hero-clock">--:--</strong><span id="hero-date">Loading date…</span></div><div class="hero-weather-icon">🌤️</div><div class="hero-weather-copy"><strong id="hero-temp">Weather</strong><span id="hero-condition">Tap to check forecast</span><small>📍 Your location</small></div><div class="hero-high-low"><span>H: —°</span><span>L: —°</span></div></section>
     <section class="section-heading app-section-heading"><h2>Your apps</h2><span id="app-count">33 APPS</span></section>
@@ -58,7 +59,8 @@
     <p class="control-note">Wi-Fi, Bluetooth and airplane toggles are visual demos; they cannot change Android's real system settings.</p>
   </section>
 
-  <script src="./app.js?v=39"></script>
+  <script src="./app.js?v=40"></script>
+  <script src="./nexus-apps.js?v=40"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       window.addEventListener("load", () => {

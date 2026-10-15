@@ -9,6 +9,19 @@ A mobile-first, browser-based operating-system prototype with 33 app windows.
 - **Communication & discovery:** Phone Dialer handoff, Message Drafts, News Reader, Maps & Directions, Shop Finder, SOS & Emergency Help, Feedback.
 - **Developer & utilities:** Safe demo Terminal, Security Center, Storage Cleaner, Screen Share & Casting, Nexus AI Companion UI, Mini App Store.
 
+## New app design (v40, Batch 1)
+
+YouTube, Files, Terminal, Browser, Calculator, Reminder, Weather and Settings use the new Nexus design from the UI reference board. The code lives in `nexus-apps.js` and `nexus-apps.css`, and every other app keeps its old window until its batch is redesigned.
+
+- **YouTube:** home feed, Shorts row, Trending, subscriptions, and a watch history saved on the device
+- **Files:** keeps the files you add on the device (IndexedDB) and groups them into categories, with storage use, search and preview
+- **Terminal:** 3 tabs, a pretend file system saved on the device, mini Python, `neofetch`, and `open <app>`
+- **Browser:** tabs, bookmarks, history, and a message for sites that block being shown inside apps
+- **Calculator:** Basic, Scientific and Programmer modes, plus History, a unit Converter and a Graph plotter (uses a safe math parser, no `eval`)
+- **Reminder:** All, Today and Upcoming lists, a calendar view, repeating reminders, and notifications
+- **Weather:** live data from Open-Meteo, a GPS location button, the next 24 hours, 7 days, and updates to the home-screen weather card
+- **Settings:** live connection and battery info, dark mode, brightness, accent colour, storage, permissions, and your name
+
 ## What works in the web prototype
 
 - App launcher and app search

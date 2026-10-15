@@ -136,7 +136,7 @@ function openApp(name) {
   titleStack.className = "window-title-stack";
   const brand = document.createElement("span");
   brand.className = "window-brand";
-  brand.textContent = "CUSTOM OS  •  APP";
+  brand.textContent = "NEXUS OS  •  APP";
   const title = document.createElement("h2");
   title.textContent = app.title;
   titleStack.append(brand, title);
