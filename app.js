@@ -157,6 +157,28 @@ function openApp(name) {
   const body = document.createElement("div");
   body.className = "window-body";
   body.innerHTML = '<div class="app-content app-content-' + name + '">' + app.body + '</div>';
+  const appTabs = {
+    youtube:["Home","Trending","Subscriptions","Library"],files:["Home","Files","Images","Downloads"],terminal:["Tab 1","Tab 2","History"],browser:["Back","Home","Bookmarks","Tabs"],calculator:["Basic","Scientific","History"],reminder:["All","Today","Upcoming"],weather:["Today","Hourly","7 Days"],settings:["Network","Display","Sound","Storage"],music:["Library","Playlists","Artists"],clock:["Alarm","World Clock","Stopwatch"],news:["For You","Top Stories","Categories"],camera:["Photo","Video","Portrait"],messages:["Chats","Contacts","More"],call:["Recents","Contacts","Favorites"],gallery:["Photos","Albums","Search"],themes:["Wallpapers","Colors","Icons"],widgets:["Clock","Weather","Calendar"],ai:["Chat","Tools","History"],paint:["Pencil","Brushes","Shapes"],pdf:["Pages","Bookmarks","Menu"],maps:["Explore","Saved","Directions"],generator:["Text to Image","Text to Video","My Creations"],store:["Featured","Categories","Updates"],planner:["Tasks","Habits","Goals"],feedback:["Rate OS","Report Bug","Suggest"],security:["Devices","History","Settings"],calendar:["Month","Week","Agenda"],radio:["Top","Apps","Categories"],notes:["All Notes","Pinned","Folders"],camera:["Photo","Video","Gallery"],games:["Games","Scores","More"],books:["Library","Bookmarks","Text"],casting:["Devices","Screen","Help"],shop:["Explore","Nearby","Saved"],sos:["Emergency","Contacts","Help"],timer:["Timer","Focus","History"],tasks:["All Tasks","Today","Done"],recorder:["Record","Files","Settings"]
+  };
+  const tabs = appTabs[name];
+  if (tabs) {
+    const tabbar = document.createElement("nav");
+    tabbar.className = "reference-tabs";
+    tabbar.setAttribute("aria-label", app.title + " sections");
+    tabs.forEach((label, index) => {
+      const tab = document.createElement("button");
+      tab.type = "button";
+      tab.className = "reference-tab" + (index === 0 ? " active" : "");
+      tab.textContent = label;
+      tab.addEventListener("click", () => {
+        tabbar.querySelectorAll("button").forEach(item => item.classList.toggle("active", item === tab));
+        const content = body.querySelector(".app-content");
+        if (content) content.dataset.activeSection = label.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+      });
+      tabbar.append(tab);
+    });
+    body.prepend(tabbar);
+  }
   win.append(head, body);
   const bottomNav = document.createElement("nav");
   bottomNav.className = "app-bottom-nav";
