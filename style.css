@@ -434,3 +434,59 @@ button:active{transform:scale(.975)}
  .app-content .inline-form button{flex-shrink:0}
  .app-content .feature-card,.app-content .music-card,.app-content .browser-home,.app-content .terminal-box,.app-content .calculator,.app-content .youtube-shell,.app-content .book-content{padding:12px;border-radius:15px}
 }
+
+
+/* v34 — reference-inspired individual app layouts */
+.app-window{background:#04142b;border:1px solid #1b65b4;border-radius:23px;box-shadow:0 22px 70px #0009,0 0 0 1px #3da5ff16;overflow:hidden}
+.window-head{min-height:68px;padding:12px 15px;background:linear-gradient(110deg,#092750,#061a36 65%,#092449);border-bottom:1px solid #174779}
+.window-app-icon{width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,#148eff,#0753bd);box-shadow:0 5px 16px #007bff35;color:#fff;font-size:20px}
+.window-brand{font-size:9px;letter-spacing:.15em;color:#63baff;font-weight:800}
+.window-title-stack h2{font-size:17px;letter-spacing:-.025em;color:#f3f8ff}
+.window-ready{font-size:9px;letter-spacing:.06em;color:#6ee7b7;border:1px solid #1e6a5a;background:#062b2a;border-radius:999px;padding:6px 8px}
+.window-ready i{display:inline-block;width:5px;height:5px;border-radius:50%;background:#4be0a1;margin-right:5px;box-shadow:0 0 8px #4be0a1}
+.close-window{width:34px;height:34px;border-radius:11px;background:#0a2445;border:1px solid #214c79;color:#b7d9ff;font-size:22px}
+.window-body{padding:13px;background:radial-gradient(ellipse at 90% 0%,#0a2b501c,transparent 48%),#04142a}
+.app-content{max-width:760px;margin:0 auto;color:#dcecff}
+.app-content>p:first-child{margin:0 0 13px;padding:10px 12px;border:1px solid #163e6a;border-radius:12px;background:#071d39;color:#9cbce2}
+.app-content h3{font-size:15px;color:#f3f8ff}
+.app-content button{box-shadow:0 1px 0 #ffffff08;transition:background .16s ease,border-color .16s ease,transform .16s ease}
+.app-content button:active{transform:scale(.975)}
+.app-content .browser-toolbar,.app-content .youtube-form,.app-content .inline-form{padding:6px;border:1px solid #194a7d;background:#061a33;border-radius:15px}
+.app-content .browser-toolbar input,.app-content .youtube-form input,.app-content .inline-form input{border:0;background:transparent;box-shadow:none;min-width:0}
+.app-content .browser-shortcuts button,.app-content .youtube-presets button,.app-content .youtube-mode-tabs button{border-radius:999px;min-height:32px;padding:6px 12px;font-size:11px}
+.app-content .youtube-mode-tabs{padding:4px;border-radius:13px;background:#071b35;border:1px solid #153d68}
+.app-content .youtube-mode-tabs button{flex:1}
+.app-content .youtube-brand{padding:3px 0 12px;border-bottom:1px solid #14395f}
+.app-content .youtube-brand h3{font-size:17px}
+.app-content .youtube-results{gap:12px}
+.app-content .youtube-results button{padding:7px;border-radius:14px;border:1px solid #183f69;background:#071b34}
+.app-content .youtube-results img{border-radius:10px;margin-bottom:6px}
+.app-content .file-list>div{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.app-content .file-list>div span{color:#78a5d7;font-size:10px}
+.app-content .terminal-box{border-radius:13px;background:#020d1b;border-color:#174d78;box-shadow:inset 0 0 28px #00a56b08}
+.app-content .calculator{border-radius:18px}
+.app-content .calculator-display{border:1px solid #153b64!important;border-radius:13px!important}
+.app-content .calculator-keys button{border:1px solid #1a3d64;background:linear-gradient(145deg,#102b4e,#091c35)}
+.app-content .calculator-keys button.operator{background:linear-gradient(145deg,#0a477f,#092e56);color:#70c8ff}
+.app-content .calculator-keys button.utility{background:#0b203b;color:#9fc4ef}
+.app-content .calculator-keys button.equals{background:linear-gradient(135deg,#079ef7,#1558e8);border-color:#38baff}
+.app-content .music-result{grid-template-columns:60px minmax(0,1fr);padding:10px}
+.app-content .music-result img{width:60px;height:60px}
+.app-content .weather-result,.app-content .feature-card{border-radius:16px}
+.app-content .theme-options button{flex:1}
+.app-content .app-bottom-nav{background:#061a33;border-top:1px solid #17406b}
+.app-bottom-nav button{min-height:53px;color:#85addb}
+.app-bottom-nav button span{font-size:20px}
+.app-bottom-nav button small{font-size:10px}
+@media(min-width:700px){.app-window{width:min(680px,94vw);height:min(850px,92dvh)}}
+@media(max-width:600px){
+ .app-window{width:100vw;height:100dvh;max-height:100dvh;border-radius:0;border-left:0;border-right:0}
+ .window-head{min-height:64px;padding:10px 12px}
+ .window-body{padding:10px}
+ .app-content>p:first-child{padding:9px 10px}
+ .app-content .youtube-results{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .app-content .calculator-keys{gap:6px}
+ .app-content .calculator-keys button{height:47px;min-height:42px}
+ .app-bottom-nav{padding-bottom:env(safe-area-inset-bottom)}
+}
+@media(prefers-reduced-motion:reduce){.app-content button{transition:none}}
