@@ -91,7 +91,7 @@
   }
   function ytState(e) {
     YP.state = e.data;
-    if (e.data === 1) { M.loading = ""; const t = mCur(); if (t) store.set("nx-song:" + t.id, YP.cands.slice(YP.ci).concat(YP.cands.slice(0, YP.ci))); }
+    if (e.data === 1) { M.loading = ""; const t = mCur(); if (t) store.set("nx-song:" + t.id, YP.cands.slice(YP.ci).concat(YP.cands.slice(0, YP.ci))); setTimeout(prefetchNext, 3000); }
     if (e.data === 0) { if (M.repeat) { YP.player.seekTo(0); YP.player.playVideo(); } else mStep(1); }
     if ("mediaSession" in navigator) navigator.mediaSession.playbackState = e.data === 1 ? "playing" : "paused";
     mRefresh(true);
@@ -109,18 +109,30 @@
         events: { onReady: () => { YP.player.playVideo(); res(); }, onStateChange: ytState, onError: ytErr } });
     });
   }
+  /* Find the song on YouTube fast: two free, quota-less search mirrors race first; the
+     Nexus server joins only if they're slow (it can take ~30 s to wake up). */
+  const okLen = (sec) => !sec || (sec > 60 && sec < 900);
+  async function tryJson(url, ms) { const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), ms); try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(tm); } }
+  const SRC = [
+    async (q) => (await tryJson(`https://invidious.f5.si/api/v1/search?type=video&fields=videoId,lengthSeconds&q=${encodeURIComponent(q)}`, 9000)).filter((x) => okLen(x.lengthSeconds)).map((x) => x.videoId),
+    async (q) => ((await tryJson(`https://api.piped.private.coffee/search?filter=videos&q=${encodeURIComponent(q)}`, 9000)).items || []).filter((x) => x.type === "stream" && okLen(x.duration)).map((x) => (x.url || "").split("v=")[1]),
+    async (q, ctl) => { await new Promise((r) => setTimeout(r, M.warm ? 1500 : 3000)); if (ctl.done) throw new Error("skip"); const u = new URL(N.API_BASE + "/api/youtube/search"); u.searchParams.set("q", q); const d = await tryJson(u, 45000); M.warm = true; return (d.items || []).map((x) => x.videoId); }
+  ];
+  const searching = {};
   async function songIds(t) {
     const c = store.get("nx-song:" + t.id, null); if (Array.isArray(c) && c.length) return c;
+    if (searching[t.id]) return searching[t.id];
     const q = `${t.title.replace(/\s*[([].*?[)\]]/g, "")} ${t.artist.split(/,|&/)[0]} song`;
-    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
-    try {
-      const u = new URL(N.API_BASE + "/api/youtube/search"); u.searchParams.set("q", q);
-      const r = await fetch(u, { signal: ctl.signal }); if (!r.ok) throw new Error("search");
-      const ids = ((await r.json()).items || []).map((x) => x.videoId).filter((id) => /^[\w-]{11}$/.test(id || "")).slice(0, 6);
-      if (ids.length) store.set("nx-song:" + t.id, ids); return ids;
-    } finally { clearTimeout(tm); }
+    const go = (async () => {
+      const ctl = { done: false };
+      const runs = SRC.map((f) => f(q, ctl).then((ids) => { ids = ids.filter((id) => /^[\w-]{11}$/.test(id || "")).slice(0, 6); if (!ids.length) throw new Error("none"); return ids; }));
+      try { const ids = await Promise.any(runs.map((r) => r.then((v) => { ctl.done = true; return v; }))); store.set("nx-song:" + t.id, ids); return ids; } catch (_) { return []; }
+    })();
+    searching[t.id] = go; try { return await go; } finally { delete searching[t.id]; }
   }
-  const wake = () => { if (Date.now() - (M.woke || 0) > 600e3) { M.woke = Date.now(); fetch(N.API_BASE + "/health").catch(() => {}); } };
+  function prefetchNext() { if (!M.full) return; const n = M.queue[M.idx + 1]; if (n && !store.get("nx-song:" + n.id, null)) songIds(n).catch(() => {}); }
+  const wake = () => { if (Date.now() - (M.woke || 0) > 540e3) { M.woke = Date.now(); fetch(N.API_BASE + "/health").then(() => { M.warm = true; }).catch(() => {}); } };
+  wake(); setInterval(() => { if (document.visibilityState === "visible") wake(); }, 600e3);
 
   /* ---- unified controls ---- */
   const E = {
@@ -149,7 +161,7 @@
     if (YP.box) YP.box.querySelector("[data-mv-title]").textContent = t.title + " · " + t.artist;
     if (!M.full) { mPreview(t); return; }
     M.mode = M.mode === "yt" ? "yt" : "none"; M.loading = "Finding the full song…"; mRefresh();
-    const slow = setTimeout(() => { if (tok === M.token && M.loading) { M.loading = "Waking up the music server (up to 30 s)…"; mRefresh(true); } }, 4000);
+    const slow = setTimeout(() => { if (tok === M.token && M.loading) { M.loading = "Still searching — almost there…"; mRefresh(true); } }, 6000);
     try {
       const ids = await songIds(t); if (tok !== M.token) return;
       if (!ids.length) throw new Error("none");
@@ -246,7 +258,7 @@
       <div data-view="lib" hidden><div data-m-lib></div></div>
       <div class="nx-card nx-m-mode"><span class="nx-row-main"><strong>Play full songs</strong><span>Uses the YouTube player. Turn off to hear 30-second previews (uses less data).</span></span><button type="button" class="nx-switch" data-m-full aria-checked="${M.full}" aria-label="Play full songs"></button></div><p class="nx-note">Song info from iTunes. Full songs are streamed by YouTube. On phones, YouTube pauses when you leave the browser or lock the screen.</p>`,
     init(win) {
-      win.classList.add("nx-music"); wake();
+      win.classList.add("nx-music"); wake(); if (M.full) ytApi().catch(() => {});
       win.querySelector(".nx-tabs").hidden = true;
       win.querySelector("[data-m-player]").innerHTML = mPlayer();
       if (M.queue.length) mUpNext(win);

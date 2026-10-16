@@ -106,11 +106,44 @@
    * ================================================================== */
   let installEvt = null;
   window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; });
+  // [name, category, package, colour, letter, link the app opens (app link / scheme), website fallback]
   const ANDROID = [
-    ["WhatsApp", "Messaging", "com.whatsapp", "#25d366", "W"], ["Instagram", "Social", "com.instagram.android", "#e1306c", "I"], ["Spotify", "Music", "com.spotify.music", "#1db954", "S"], ["YouTube", "Video", "com.google.android.youtube", "#ff0000", "▶"],
-    ["Google Classroom", "Education", "com.google.android.apps.classroom", "#1e8e3e", "C"], ["Duolingo", "Education", "com.duolingo", "#58cc02", "D"], ["Khan Academy", "Education", "org.khanacademy.android", "#14bf96", "K"], ["Canva", "Design", "com.canva.editor", "#7d2ae8", "C"],
-    ["Google Maps", "Travel", "com.google.android.apps.maps", "#4285f4", "M"], ["PhonePe", "Payments", "com.phonepe.app", "#5f259f", "P"], ["Sololearn", "Coding", "com.sololearn", "#149ef2", "S"], ["Snapseed", "Photo", "com.niksoftware.snapseed", "#0f9d58", "S"]
+    ["WhatsApp", "Messaging", "com.whatsapp", "#25d366", "W", "whatsapp://send", "https://web.whatsapp.com/"],
+    ["Instagram", "Social", "com.instagram.android", "#e1306c", "I", "https://www.instagram.com/", "https://www.instagram.com/"],
+    ["YouTube", "Video", "com.google.android.youtube", "#ff0000", "▶", "https://www.youtube.com/", "https://m.youtube.com/"],
+    ["Spotify", "Music", "com.spotify.music", "#1db954", "S", "https://open.spotify.com/", "https://open.spotify.com/"],
+    ["JioSaavn", "Music", "com.jio.media.jiobeats", "#2bc5b4", "J", "https://www.jiosaavn.com/", "https://www.jiosaavn.com/"],
+    ["Telegram", "Messaging", "org.telegram.messenger", "#229ed9", "T", "tg://resolve", "https://web.telegram.org/"],
+    ["Gmail", "Email", "com.google.android.gm", "#ea4335", "M", "https://mail.google.com/", "https://mail.google.com/"],
+    ["Google Drive", "Files", "com.google.android.apps.docs", "#1fa463", "D", "https://drive.google.com/", "https://drive.google.com/"],
+    ["Google Classroom", "Education", "com.google.android.apps.classroom", "#1e8e3e", "C", "https://classroom.google.com/", "https://classroom.google.com/"],
+    ["Google Maps", "Travel", "com.google.android.apps.maps", "#4285f4", "M", "https://maps.google.com/", "https://www.google.com/maps"],
+    ["ChatGPT", "AI", "com.openai.chatgpt", "#10a37f", "G", "https://chatgpt.com/", "https://chatgpt.com/"],
+    ["Duolingo", "Education", "com.duolingo", "#58cc02", "D", "https://www.duolingo.com/", "https://www.duolingo.com/"],
+    ["Khan Academy", "Education", "org.khanacademy.android", "#14bf96", "K", "https://www.khanacademy.org/", "https://www.khanacademy.org/"],
+    ["Sololearn", "Coding", "com.sololearn", "#149ef2", "S", "https://www.sololearn.com/", "https://www.sololearn.com/"],
+    ["Canva", "Design", "com.canva.editor", "#7d2ae8", "C", "https://www.canva.com/", "https://www.canva.com/"],
+    ["Wikipedia", "Reference", "org.wikipedia", "#636466", "W", "https://en.wikipedia.org/", "https://en.m.wikipedia.org/"],
+    ["Netflix", "Movies", "com.netflix.mediaclient", "#e50914", "N", "https://www.netflix.com/", "https://www.netflix.com/"],
+    ["Amazon", "Shopping", "in.amazon.mShop.android.shopping", "#ff9900", "a", "https://www.amazon.in/", "https://www.amazon.in/"],
+    ["Flipkart", "Shopping", "com.flipkart.android", "#2874f0", "F", "https://www.flipkart.com/", "https://www.flipkart.com/"],
+    ["Swiggy", "Food", "in.swiggy.android", "#fc8019", "S", "https://www.swiggy.com/", "https://www.swiggy.com/"],
+    ["Zomato", "Food", "com.application.zomato", "#e23744", "Z", "https://www.zomato.com/", "https://www.zomato.com/"],
+    ["PhonePe", "Payments", "com.phonepe.app", "#5f259f", "P", "phonepe://", "https://www.phonepe.com/"],
+    ["Google Pay", "Payments", "com.google.android.apps.nbu.paisa.user", "#1a73e8", "G", "tez://upi", "https://pay.google.com/"],
+    ["Snapseed", "Photo", "com.niksoftware.snapseed", "#0f9d58", "S", "", "https://play.google.com/store/apps/details?id=com.niksoftware.snapseed"]
   ];
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const play = (id) => "https://play.google.com/store/apps/details?id=" + id;
+  // Android Chrome: an intent with the app's package opens the installed app; if it isn't installed, Chrome goes to the website instead of the Play Store.
+  function appLaunch([, , pkg, , , link, web]) {
+    if (!isAndroid || !link) return web;
+    const u = new URL(link.includes("://") ? link : "https://" + link); const scheme = u.protocol.replace(":", "");
+    const rest = link.replace(/^[a-z]+:\/\//i, "");
+    return `intent://${rest}#Intent;scheme=${scheme};package=${pkg};S.browser_fallback_url=${encodeURIComponent(web)};end`;
+  }
+  const opened = () => store.get("nexus-android-opened", []);
+  N.androidApp = (name) => { name = name.toLowerCase().replace(/\s+/g, ""); const a = ANDROID.find((x) => x[0].toLowerCase().replace(/\s+/g, "") === name) || ANDROID.find((x) => name.length > 3 && x[0].toLowerCase().replace(/\s+/g, "").startsWith(name)); if (!a) return null; return { name: a[0], open() { store.set("nexus-android-opened", [a[0], ...opened().filter((x) => x !== a[0])].slice(0, 8)); if (isAndroid) location.href = appLaunch(a); else window.open(appLaunch(a), "_blank"); } }; };
   const WEB = [["Scratch", "Make games with blocks", "https://scratch.mit.edu/", "#f9a825", "S"], ["Replit", "Code in your browser", "https://replit.com/", "#f26207", "R"], ["GeoGebra", "Maths graphs & geometry", "https://www.geogebra.org/calculator", "#6557d2", "G"], ["Photopea", "Free photo editor", "https://www.photopea.com/", "#18a497", "P"], ["Code.org", "Learn to code", "https://code.org/", "#00adbc", "C"], ["Excalidraw", "Sketch diagrams", "https://excalidraw.com/", "#6965db", "E"], ["Desmos", "Graphing calculator", "https://www.desmos.com/calculator", "#2f7d32", "D"], ["Typing Club", "Learn fast typing", "https://www.typingclub.com/", "#0b7bda", "T"]];
   const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
   N.register("store", {
@@ -127,7 +160,10 @@
           box.innerHTML = `${!isStandalone() ? `<div class="nx-card nx-st-hero"><span class="nx-tile t-blue">${ic("smartphone")}</span><div><strong>Install Nexus OS</strong><span>${installEvt ? "Add Nexus to your home screen like a real app." : "In Chrome, tap ⋮ then “Add to Home screen”."}</span></div>${installEvt ? `<button type="button" class="nx-btn sm" data-st-install>Install</button>` : ""}</div>` : ""}
             <div class="nx-section-title">Built in <small>${apps.length} apps</small></div><div class="nx-list">${apps.map(([k, a]) => `<div class="nx-row"><span class="nx-tile ${["t-blue", "t-violet", "t-teal", "t-orange", "t-pink", "t-green", "t-red", "t-indigo"][k.length % 8]}">${esc((a.title || k)[0])}</span><span class="nx-row-main"><strong>${esc(a.title || k)}</strong><span>Nexus OS · Installed</span></span><button type="button" class="nx-btn sm ghost" data-st-open="${k}">Open</button></div>`).join("")}</div>`;
         } else if (tab === "android") {
-          box.innerHTML = `<p class="nx-note" style="margin-top:0">Opens the Google Play Store to install real Android apps.</p><div class="nx-list">${ANDROID.filter((a) => m(a[0] + a[1])).map(([n, c, id, col, l]) => `<div class="nx-row"><span class="nx-st-ic" style="background:${col}">${esc(l)}</span><span class="nx-row-main"><strong>${esc(n)}</strong><span>${esc(c)}</span></span><a class="nx-btn sm" href="https://play.google.com/store/apps/details?id=${id}" target="_blank" rel="noopener">Install</a></div>`).join("")}</div>`;
+          const rec = opened().map((n) => ANDROID.find((a) => a[0] === n)).filter(Boolean).slice(0, 4);
+          const row = (a) => `<div class="nx-row"><span class="nx-st-ic" style="background:${a[3]}">${esc(a[4])}</span><span class="nx-row-main"><strong>${esc(a[0])}</strong><span>${esc(a[1])}</span></span><a class="nx-icon-btn nx-st-get" href="${play(a[2])}" target="_blank" rel="noopener" aria-label="Get ${esc(a[0])} on Google Play" title="Get on Google Play">${ic("download", "sm")}</a><a class="nx-btn sm" data-st-launch="${esc(a[0])}" href="${esc(appLaunch(a))}" target="_blank" rel="noopener">Open</a></div>`;
+          box.innerHTML = `<div class="nx-card nx-st-hero"><span class="nx-tile t-green">${ic("smartphone")}</span><div><strong>Open your phone's apps</strong><span>${isAndroid ? "<b>Open</b> starts the app if it's installed, or its website if it isn't. Tap the download icon to install it from Google Play." : "<b>Open</b> starts the website version. On an Android phone it opens the real app."}</span></div></div>
+            ${rec.length && !q ? `<div class="nx-section-title">Recently opened</div><div class="nx-list">${rec.map(row).join("")}</div><div class="nx-section-title">All apps</div>` : ""}<div class="nx-list">${ANDROID.filter((a) => m(a[0] + a[1])).map(row).join("")}</div>`;
         } else {
           box.innerHTML = `<div class="nx-list">${WEB.filter((a) => m(a[0] + a[1])).map(([n, d, u, col, l]) => `<div class="nx-row"><span class="nx-st-ic" style="background:${col}">${esc(l)}</span><span class="nx-row-main"><strong>${esc(n)}</strong><span>${esc(d)}</span></span><a class="nx-btn sm ghost" href="${u}" target="_blank" rel="noopener">Open</a></div>`).join("")}</div>`;
         }
@@ -139,6 +175,7 @@
       win.addEventListener("click", async (e) => {
         const g = (s) => e.target.closest(s);
         if (g("[data-st-open]")) { window.openApp(g("[data-st-open]").dataset.stOpen); return; }
+        if (g("[data-st-launch]")) { const n = g("[data-st-launch]").dataset.stLaunch; store.set("nexus-android-opened", [n, ...opened().filter((x) => x !== n)].slice(0, 8)); if (isAndroid) { e.preventDefault(); location.href = g("[data-st-launch]").href; } return; }
         if (g("[data-st-search]")) { form.hidden = !form.hidden; if (!form.hidden) form.q.focus(); else { q = ""; form.q.value = ""; render(); } return; }
         if (g("[data-st-install]") && installEvt) { installEvt.prompt(); const r = await installEvt.userChoice.catch(() => null); if (r?.outcome === "accepted") toast(win, "Installing Nexus OS…"); installEvt = null; render(); }
       });
@@ -234,7 +271,7 @@
       win.querySelector("[data-fb-form]").addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.target; const msg = f.msg.value.trim(); if (!msg) return;
         const label = TYPES.find((t) => t[0] === type)[1];
-        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v42` : "";
+        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v43` : "";
         const title = `[${type === "bug" ? "Bug" : type === "idea" ? "Idea" : "Thanks"}] ${msg.split("\n")[0].slice(0, 70)}`;
         window.open(`${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(msg + dev)}${type === "bug" ? "&labels=bug" : type === "idea" ? "&labels=enhancement" : ""}`, "_blank", "noopener");
         const h = store.get("nexus-feedback", []); h.unshift({ id: uid(), type, msg, stars, at: Date.now() }); store.set("nexus-feedback", h.slice(0, 20));

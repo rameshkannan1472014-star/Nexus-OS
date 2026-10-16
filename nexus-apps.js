@@ -955,7 +955,7 @@
       case "whoami": out(userName().toLowerCase().replace(/[^a-z0-9]/g, "")); break;
       case "hostname": out("nexus"); break;
       case "uname": out(args.includes("-a") ? "NexusOS nexus 2.0.0-web #40 " + (navigator.platform || "web") + " JavaScript" : "NexusOS"); break;
-      case "nexus": out("Nexus OS 2.0 · web edition · build v42", "d"); out("Made by " + userName() + ". 38 apps, all in the new Nexus design.", "m"); break;
+      case "nexus": out("Nexus OS 2.0 · web edition · build v43", "d"); out("Made by " + userName() + ". 38 apps, all in the new Nexus design.", "m"); break;
       case "neofetch": {
         const logo = ["   ▄▄▄▄   ▄▄▄▄ ", "   █  █   █  █ ", "   ▀▀▀▀   ▀▀▀▀ ", "   ▄▄▄▄   ▄▄▄▄ ", "   █  █   █  █ ", "   ▀▀▀▀   ▀▀▀▀ "];
         const u = userName().toLowerCase().replace(/[^a-z0-9]/g, "");

@@ -307,7 +307,11 @@
   // open app (generic, last)
   on(/^(?:open|launch|start|run|show(?: me)?|go to|switch to|take me to|bring up|load|enter|use)\s+(?:the\s+|my\s+)?(.+?)(?:\s+(?:app|application|page|screen|section))?$|^(.+?)\s+(?:open|kholo|thira|open pannu|open karo)$/, (m) => {
     const raw = (m[1] || m[2]).trim(); const k = findApp(raw);
-    if (!k) return null;
+    if (!k || /^(whatsapp|instagram|insta|spotify|gmail|telegram|chatgpt|netflix|amazon|flipkart|swiggy|zomato|phonepe|google pay|gpay|duolingo|canva|classroom|google classroom|jiosaavn|google drive|drive|wikipedia|snapseed|khan academy|sololearn)$/.test(raw)) {
+      const alias = { insta: "instagram", gpay: "google pay", drive: "google drive", classroom: "google classroom" }; const a = N.androidApp?.(alias[raw] || raw);
+      if (a) { setTimeout(() => a.open(), 400); return { text: `📱 Opening **${a.name}**…` }; }
+      if (!k) return null;
+    }
     if (k === "ai") return { text: "You're already talking to me 😊" };
     later(() => window.openApp(k)); return { text: `Opening **${esc(title(k))}**…` };
   });
