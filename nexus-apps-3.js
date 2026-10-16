@@ -314,6 +314,13 @@
   }
   applyTheme();
   const setAccent = (c) => { store.set("nexus-accent", c); document.documentElement.style.setProperty("--nx-user-accent", c); document.documentElement.style.setProperty("--accent", c); try { window.saveNexusAppearance?.(); } catch (_) {} };
+  N.theme = {
+    walls: WALLS.map((w) => [w[0], w[1]]), accents: ACC, shapes: SHAPES.map((x) => x[0]),
+    setWall(k) { const t = theme(); t.wall = k; store.set("nexus-theme", t); applyTheme(); },
+    setShape(k) { const t = theme(); t.shape = k; store.set("nexus-theme", t); applyTheme(); },
+    setAccent: (c) => setAccent(c), current: theme,
+    setMode(light) { document.body.classList.toggle("light-mode", light); try { window.saveNexusAppearance?.(); } catch (_) {} }
+  };
   function thPreview() {
     const t = theme(); const w = t.wall === "custom" && t.img ? `center / cover url("${t.img}")` : (WALLS.find((x) => x[0] === t.wall) || WALLS[0])[2];
     const r = (SHAPES.find((s) => s[0] === t.shape) || SHAPES[0])[2];

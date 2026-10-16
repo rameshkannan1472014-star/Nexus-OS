@@ -48,6 +48,7 @@
     }
     throw last || new Error("busy");
   }
+  N.radio = { async play(q) { const l = await rFetch(q ? "name=" + encodeURIComponent(q) : "countrycode=IN"); if (!l.length) return null; rPlay(l[0]); return l[0]; }, stop() { R.audio.pause(); }, current: () => R.cur };
   const rFavs = () => store.get("nexus-radio-favs", []);
   function rPlay(s) {
     N.music?.pause(); R.cur = s; R.state = "loading"; R.audio.src = s.url; R.audio.play().catch(() => { R.state = "error"; rPlayer(); });
@@ -233,7 +234,7 @@
       win.querySelector("[data-fb-form]").addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.target; const msg = f.msg.value.trim(); if (!msg) return;
         const label = TYPES.find((t) => t[0] === type)[1];
-        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v41` : "";
+        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v42` : "";
         const title = `[${type === "bug" ? "Bug" : type === "idea" ? "Idea" : "Thanks"}] ${msg.split("\n")[0].slice(0, 70)}`;
         window.open(`${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(msg + dev)}${type === "bug" ? "&labels=bug" : type === "idea" ? "&labels=enhancement" : ""}`, "_blank", "noopener");
         const h = store.get("nexus-feedback", []); h.unshift({ id: uid(), type, msg, stars, at: Date.now() }); store.set("nexus-feedback", h.slice(0, 20));

@@ -289,6 +289,7 @@
     if (!tr.getCapabilities?.().torch) { s.getTracks().forEach((t) => t.stop()); throw new Error("no torch"); }
     await tr.applyConstraints({ advanced: [{ torch: true }] }); SOS.torch = s; return true;
   }
+  N.torch = (on) => torchToggle(on); N.torchOn = () => !!SOS.torch; N.siren = (on) => sirenToggle(on);
   N.register("sos", {
     title: "Emergency SOS",
     html: () => `<div class="nx-sos-hero"><button type="button" class="nx-sos-btn" data-sos-hold aria-label="Hold to call 112"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" data-ring/></svg><b>SOS</b><span>Hold 2 sec</span></button><p>Hold the button to call <b>112</b> (India emergency).</p></div>
@@ -340,7 +341,7 @@
     init(win) {
       const render = async () => {
         const est = await navigator.storage?.estimate?.().catch(() => null); const files = await FilesDB.all().catch(() => []); const ls = lsGroups();
-        let swN = 0, swOld = 0; try { const keys = await caches.keys(); swN = keys.length; swOld = keys.filter((k) => k.startsWith("nexus-os-") && k !== "nexus-os-v41").length; } catch (_) {}
+        let swN = 0, swOld = 0; try { const keys = await caches.keys(); swN = keys.length; swOld = keys.filter((k) => k.startsWith("nexus-os-") && k !== "nexus-os-v42").length; } catch (_) {}
         const fileBytes = files.reduce((a, f) => a + (f.size || 0), 0); const used = est?.usage || fileBytes + ls.cache + ls.data; const quota = est?.quota || 0;
         const junk = ls.cache; const big = files.slice().sort((a, b) => b.size - a.size).slice(0, 5);
         const callLog = store.get("nexus-call-log", []).length, aiChat = store.get("nexus-ai-chat", []).length;
@@ -357,7 +358,7 @@
       win.addEventListener("click", async (e) => {
         const g = (s) => e.target.closest(s); const a = g("[data-cl]")?.dataset.cl;
         if (a === "cache") { const ks = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (CACHE_PREFIX.some((p) => k.startsWith(p)) && k !== "nexus-weather-cache") ks.push(k); } ks.forEach((k) => localStorage.removeItem(k)); toast(win, `Cleaned ${ks.length} items`); }
-        if (a === "sw") { const keys = await caches.keys(); await Promise.all(keys.filter((k) => k.startsWith("nexus-os-") && k !== "nexus-os-v41").map((k) => caches.delete(k))); toast(win, "Old versions removed"); }
+        if (a === "sw") { const keys = await caches.keys(); await Promise.all(keys.filter((k) => k.startsWith("nexus-os-") && k !== "nexus-os-v42").map((k) => caches.delete(k))); toast(win, "Old versions removed"); }
         if (a === "ai" && confirm("Clear your Nexus AI chat?")) { store.set("nexus-ai-chat", []); toast(win, "Chat cleared"); }
         if (a === "calls" && confirm("Clear call history?")) { store.set("nexus-call-log", []); toast(win, "Call history cleared"); }
         if (g("[data-cl-del]")) { if (!confirm("Delete this file?")) return; await FilesDB.del(g("[data-cl-del]").dataset.clDel); toast(win, "File deleted"); }

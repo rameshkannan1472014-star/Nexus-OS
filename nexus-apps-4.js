@@ -60,7 +60,12 @@
   const AI = { busy: false, speak: store.get("nexus-ai-speak", false), rec: null };
   const chat = () => store.get("nexus-ai-chat", []);
   const saveChat = (c) => store.set("nexus-ai-chat", c.slice(-40));
-  const SYSTEM = `You are Nexus AI, the friendly built-in assistant of Nexus OS, a web operating system made by a teenage developer in Tamil Nadu, India. The user is ${"{name}"}. Be warm, clear and brief (under 150 words unless asked for more). Use simple language suitable for a teenager. Use short paragraphs, bullet points and code blocks when helpful. Never produce unsafe, adult or hateful content. You cannot see the screen; if asked to open apps or set alarms, tell them you can do it with commands like "open camera" or "set alarm 6:30 am".`;
+  const SYSTEM = `You are Nexus AI, the friendly built-in assistant of Nexus OS, a web operating system made by a teenage developer in Tamil Nadu, India. The user is ${"{name}"}. Be warm, clear and brief (under 150 words unless asked for more). Use simple language suitable for a teenager. You understand English, Tamil and Tanglish; reply in the user's language. Use short paragraphs, bullet points and code blocks when helpful. Never produce unsafe, adult or hateful content.
+
+YOU CAN CONTROL NEXUS OS. When the user asks you to DO something on the device (open/close apps, play music or radio, call or message someone, notes, tasks, events, reminders, alarms, timers, torch, wallpaper, colours, maps, directions, YouTube, news, photos, recordings, images, etc.), reply with ONE short friendly sentence, then put each action on its own line exactly like this:
+[[do: open camera]]
+Write the command in simple English using these forms: {cmds}
+You can add several [[do: ...]] lines for several actions, in order. Only use [[do: ...]] when the user wants an action, never for normal questions. Never say you can't control the device — use a command instead. If something truly isn't possible from a website (Wi-Fi, Bluetooth, brightness, volume, screenshots), explain briefly.`;
   function md(t) {
     let h = esc(t);
     h = h.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, l, c) => `<pre><code>${c.replace(/\n$/, "")}</code></pre>`);
@@ -103,22 +108,13 @@
     return `**${p.name}** right now: **${Math.round(c.temperature_2m)}°C**, ${W[c.weather_code] || "mixed weather"}. Feels like ${Math.round(c.apparent_temperature)}°C, humidity ${c.relative_humidity_2m}%.\nToday: high ${Math.round(d.daily.temperature_2m_max[0])}°, low ${Math.round(d.daily.temperature_2m_min[0])}°, ${d.daily.precipitation_probability_max[0]}% chance of rain.`;
   }
   async function localIntent(q) {
-    const s = q.toLowerCase().trim().replace(/[?!.]+$/, "");
+    const s0 = q.toLowerCase().trim().replace(/[?!.]+$/, ""); const s = N.aiNorm ? N.aiNorm(q) : s0;
     let m;
-    if (/^(hi|hello|hey|hai|vanakkam|good (morning|afternoon|evening))\b/.test(s) && s.split(" ").length <= 3) return { text: `Hi ${userName()}! 👋 I can answer questions, write and explain code, and control Nexus — try "open camera", "set alarm 6:30 am", "play Anirudh songs" or "draw a robot on Mars".` };
-    if ((m = s.match(/^(?:open|launch|start|go to)\s+(?:the\s+)?(.+?)(?:\s+app)?$/))) {
-      const map = appNames(); const key = map[m[1]] || Object.keys(map).find((k) => k && k.startsWith(m[1]));
-      if (key) { const k = map[key] || key; setTimeout(() => window.openApp(k), 500); return { text: `Opening **${(N.APPS[k]?.title) || k}**…` }; }
-    }
+    if (/^(hi|hello|hey|hai|vanakkam|good (morning|afternoon|evening))\b/.test(s0) && s0.split(" ").length <= 3) return { text: `Hi ${userName()}! 👋 I can answer questions, write and explain code, and control Nexus — try "open camera", "set alarm 6:30 am", "play Anirudh songs" or "draw a robot on Mars".` };
     if ((m = s.match(/(?:set (?:an |the )?alarm|wake me(?: up)?)(?: for| at)?\s+(.+)/))) {
       const d = parseTime(m[1]); if (!d) return { text: "What time should the alarm be? Try \"set alarm 6:30 am\"." };
       const l = store.get("nexus-alarms", []); l.push({ id: uid(), h: d.getHours(), m: d.getMinutes(), label: "Alarm", days: [], on: true }); store.set("nexus-alarms", l);
       return { text: `⏰ Alarm set for **${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}**. It rings while Nexus OS is open.`, action: ["Open Clock", "clock"] };
-    }
-    if ((m = s.match(/(?:set (?:a )?)?timer (?:for )?(\d+)\s*(min|minute|minutes|mins|hour|hours|sec|second|seconds)/))) {
-      const ms = Number(m[1]) * (/^h/.test(m[2]) ? 3600e3 : /^s/.test(m[2]) ? 1e3 : 60e3); const d = new Date(Date.now() + Math.max(60e3, ms));
-      const l = store.get("nexus-alarms", []); l.push({ id: uid(), h: d.getHours(), m: d.getMinutes(), label: `Timer (${m[1]} ${m[2]})`, days: [], on: true }); store.set("nexus-alarms", l);
-      return { text: `⏱️ Okay, I'll ring at about **${d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}**. For a to-the-second countdown, use the Timer in Clock.`, action: ["Open Timer", "timer"] };
     }
     if ((m = s.match(/^remind me (?:to |about )?(.+?)(?:\s+((?:at|in|tomorrow)\b.*))?$/))) {
       let what = m[1], d = m[2] ? parseTime(m[2]) : null;
@@ -127,12 +123,8 @@
       const l = store.get("nexus-reminders-v2", []); l.push({ id: uid(), text: what.charAt(0).toUpperCase() + what.slice(1), time: d.getTime(), done: false, notified: false, repeat: "none" }); store.set("nexus-reminders-v2", l);
       return { text: `🔔 I'll remind you to **${esc(what)}** ${fmtWhen(d)}.`, action: ["Open Reminder", "reminder"] };
     }
+    { const c = await N.aiCmd?.(q); if (c) return c; }
     if (/\b(weather|temperature|rain|forecast)\b/.test(s) && s.length < 60) { m = s.match(/\b(?:in|at|for)\s+([a-z .'-]+)$/); return { text: await weatherReply(m ? m[1].replace(/\b(today|now|tomorrow)\b/g, "").trim() : "") , action: ["Open Weather", "weather"] }; }
-    if ((m = s.match(/^play (?:some )?(.+?)(?: songs?| music)?$/)) && !/game/.test(s)) {
-      try { const t = await N.music?.play(m[1]); if (t) return { text: `🎵 Playing **${esc(t.title)}** by ${esc(t.artist)} (30-second preview).`, action: ["Open Music", "music"] }; } catch (_) {}
-      return { text: `I couldn't find songs for "${esc(m[1])}".` };
-    }
-    if (/^(stop|pause) (the )?(music|song)/.test(s)) { N.music?.pause(); return { text: "⏸️ Music paused." }; }
     if (/what(?:'s| is) the time|^time$|time now/.test(s)) return { text: `It's **${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}**.` };
     if (/what(?:'s| is) (?:the |today'?s )?date|what day is/.test(s)) return { text: `Today is **${new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "long", year: "numeric" })}**.` };
     if ((m = s.match(/^(?:what is |what's |calculate |calc |solve )?([\d\s.+\-*/^()%×÷]+|(?:sqrt|sin|cos|tan|log|ln)\s*\(?[\d\s.+\-*/^()]+\)?)$/)) && /\d/.test(m[1]) && /[+\-*/^%×÷(]|sqrt|sin|cos|tan|log/.test(m[1])) {
@@ -142,14 +134,34 @@
     if ((m = s.match(/^(?:draw|generate|create|make|imagine)(?: me)?(?: an?| the)?(?: (?:image|picture|photo|drawing|art|wallpaper))?(?: of)?\s+(.{3,})/))) return { image: m[1] };
     return null;
   }
-  async function llm(hist) {
-    const msgs = [{ role: "system", content: SYSTEM.replace("{name}", userName()) }, ...hist.filter((x) => x.content).slice(-10).map((x) => ({ role: x.role, content: x.content.slice(0, 2000) }))];
-    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 45000);
-    try {
-      const r = await fetch("https://text.pollinations.ai/openai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "openai", messages: msgs, referrer: "nexus-os" }), signal: ctl.signal });
-      if (!r.ok) throw new Error("busy");
-      const d = await r.json(); const c = d.choices?.[0]?.message?.content; if (!c) throw new Error("empty"); return c.trim();
-    } finally { clearTimeout(t); }
+  async function llm(hist, onWait) {
+    const msgs = [{ role: "system", content: SYSTEM.replace("{name}", userName()).replace("{cmds}", N.aiCmdHelp || "open <app>") }, ...hist.filter((x) => x.content).slice(-10).map((x) => ({ role: x.role, content: x.content.slice(0, 2000) }))];
+    const countdown = async (sec) => { for (let k = sec; k > 0; k--) { onWait?.(k); await new Promise((r) => setTimeout(r, 1000)); } onWait?.(0); };
+    const gap = 31000 - (Date.now() - store.get("nx-ai-last", 0)); if (gap > 0 && gap < 31000) await countdown(Math.ceil(gap / 1000));
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 45000);
+      try {
+        store.set("nx-ai-last", Date.now());
+        const r = await fetch("https://text.pollinations.ai/openai", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "openai", messages: msgs, referrer: "nexus-os" }), signal: ctl.signal });
+        if (r.status === 402 || r.status === 429) { const b = await r.text().catch(() => ""); const sec = Number((b.match(/after (\d+)\s*s/i) || [])[1]) || 30; await countdown(Math.min(sec + 1, 40)); continue; }
+        if (!r.ok) throw new Error("busy");
+        const d = await r.json(); const c = d.choices?.[0]?.message?.content; if (!c) throw new Error("empty"); return c.trim();
+      } finally { clearTimeout(t); }
+    }
+    throw new Error("busy");
+  }
+  async function llmAct(txt) {
+    const cmds = []; txt = txt.replace(/\[\[\s*do\s*:\s*([^\]]+?)\s*\]\]/gi, (_, c) => { cmds.push(c.trim()); return ""; }).replace(/\n{3,}/g, "\n\n").trim();
+    if (!cmds.length) return { content: txt };
+    const out = []; let action = null, image = null;
+    for (const c of cmds.slice(0, 4)) {
+      const r = await localIntent(c).catch(() => null);
+      if (r?.image) { image = r.image; continue; }
+      if (r) { out.push(r.text); if (r.action) action = r.action; } else out.push(`(I couldn't do “${esc(c)}” yet.)`);
+      if (cmds.length > 1) await new Promise((res) => setTimeout(res, 700));
+    }
+    if (image) return { ...(await aiImage(document.querySelector("#app-layer .nx-ai") || document.body, image)), pre: txt };
+    return { content: (txt ? txt + "\n\n" : "") + out.join("\n"), action };
   }
   async function wikiFallback(q) {
     const term = q.replace(/^(tell me about|who|what|where|when) (is|was|are|were )?(the |a |an )?/i, "").replace(/\?.*$/, "").replace(/[.!].*$/, "").trim();
@@ -198,7 +210,7 @@
         const loc = await localIntent(q);
         if (loc?.image) reply = await aiImage(win, loc.image);
         else if (loc) reply = { content: loc.text, action: loc.action };
-        else { try { reply = { content: await llm(chat()) }; } catch (_) { const w = await wikiFallback(q).catch(() => null); reply = { content: w || "I couldn't reach my brain online right now 😅. Check your internet and try again. Commands like \"open camera\" and \"set alarm 7 am\" still work offline." }; } }
+        else { try { reply = await llmAct(await llm(chat(), (sec) => { const el = win.querySelector("[data-ai-typing] > div"); if (el) el.innerHTML = sec ? `<span class="nx-note" style="margin:0">Free AI is busy — answering in ${sec}s…</span>` : `<span class="nx-ai-dots"><i></i><i></i><i></i></span>`; })); } catch (_) { const w = await wikiFallback(q).catch(() => null); reply = { content: w || "I couldn't reach my brain online right now 😅. Check your internet and try again. Commands like \"open camera\" and \"set alarm 7 am\" still work offline." }; } }
       }
     } catch (e) { reply = { content: "Something went wrong: " + e.message }; }
     c = chat(); c.push({ role: "assistant", ...reply }); saveChat(trimImgs(c)); AI.busy = false;

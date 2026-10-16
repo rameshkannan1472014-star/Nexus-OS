@@ -27,36 +27,136 @@
   }
 
   /* ================================================================== *
-   * MUSIC — iTunes 30-second previews, keeps playing after you close it
+   * MUSIC — full songs through the official YouTube player (song info &
+   * artwork from iTunes). Falls back to a 30-second preview.
    * ================================================================== */
-  const M = { audio: new Audio(), queue: [], idx: -1, shuffle: false, repeat: false, libTab: "library" };
+  const M = { audio: new Audio(), queue: [], idx: -1, shuffle: false, repeat: false, libTab: "library", mode: "none", loading: "", token: 0, full: store.get("nexus-music-full", true) };
   M.audio.preload = "none";
   const PICKS = [["Tamil hits", "tamil hits"], ["Anirudh", "anirudh ravichander"], ["A.R. Rahman", "a r rahman"], ["Lo-fi study", "lofi study beats"], ["Bollywood", "bollywood hits"], ["English pop", "pop hits"], ["Workout", "workout motivation"]];
   const ARTISTS = ["Anirudh Ravichander", "A. R. Rahman", "Arijit Singh", "Sid Sriram", "Yuvan Shankar Raja", "Shreya Ghoshal", "Taylor Swift", "Ed Sheeran", "Imagine Dragons"];
   const PLAYLISTS = [["Study focus", "lofi chill study", "t-indigo"], ["Tamil melodies", "tamil melody", "t-pink"], ["Kuthu beats", "tamil kuthu", "t-orange"], ["Top Bollywood", "bollywood romantic", "t-red"], ["Gym power", "gym workout", "t-green"], ["Chill English", "acoustic chill", "t-sky"]];
-  const mTrack = (t) => ({ id: String(t.trackId), title: t.trackName || "Untitled", artist: t.artistName || "Unknown artist", album: t.collectionName || "", art: (t.artworkUrl100 || "").replace("100x100", "600x600"), thumb: t.artworkUrl100 || "", preview: t.previewUrl });
+  const mTrack = (t) => ({ id: String(t.trackId), title: t.trackName || "Untitled", artist: t.artistName || "Unknown artist", album: t.collectionName || "", art: (t.artworkUrl100 || "").replace("100x100", "600x600"), thumb: t.artworkUrl100 || "", preview: t.previewUrl, len: Math.round((t.trackTimeMillis || 0) / 1000) });
   async function mSearch(q) {
     const key = "nx-music-cache:" + q.toLowerCase(); const c = store.get(key, null);
     if (c && Date.now() - c.at < 6 * 3600e3) return c.items;
     const r = await fetch("https://itunes.apple.com/search?entity=song&limit=25&country=IN&term=" + encodeURIComponent(q));
     if (!r.ok) throw new Error("Music search is busy. Try again.");
     const items = ((await r.json()).results || []).filter((t) => t.previewUrl).map(mTrack);
-    try { sessionStorage.setItem(key, "1"); } catch (_) {}
     store.set(key, { at: Date.now(), items });
     return items;
   }
   const mCur = () => M.queue[M.idx] || null;
-  const fmtT = (s) => (Number.isFinite(s) ? Math.floor(s / 60) + ":" + pad(Math.floor(s % 60)) : "0:00");
-  function mPlay(queue, idx) {
-    M.queue = queue; M.idx = idx; const t = mCur(); if (!t) return;
-    M.audio.src = t.preview; M.audio.play().catch(() => {});
+  const fmtT = (s) => (Number.isFinite(s) && s > 0 ? Math.floor(s / 60) + ":" + pad(Math.floor(s % 60)) : "0:00");
+
+  /* ---- YouTube engine ---- */
+  const YP = { api: null, player: null, box: null, cands: [], ci: 0, state: -1 };
+  function ytApi() {
+    if (window.YT?.Player) return Promise.resolve();
+    return (YP.api = YP.api || new Promise((res, rej) => {
+      const prev = window.onYouTubeIframeAPIReady; window.onYouTubeIframeAPIReady = () => { prev?.(); res(); };
+      const s = document.createElement("script"); s.src = "https://www.youtube.com/iframe_api"; s.onerror = () => { YP.api = null; rej(new Error("yt")); }; document.head.append(s);
+    }));
+  }
+  function ytBox() {
+    if (YP.box) return YP.box;
+    const b = document.createElement("div"); b.className = "nx-mvid"; b.hidden = true;
+    b.innerHTML = `<div class="nx-mvid-frame"><div id="nx-mvid-el"></div></div><div class="nx-mvid-bar"><span data-mv-title></span><button type="button" data-mv-toggle aria-label="Play or pause"></button><button type="button" data-mv-next aria-label="Next song">${ic("next", "sm")}</button><button type="button" data-mv-open aria-label="Open Music">${ic("music", "sm")}</button><button type="button" data-mv-x aria-label="Stop music">${ic("x", "sm")}</button></div>`;
+    b.addEventListener("click", (e) => {
+      if (e.target.closest("[data-mv-toggle]")) E.paused() ? E.play() : E.pause();
+      if (e.target.closest("[data-mv-next]")) mStep(1);
+      if (e.target.closest("[data-mv-open]")) window.openApp("music");
+      if (e.target.closest("[data-mv-x]")) mStop();
+    });
+    const bar = b.querySelector(".nx-mvid-bar"); let drag = null;
+    bar.addEventListener("pointerdown", (e) => { if (e.target.closest("button") || b.classList.contains("full")) return; const r = b.getBoundingClientRect(); drag = { dx: e.clientX - r.left, dy: e.clientY - r.top }; bar.setPointerCapture(e.pointerId); });
+    bar.addEventListener("pointermove", (e) => { if (!drag) return; const x = Math.max(4, Math.min(innerWidth - b.offsetWidth - 4, e.clientX - drag.dx)), y = Math.max(4, Math.min(innerHeight - b.offsetHeight - 4, e.clientY - drag.dy)); YP.pos = { x, y }; b.style.left = x + "px"; b.style.top = y + "px"; b.style.right = "auto"; b.style.bottom = "auto"; });
+    bar.addEventListener("pointerup", () => { drag = null; });
+    document.body.append(b); YP.box = b; requestAnimationFrame(ytPlace); return b;
+  }
+  function ytPlace() {
+    const b = YP.box; if (!b) return; requestAnimationFrame(ytPlace);
+    const on = M.mode === "yt"; if (b.hidden === on) b.hidden = !on; if (!on) return;
+    const w = document.querySelector("#app-layer .nx-music"); const art = w?.querySelector(".nx-m-art.is-video");
+    const body = w?.querySelector(".nx-body")?.getBoundingClientRect(); const r = art?.getBoundingClientRect();
+    const covered = document.querySelector("#app-layer .nx-sheet, .nx-ringing, .nx-lock, #control-center:not([hidden])");
+    if (w && art && r.width && body && r.bottom > body.top + 30 && r.top < body.bottom - 30 && !covered) {
+      if (!b.classList.contains("full")) b.classList.add("full");
+      const ct = Math.max(0, body.top - r.top), cb = Math.max(0, r.bottom - body.bottom);
+      const s = `left:${r.left}px;top:${r.top}px;width:${r.width}px;height:${r.height}px;clip-path:inset(${ct}px 0 ${cb}px 0 round 16px)`;
+      if (b._s !== s) { b.style.cssText = s; b._s = s; }
+    } else {
+      if (b.classList.contains("full")) { b.classList.remove("full"); b.style.cssText = YP.pos ? `left:${YP.pos.x}px;top:${YP.pos.y}px;right:auto;bottom:auto` : ""; b._s = ""; }
+      b.classList.toggle("in-app", !!document.querySelector("#app-layer .nx-app")); b.classList.toggle("covered", !!covered);
+    }
+  }
+  function ytState(e) {
+    YP.state = e.data;
+    if (e.data === 1) { M.loading = ""; const t = mCur(); if (t) store.set("nx-song:" + t.id, YP.cands.slice(YP.ci).concat(YP.cands.slice(0, YP.ci))); }
+    if (e.data === 0) { if (M.repeat) { YP.player.seekTo(0); YP.player.playVideo(); } else mStep(1); }
+    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = e.data === 1 ? "playing" : "paused";
+    mRefresh(true);
+  }
+  function ytErr() {
+    YP.ci++;
+    if (YP.ci < YP.cands.length) { YP.player.loadVideoById(YP.cands[YP.ci]); return; }
+    const t = mCur(); if (t) { localStorage.removeItem("nx-song:" + t.id); mPreview(t, "This song can't play in full here — playing a preview."); }
+  }
+  async function ytPlay(ids) {
+    await ytApi(); ytBox(); const t0 = mCur(); if (t0) YP.box.querySelector("[data-mv-title]").textContent = t0.title + " · " + t0.artist; YP.cands = ids; YP.ci = 0; M.mode = "yt";
+    if (YP.player?.loadVideoById) { YP.player.loadVideoById(ids[0]); return; }
+    await new Promise((res) => {
+      YP.player = new YT.Player("nx-mvid-el", { width: "100%", height: "100%", videoId: ids[0], playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1, iv_load_policy: 3 },
+        events: { onReady: () => { YP.player.playVideo(); res(); }, onStateChange: ytState, onError: ytErr } });
+    });
+  }
+  async function songIds(t) {
+    const c = store.get("nx-song:" + t.id, null); if (Array.isArray(c) && c.length) return c;
+    const q = `${t.title.replace(/\s*[([].*?[)\]]/g, "")} ${t.artist.split(/,|&/)[0]} song`;
+    const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 50000);
+    try {
+      const u = new URL(N.API_BASE + "/api/youtube/search"); u.searchParams.set("q", q);
+      const r = await fetch(u, { signal: ctl.signal }); if (!r.ok) throw new Error("search");
+      const ids = ((await r.json()).items || []).map((x) => x.videoId).filter((id) => /^[\w-]{11}$/.test(id || "")).slice(0, 6);
+      if (ids.length) store.set("nx-song:" + t.id, ids); return ids;
+    } finally { clearTimeout(tm); }
+  }
+  const wake = () => { if (Date.now() - (M.woke || 0) > 600e3) { M.woke = Date.now(); fetch(N.API_BASE + "/health").catch(() => {}); } };
+
+  /* ---- unified controls ---- */
+  const E = {
+    paused: () => (M.mode === "yt" ? YP.state !== 1 && YP.state !== 3 : M.audio.paused),
+    play() { if (M.mode === "yt") YP.player?.playVideo(); else M.audio.play().catch(() => {}); },
+    pause() { if (M.mode === "yt") YP.player?.pauseVideo(); else M.audio.pause(); },
+    cur: () => (M.mode === "yt" ? YP.player?.getCurrentTime?.() || 0 : M.audio.currentTime || 0),
+    dur: () => (M.mode === "yt" ? YP.player?.getDuration?.() || mCur()?.len || 0 : M.audio.duration || 30),
+    seek(p) { const d = E.dur(); if (!d) return; if (M.mode === "yt") YP.player?.seekTo(p * d, true); else M.audio.currentTime = p * d; }
+  };
+  function mStop() { M.token++; M.audio.pause(); try { YP.player?.stopVideo(); } catch (_) {} M.mode = "none"; M.loading = ""; M.idx = -1; const hs = document.getElementById("music-status"); if (hs) hs.textContent = "Nothing playing"; mRefresh(); }
+  function mPreview(t, msg) {
+    try { YP.player?.stopVideo(); } catch (_) {} M.mode = "preview"; M.loading = ""; M.audio.src = t.preview; M.audio.play().catch(() => {});
+    if (msg) { const w = document.querySelector("#app-layer .nx-music"); if (w) toast(w, msg); } mRefresh();
+  }
+  async function mPlay(queue, idx) {
+    M.queue = queue; M.idx = idx; const t = mCur(); if (!t) return; const tok = ++M.token;
+    N.radio?.stop(); M.audio.pause(); try { YP.player?.pauseVideo(); } catch (_) {}
     const rec = store.get("nexus-music-recent", []).filter((x) => x.id !== t.id); rec.unshift(t); store.set("nexus-music-recent", rec.slice(0, 30));
     if ("mediaSession" in navigator) {
       navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: t.artist, album: t.album, artwork: [{ src: t.art, sizes: "600x600", type: "image/jpeg" }] });
-      navigator.mediaSession.setActionHandler("previoustrack", () => mStep(-1));
-      navigator.mediaSession.setActionHandler("nexttrack", () => mStep(1));
+      navigator.mediaSession.setActionHandler("previoustrack", () => mStep(-1)); navigator.mediaSession.setActionHandler("nexttrack", () => mStep(1));
+      navigator.mediaSession.setActionHandler("play", () => E.play()); navigator.mediaSession.setActionHandler("pause", () => E.pause());
     }
     const hs = document.getElementById("music-status"); if (hs) hs.textContent = t.title + " · " + t.artist;
+    if (YP.box) YP.box.querySelector("[data-mv-title]").textContent = t.title + " · " + t.artist;
+    if (!M.full) { mPreview(t); return; }
+    M.mode = M.mode === "yt" ? "yt" : "none"; M.loading = "Finding the full song…"; mRefresh();
+    const slow = setTimeout(() => { if (tok === M.token && M.loading) { M.loading = "Waking up the music server (up to 30 s)…"; mRefresh(true); } }, 4000);
+    try {
+      const ids = await songIds(t); if (tok !== M.token) return;
+      if (!ids.length) throw new Error("none");
+      M.loading = "Loading…"; await ytPlay(ids); if (tok !== M.token) return;
+      setTimeout(() => { if (tok === M.token && M.mode === "yt" && YP.state !== 1 && YP.state !== 3) { M.loading = ""; mRefresh(true); } }, 6000);
+    } catch (_) { if (tok === M.token) mPreview(t, "Full song not available right now — playing a 30-second preview."); }
+    finally { clearTimeout(slow); }
     mRefresh();
   }
   function mStep(d) {
@@ -67,40 +167,43 @@
   }
   M.audio.addEventListener("ended", () => { if (M.repeat) { M.audio.currentTime = 0; M.audio.play(); } else mStep(1); });
   ["play", "pause"].forEach((ev) => M.audio.addEventListener(ev, () => mRefresh(true)));
-  M.audio.addEventListener("timeupdate", () => {
-    const w = document.querySelector("#app-layer .nx-music"); if (!w) return;
-    const r = w.querySelector("[data-m-seek]"); if (r && !r.matches(":active")) r.value = M.audio.duration ? (M.audio.currentTime / M.audio.duration) * 1000 : 0;
-    const a = w.querySelector("[data-m-cur]"); if (a) a.textContent = fmtT(M.audio.currentTime);
-    const b = w.querySelector("[data-m-dur]"); if (b) b.textContent = fmtT(M.audio.duration || 30);
-  });
+  setInterval(() => {
+    if (YP.box) { const tg = YP.box.querySelector("[data-mv-toggle]"); const p = E.paused(); if (tg._p !== p) { tg.innerHTML = ic(p ? "play" : "pause", "sm"); tg._p = p; } }
+    const w = document.querySelector("#app-layer .nx-music"); if (!w || M.mode === "none") return;
+    const d = E.dur(), c = E.cur();
+    const r = w.querySelector("[data-m-seek]"); if (r && !r.matches(":active")) r.value = d ? (c / d) * 1000 : 0;
+    const a = w.querySelector("[data-m-cur]"); if (a) a.textContent = fmtT(c);
+    const b = w.querySelector("[data-m-dur]"); if (b) b.textContent = fmtT(d);
+    const tg = w.querySelector("[data-m-toggle]"); if (tg && tg._p !== E.paused()) mRefresh(true);
+  }, 500);
   const liked = () => store.get("nexus-music-liked", []);
   const isLiked = (t) => !!t && liked().some((x) => x.id === t.id);
   function mRow(t, i, list) {
     const on = mCur()?.id === t.id;
-    return `<button type="button" class="nx-row nx-m-row${on ? " is-on" : ""}" data-m-play="${i}" data-m-list="${list}"><img src="${esc(t.thumb)}" alt="" loading="lazy"><span class="nx-row-main"><strong>${esc(t.title)}</strong><span>${esc(t.artist)}</span></span>${on && !M.audio.paused ? `<span class="nx-eq"><i></i><i></i><i></i></span>` : ic("play", "sm")}</button>`;
+    return `<button type="button" class="nx-row nx-m-row${on ? " is-on" : ""}" data-m-play="${i}" data-m-list="${list}"><img src="${esc(t.thumb)}" alt="" loading="lazy"><span class="nx-row-main"><strong>${esc(t.title)}</strong><span>${esc(t.artist)}${t.len ? " · " + fmtT(t.len) : ""}</span></span>${on && !E.paused() ? `<span class="nx-eq"><i></i><i></i><i></i></span>` : ic("play", "sm")}</button>`;
   }
   const mLists = {};
   function mPlayer() {
-    const t = mCur();
+    const t = mCur(); const vid = M.full && t && (M.mode === "yt" || M.loading);
+    const p = E.paused();
     return `<div class="nx-m-player">
-      <div class="nx-m-art">${t ? `<img src="${esc(t.art)}" alt="">` : `<span>${ic("music", "lg")}</span>`}</div>
-      <div class="nx-m-info"><div><strong>${esc(t?.title || "Pick a song to start")}</strong><span>${esc(t ? t.artist : "Search or tap a quick pick below")}</span></div>
+      <div class="nx-m-art${vid ? " is-video" : ""}">${t ? `<img src="${esc(t.art)}" alt="">` : `<span>${ic("music", "lg")}</span>`}${M.loading ? `<div class="nx-m-load"><span class="nx-spin"></span><small>${esc(M.loading)}</small></div>` : ""}</div>
+      <div class="nx-m-info"><div><strong>${esc(t?.title || "Pick a song to start")}</strong><span>${esc(t ? t.artist : "Search or tap a quick pick below")}${t ? ` · <em class="nx-m-badge${M.mode === "preview" ? " prev" : ""}">${M.mode === "preview" ? "30-sec preview" : "Full song"}</em>` : ""}</span></div>
         <button type="button" class="nx-icon-btn${isLiked(t) ? " is-on" : ""}" data-m-like aria-label="Like" ${t ? "" : "disabled"}>${ic("heart")}</button></div>
       <input class="nx-range" type="range" min="0" max="1000" value="0" data-m-seek aria-label="Song position" ${t ? "" : "disabled"}>
-      <div class="nx-m-times"><span data-m-cur>0:00</span><span data-m-dur>${t ? "0:30" : "0:00"}</span></div>
+      <div class="nx-m-times"><span data-m-cur>0:00</span><span data-m-dur>${t ? fmtT(M.mode === "preview" ? 30 : t.len) : "0:00"}</span></div>
       <div class="nx-m-ctrl">
         <button type="button" class="nx-icon-btn${M.shuffle ? " is-on" : ""}" data-m-shuffle aria-label="Shuffle">${ic("shuffle")}</button>
         <button type="button" class="nx-icon-btn" data-m-prev aria-label="Previous">${ic("prev")}</button>
-        <button type="button" class="nx-m-big" data-m-toggle aria-label="${M.audio.paused ? "Play" : "Pause"}">${ic(M.audio.paused ? "play" : "pause", "lg")}</button>
+        <button type="button" class="nx-m-big" data-m-toggle aria-label="${p ? "Play" : "Pause"}">${ic(p ? "play" : "pause", "lg")}</button>
         <button type="button" class="nx-icon-btn" data-m-next aria-label="Next">${ic("next")}</button>
         <button type="button" class="nx-icon-btn${M.repeat ? " is-on" : ""}" data-m-repeat aria-label="Repeat">${ic("repeat")}</button>
       </div></div>`;
   }
-  function mRefresh(soft) {
+  function mRefresh() {
     const w = document.querySelector("#app-layer .nx-music"); if (!w) return;
-    const box = w.querySelector("[data-m-player]"); if (box) box.innerHTML = mPlayer();
-    if (!soft || true) { mUpNext(w); }
-    w.querySelectorAll("[data-m-list]").forEach(() => {});
+    const box = w.querySelector("[data-m-player]"); if (box) { box.innerHTML = mPlayer(); const tg = box.querySelector("[data-m-toggle]"); if (tg) tg._p = E.paused(); }
+    mUpNext(w);
   }
   function mUpNext(w) {
     const box = w.querySelector("[data-m-queue]"); if (!box) return;
@@ -129,7 +232,7 @@
   }
   N.music = {
     async play(q) { const items = await mSearch(q); if (!items.length) return null; mPlay(items, 0); return items[0]; },
-    pause() { M.audio.pause(); }, current: mCur
+    pause() { E.pause(); }, resume() { if (mCur()) E.play(); }, next() { mStep(1); }, prev() { mStep(-1); }, stop: () => mStop(), current: mCur, isFull: () => M.full
   };
   N.register("music", {
     title: "Music",
@@ -139,24 +242,24 @@
     html: () => `<div data-view="home"><div data-m-player></div>
         <div class="nx-chips" style="margin-top:14px">${PICKS.map(([l, q], i) => `<button type="button" class="nx-chip${i ? "" : " is-active"}" data-m-pick="${esc(q)}">${esc(l)}</button>`).join("")}</div>
         <div data-m-queue></div></div>
-      <div data-view="search" hidden><form class="nx-search" data-m-form role="search"><span>${ic("search")}</span><input name="q" placeholder="Songs, artists or albums" autocomplete="off" enterkeyhint="search" aria-label="Search music"></form><div data-m-results><div class="nx-empty">${ic("music")}<strong>Find any song</strong>You'll hear a 30-second preview.</div></div></div>
+      <div data-view="search" hidden><form class="nx-search" data-m-form role="search"><span>${ic("search")}</span><input name="q" placeholder="Songs, artists or albums" autocomplete="off" enterkeyhint="search" aria-label="Search music"></form><div data-m-results><div class="nx-empty">${ic("music")}<strong>Find any song</strong>Full songs play through YouTube.</div></div></div>
       <div data-view="lib" hidden><div data-m-lib></div></div>
-      <p class="nx-note">Song previews from the iTunes Search service. Full songs need a music app.</p>`,
+      <div class="nx-card nx-m-mode"><span class="nx-row-main"><strong>Play full songs</strong><span>Uses the YouTube player. Turn off to hear 30-second previews (uses less data).</span></span><button type="button" class="nx-switch" data-m-full aria-checked="${M.full}" aria-label="Play full songs"></button></div><p class="nx-note">Song info from iTunes. Full songs are streamed by YouTube. On phones, YouTube pauses when you leave the browser or lock the screen.</p>`,
     init(win) {
-      win.classList.add("nx-music");
+      win.classList.add("nx-music"); wake();
       win.querySelector(".nx-tabs").hidden = true;
       win.querySelector("[data-m-player]").innerHTML = mPlayer();
       if (M.queue.length) mUpNext(win);
       else mSearch(PICKS[0][1]).then((items) => { if (!M.queue.length) { M.queue = items; M.idx = -1; mUpNext(win); } }).catch(() => {});
       const form = win.querySelector("[data-m-form]");
       form.addEventListener("submit", (e) => { e.preventDefault(); const q = form.q.value.trim(); if (q) { form.q.blur(); mLoadInto(win, "[data-m-results]", q, "results"); } });
-      win.addEventListener("input", (e) => { if (e.target.matches("[data-m-seek]") && M.audio.duration) M.audio.currentTime = (e.target.value / 1000) * M.audio.duration; });
+      win.addEventListener("input", (e) => { if (e.target.matches("[data-m-seek]")) E.seek(e.target.value / 1000); });
       win.addEventListener("click", (e) => {
         const pl = e.target.closest("[data-m-play]");
         if (pl) { const list = pl.dataset.mList === "queue" ? M.queue : mLists[pl.dataset.mList] || []; mPlay(list.slice(), Number(pl.dataset.mPlay)); win.querySelectorAll(`[data-m-list="${pl.dataset.mList}"]`).forEach((b) => b.classList.toggle("is-on", b === pl)); return; }
-        if (e.target.closest("[data-m-toggle]")) { if (!mCur()) { if (M.queue.length) mPlay(M.queue, 0); return; } M.audio.paused ? M.audio.play() : M.audio.pause(); return; }
+        if (e.target.closest("[data-m-toggle]")) { if (!mCur()) { if (M.queue.length) mPlay(M.queue, 0); return; } E.paused() ? E.play() : E.pause(); return; }
         if (e.target.closest("[data-m-next]")) { mStep(1); return; }
-        if (e.target.closest("[data-m-prev]")) { if (M.audio.currentTime > 3) M.audio.currentTime = 0; else mStep(-1); return; }
+        if (e.target.closest("[data-m-prev]")) { if (E.cur() > 3) E.seek(0); else mStep(-1); return; }
         if (e.target.closest("[data-m-shuffle]")) { M.shuffle = !M.shuffle; mRefresh(); toast(win, M.shuffle ? "Shuffle on" : "Shuffle off"); return; }
         if (e.target.closest("[data-m-repeat]")) { M.repeat = !M.repeat; mRefresh(); toast(win, M.repeat ? "Repeat this song" : "Repeat off"); return; }
         if (e.target.closest("[data-m-like]")) { const t = mCur(); if (!t) return; let l = liked(); l = isLiked(t) ? l.filter((x) => x.id !== t.id) : [t, ...l]; store.set("nexus-music-liked", l); mRefresh(); toast(win, isLiked(t) ? "Added to Liked songs" : "Removed from Liked songs"); return; }
@@ -164,6 +267,7 @@
         if (pk) { setActive(win, "[data-m-pick]", pk); mSearch(pk.dataset.mPick).then((items) => { M.queue = items; M.idx = -1; mUpNext(win); }).catch(() => toast(win, "Couldn't load songs")); return; }
         const q = e.target.closest("[data-m-q]");
         if (q) { const box = win.querySelector("[data-m-pl-list]"); box.innerHTML = `<div class="nx-section-title">${esc(q.dataset.mTitle)}</div><div data-m-pl-inner></div>`; mLoadInto(win, "[data-m-pl-inner]", q.dataset.mQ, "pl"); box.scrollIntoView({ behavior: "smooth" }); return; }
+        if (e.target.closest("[data-m-full]")) { M.full = !M.full; store.set("nexus-music-full", M.full); e.target.closest("[data-m-full]").setAttribute("aria-checked", M.full); toast(win, M.full ? "Full songs on" : "Previews only"); if (mCur()) mPlay(M.queue, M.idx); return; }
         if (e.target.closest("[data-m-gosearch]")) { selectNav(win, "search"); this.onNav(win, "search"); }
       });
       if (!M.queue.length) win.querySelector("[data-m-queue]").innerHTML = `<div class="nx-list" style="margin-top:12px">${'<div class="nx-row"><span class="nx-skel" style="width:44px;height:44px"></span><span class="nx-skel" style="height:14px;flex:1"></span></div>'.repeat(4)}</div>`;
@@ -225,6 +329,11 @@
   }
   const fmtDur = (ms, cs) => { const t = Math.max(0, ms); const h = Math.floor(t / 3600000), m = Math.floor((t % 3600000) / 60000), s = Math.floor((t % 60000) / 1000), c = Math.floor((t % 1000) / 10); return (h ? h + ":" + pad(m) : pad(m)) + ":" + pad(s) + (cs ? "." + pad(c) : ""); };
   const swNow = () => C.swAcc + (C.swRunning ? Date.now() - C.swStart : 0);
+  N.clock = {
+    startTimer(ms) { C.timerTotal = ms; C.timerEnd = Date.now() + ms; C.timerRunning = true; C.timerLeft = 0; C.view = "timer"; },
+    stopTimer() { C.timerRunning = false; C.timerLeft = 0; },
+    stopwatch(go) { if (go && !C.swRunning) { C.swStart = Date.now(); C.swRunning = true; } if (!go && C.swRunning) { C.swAcc += Date.now() - C.swStart; C.swRunning = false; } C.view = "sw"; return swNow(); }
+  };
   function cRender(win) {
     const v = C.view;
     if (v === "alarm") {

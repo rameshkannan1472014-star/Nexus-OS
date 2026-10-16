@@ -9,7 +9,7 @@ A mobile-first, browser-based operating-system prototype with 33 app windows.
 - **Communication & discovery:** Phone Dialer handoff, Message Drafts, News Reader, Maps & Directions, Shop Finder, SOS & Emergency Help, Feedback.
 - **Developer & utilities:** Safe demo Terminal, Security Center, Storage Cleaner, Screen Share & Casting, Nexus AI Companion UI, Mini App Store.
 
-## New app design (v41, all apps)
+## New app design (v42, all apps)
 
 All 38 apps now use the new Nexus design from the UI reference board: dark navy background, electric-blue accent, cards, tabs and bottom navigation.
 
@@ -22,19 +22,21 @@ All 38 apps now use the new Nexus design from the UI reference board: dark navy 
 | `nexus-apps-5.js` | Maps, Photo & Video Generator, Day Planner, Calendar |
 | `nexus-apps-6.js` | FM Radio, Store, Shop Finder, Feedback, Security (PIN lock), Mirror Casting |
 | `nexus-apps-7.js` | Notes, Tasks, Recorder, Games, Books, SOS, Cleaner |
+| `nexus-ai-control.js` | Nexus AI device control: understands natural commands and runs them |
 | `nexus-apps.css`, `nexus-apps-more.css` | Design tokens and styles |
 
 Highlights:
 
-- **Nexus AI** gives real answers (free Pollinations text AI, with a Wikipedia fallback) and can control Nexus: "open camera", "set alarm 6:30 am", "remind me to study at 7 pm", "play Anirudh songs", "weather in Chennai", "draw a robot on Mars".
+- **Nexus AI controls the OS.** It understands natural commands in English and simple Tanglish, for example "can you turn on the torch", "anirudh paattu podu", "call Amma", "message Amma saying I reached", "add maths homework to my tasks", "add science exam on Friday at 10 am", "what's my plan today", "change wallpaper to galaxy", "make the accent red", "timer 10 minutes", "find pharmacy near me" and "navigate to Tiruppur bus stand". Anything else goes to the online AI, which replies with `[[do: ...]]` commands that Nexus runs. Say "help" to see the full list.
+- **Nexus AI** also gives real answers (free Pollinations text AI, with a Wikipedia fallback) and can control Nexus: "open camera", "set alarm 6:30 am", "remind me to study at 7 pm", "play Anirudh songs", "weather in Chennai", "draw a robot on Mars".
 - **Camera, Paint, Recorder and the Generator** save into Files, and their photos and videos show up in **Gallery**.
-- **Music** plays 30-second iTunes previews, and **FM Radio** streams live Indian and world stations.
+- **Music** plays full songs through the official YouTube player (song info and artwork from iTunes). A small player follows you around the OS, and you can drag it. If a song can't be embedded it falls back to a 30-second preview. **FM Radio** streams live Indian and world stations.
 - **Phone and Messages** share one contact list. Calls and texts are handed to the phone's own dialler and SMS app.
 - **Themes** changes the wallpaper (including your own photo), accent colour and icon shape. **Widgets** turns home-screen panels on or off.
 - **Security** runs a safety check and can lock Nexus with a 4-digit PIN. **SOS** has a hold-to-call 112 button, location sharing, a torch and a siren.
 - **Maps and Shop Finder** use OpenStreetMap. **Books** uses Open Library, and free books open in the Internet Archive reader.
 
-Limits: free AI images are limited to about one a minute per network. Alarms ring only while Nexus is open. A website can't change Wi-Fi, Bluetooth or other phone system settings.
+Limits: the free AI gives about one reply every 30 seconds per network (Nexus waits and retries by itself), and free AI images are limited to about one a minute. On phones, YouTube pauses full songs when you leave the browser or lock the screen. Alarms ring only while Nexus is open. A website can't change Wi-Fi, Bluetooth or other phone system settings.
 
 ## What works in the web prototype
 
