@@ -299,6 +299,8 @@
   on(/^(?:show|read|tell me|give me|what(?:'s| is)(?: the)?|open)\s*(?:me\s+)?(?:the\s+)?(?:latest\s+|today'?s\s+|top\s+)?(?:news|headlines)(?: today)?$|^what'?s happening(?: in the world| today)?$/, () => { inApp("news"); return { text: "📰 Opening today's headlines." }; });
   on(/^(?:clean|clear|free up|boost)\s*(?:the\s+|my\s+)?(?:phone|storage|space|cache|junk|memory|ram|nexus)?(?:\s+space)?$/, () => { inApp("cleaner"); return { text: "🧹 Opening **Cleaner** — tap Clean to free up space." }; });
 
+  on(/^(?:install|download|get|add)\s+(?:the\s+)?(.+?)(?:\s+app)?(?:\s+(?:to|on)\s+(?:my\s+)?(?:home ?screen|nexus))?$/, (m) => { const alias = { insta: "instagram", gpay: "google pay", drive: "google drive", classroom: "google classroom" }; const a = N.androidInstall?.(alias[m[1]] || m[1]); if (!a) return null; return { text: `📲 Added **${a.name}** to your Nexus home screen.`, action: ["Open Store", "store"] }; });
+
   // open a website
   on(/^(?:open|go to|visit|launch)\s+((?:https?:\/\/)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/\S*)?)$/, (m) => { N.openUrl(/^https?:/.test(m[1]) ? m[1] : "https://" + m[1]); return { text: `🌐 Opening **${esc(m[1])}**…` }; });
   // web search

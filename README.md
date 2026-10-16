@@ -9,7 +9,7 @@ A mobile-first, browser-based operating-system prototype with 33 app windows.
 - **Communication & discovery:** Phone Dialer handoff, Message Drafts, News Reader, Maps & Directions, Shop Finder, SOS & Emergency Help, Feedback.
 - **Developer & utilities:** Safe demo Terminal, Security Center, Storage Cleaner, Screen Share & Casting, Nexus AI Companion UI, Mini App Store.
 
-## New app design (v43, all apps)
+## New app design (v44, all apps)
 
 All 38 apps now use the new Nexus design from the UI reference board: dark navy background, electric-blue accent, cards, tabs and bottom navigation.
 
@@ -30,10 +30,10 @@ Highlights:
 - **Nexus AI controls the OS.** It understands natural commands in English and simple Tanglish, for example "can you turn on the torch", "anirudh paattu podu", "call Amma", "message Amma saying I reached", "add maths homework to my tasks", "add science exam on Friday at 10 am", "what's my plan today", "change wallpaper to galaxy", "make the accent red", "timer 10 minutes", "find pharmacy near me" and "navigate to Tiruppur bus stand". Anything else goes to the online AI, which replies with `[[do: ...]]` commands that Nexus runs. Say "help" to see the full list.
 - **Nexus AI** also gives real answers (free Pollinations text AI, with a Wikipedia fallback) and can control Nexus: "open camera", "set alarm 6:30 am", "remind me to study at 7 pm", "play Anirudh songs", "weather in Chennai", "draw a robot on Mars".
 - **Camera, Paint, Recorder and the Generator** save into Files, and their photos and videos show up in **Gallery**.
-- **Music** plays full songs through the official YouTube player (song info and artwork from iTunes). A small player follows you around the OS, and you can drag it. Songs are found in under a second through free search mirrors (Invidious and Piped), with the Nexus server as a backup. If a song can't be embedded it falls back to a 30-second preview. **FM Radio** streams live Indian and world stations.
+- **Music** plays full songs through the official YouTube player (song info and artwork from iTunes). A small player follows you around the OS, and you can drag it. Songs are found in under a second through free search mirrors (Invidious and Piped), with the Nexus server as a backup. The YouTube player is prepared in advance and the first songs in the list are looked up ahead, so they start instantly. If a song can't be embedded it falls back to a 30-second preview. **FM Radio** streams live Indian and world stations.
 - **Phone and Messages** share one contact list. Calls and texts are handed to the phone's own dialler and SMS app.
 - **Themes** changes the wallpaper (including your own photo), accent colour and icon shape. **Widgets** turns home-screen panels on or off.
-- **Store → Android** opens your real phone apps (WhatsApp, Instagram, Spotify and more). If an app isn't installed, its website opens instead. The download icon goes to Google Play.
+- **Store → Android** opens your real phone apps (WhatsApp, Instagram, Spotify and more). Install adds the app to a "Phone apps" section on the Nexus home screen; tapping it opens the real app, or its website if it isn't on the phone. Google Play is never opened.
 - **Security** runs a safety check and can lock Nexus with a 4-digit PIN. **SOS** has a hold-to-call 112 button, location sharing, a torch and a siren.
 - **Maps and Shop Finder** use OpenStreetMap. **Books** uses Open Library, and free books open in the Internet Archive reader.
 

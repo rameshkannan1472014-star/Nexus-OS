@@ -519,3 +519,4 @@
 .nx-mvid.full { right: auto; bottom: auto; border: 0; box-shadow: none; border-radius: 16px; background: #000; }
 .nx-mvid.full .nx-mvid-bar { display: none; } .nx-mvid.full .nx-mvid-frame { height: 100%; aspect-ratio: auto; }
 .nx-st-get { color: var(--nx-muted); margin-right: 4px; } .nx-st-hero b { color: var(--nx-text); }
+.nx-mvid.off { visibility: hidden; pointer-events: none; left: -10000px !important; top: 0 !important; right: auto !important; bottom: auto !important; }

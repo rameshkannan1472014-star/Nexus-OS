@@ -143,6 +143,25 @@
     return `intent://${rest}#Intent;scheme=${scheme};package=${pkg};S.browser_fallback_url=${encodeURIComponent(web)};end`;
   }
   const opened = () => store.get("nexus-android-opened", []);
+  const installed = () => store.get("nexus-phone-apps", []);
+  const launch = (a) => { store.set("nexus-android-opened", [a[0], ...opened().filter((x) => x !== a[0])].slice(0, 8)); if (isAndroid) location.href = appLaunch(a); else window.open(appLaunch(a), "_blank", "noopener"); };
+  function setInstalled(name, on) { const l = installed().filter((x) => x !== name); if (on) l.push(name); store.set("nexus-phone-apps", l); renderPhoneApps(); }
+  // Installed phone apps get their own icons on the Nexus home screen.
+  function renderPhoneApps() {
+    let sec = document.getElementById("nx-phone-apps"); const list = installed().map((n) => ANDROID.find((a) => a[0] === n)).filter(Boolean);
+    if (!list.length) { sec?.remove(); document.getElementById("nx-phone-apps-h")?.remove(); return; }
+    const grid = document.querySelector(".app-grid"); if (!grid) return;
+    if (!sec) {
+      const h = document.createElement("section"); h.id = "nx-phone-apps-h"; h.className = "section-heading"; h.innerHTML = `<h2>Phone apps</h2><span data-pa-count></span>`;
+      sec = document.createElement("section"); sec.id = "nx-phone-apps"; sec.className = "app-grid nx-phone-grid"; sec.setAttribute("aria-label", "Phone apps");
+      grid.after(h, sec);
+      sec.addEventListener("click", (e) => { const b = e.target.closest("[data-phone-app]"); if (!b) return; const a = ANDROID.find((x) => x[0] === b.dataset.phoneApp); if (a) launch(a); });
+    }
+    document.querySelector("#nx-phone-apps-h [data-pa-count]").textContent = list.length + (list.length === 1 ? " APP" : " APPS");
+    sec.innerHTML = list.map((a) => `<button class="app" type="button" data-phone-app="${esc(a[0])}"><span class="app-icon" style="background:${a[3]};color:#fff;font-weight:800">${esc(a[4])}</span><span>${esc(a[0])}</span></button>`).join("");
+  }
+  setTimeout(renderPhoneApps, 300);
+  N.androidInstall = (name) => { const a = N.androidApp(name); if (!a) return null; setInstalled(a.name, true); return a; };
   N.androidApp = (name) => { name = name.toLowerCase().replace(/\s+/g, ""); const a = ANDROID.find((x) => x[0].toLowerCase().replace(/\s+/g, "") === name) || ANDROID.find((x) => name.length > 3 && x[0].toLowerCase().replace(/\s+/g, "").startsWith(name)); if (!a) return null; return { name: a[0], open() { store.set("nexus-android-opened", [a[0], ...opened().filter((x) => x !== a[0])].slice(0, 8)); if (isAndroid) location.href = appLaunch(a); else window.open(appLaunch(a), "_blank"); } }; };
   const WEB = [["Scratch", "Make games with blocks", "https://scratch.mit.edu/", "#f9a825", "S"], ["Replit", "Code in your browser", "https://replit.com/", "#f26207", "R"], ["GeoGebra", "Maths graphs & geometry", "https://www.geogebra.org/calculator", "#6557d2", "G"], ["Photopea", "Free photo editor", "https://www.photopea.com/", "#18a497", "P"], ["Code.org", "Learn to code", "https://code.org/", "#00adbc", "C"], ["Excalidraw", "Sketch diagrams", "https://excalidraw.com/", "#6965db", "E"], ["Desmos", "Graphing calculator", "https://www.desmos.com/calculator", "#2f7d32", "D"], ["Typing Club", "Learn fast typing", "https://www.typingclub.com/", "#0b7bda", "T"]];
   const isStandalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
@@ -161,8 +180,8 @@
             <div class="nx-section-title">Built in <small>${apps.length} apps</small></div><div class="nx-list">${apps.map(([k, a]) => `<div class="nx-row"><span class="nx-tile ${["t-blue", "t-violet", "t-teal", "t-orange", "t-pink", "t-green", "t-red", "t-indigo"][k.length % 8]}">${esc((a.title || k)[0])}</span><span class="nx-row-main"><strong>${esc(a.title || k)}</strong><span>Nexus OS · Installed</span></span><button type="button" class="nx-btn sm ghost" data-st-open="${k}">Open</button></div>`).join("")}</div>`;
         } else if (tab === "android") {
           const rec = opened().map((n) => ANDROID.find((a) => a[0] === n)).filter(Boolean).slice(0, 4);
-          const row = (a) => `<div class="nx-row"><span class="nx-st-ic" style="background:${a[3]}">${esc(a[4])}</span><span class="nx-row-main"><strong>${esc(a[0])}</strong><span>${esc(a[1])}</span></span><a class="nx-icon-btn nx-st-get" href="${play(a[2])}" target="_blank" rel="noopener" aria-label="Get ${esc(a[0])} on Google Play" title="Get on Google Play">${ic("download", "sm")}</a><a class="nx-btn sm" data-st-launch="${esc(a[0])}" href="${esc(appLaunch(a))}" target="_blank" rel="noopener">Open</a></div>`;
-          box.innerHTML = `<div class="nx-card nx-st-hero"><span class="nx-tile t-green">${ic("smartphone")}</span><div><strong>Open your phone's apps</strong><span>${isAndroid ? "<b>Open</b> starts the app if it's installed, or its website if it isn't. Tap the download icon to install it from Google Play." : "<b>Open</b> starts the website version. On an Android phone it opens the real app."}</span></div></div>
+          const row = (a) => { const on = installed().includes(a[0]); return `<div class="nx-row"><span class="nx-st-ic" style="background:${a[3]}">${esc(a[4])}</span><span class="nx-row-main"><strong>${esc(a[0])}</strong><span>${esc(a[1])}${on ? " · On your Nexus home screen" : ""}</span></span>${on ? `<button type="button" class="nx-icon-btn nx-st-get" data-st-rm="${esc(a[0])}" aria-label="Remove ${esc(a[0])} from Nexus" title="Remove from Nexus">${ic("trash", "sm")}</button><a class="nx-btn sm" data-st-launch="${esc(a[0])}" href="${esc(appLaunch(a))}" target="_blank" rel="noopener">Open</a>` : `<button type="button" class="nx-btn sm" data-st-add="${esc(a[0])}">${ic("plus", "sm")} Install</button>`}</div>`; };
+          box.innerHTML = `<div class="nx-card nx-st-hero"><span class="nx-tile t-green">${ic("smartphone")}</span><div><strong>Add apps to Nexus</strong><span><b>Install</b> puts the app on your Nexus home screen. Tapping it opens ${isAndroid ? "the app on your phone, or its website if your phone doesn't have it" : "its website (on an Android phone it opens the real app)"}.</span></div></div>
             ${rec.length && !q ? `<div class="nx-section-title">Recently opened</div><div class="nx-list">${rec.map(row).join("")}</div><div class="nx-section-title">All apps</div>` : ""}<div class="nx-list">${ANDROID.filter((a) => m(a[0] + a[1])).map(row).join("")}</div>`;
         } else {
           box.innerHTML = `<div class="nx-list">${WEB.filter((a) => m(a[0] + a[1])).map(([n, d, u, col, l]) => `<div class="nx-row"><span class="nx-st-ic" style="background:${col}">${esc(l)}</span><span class="nx-row-main"><strong>${esc(n)}</strong><span>${esc(d)}</span></span><a class="nx-btn sm ghost" href="${u}" target="_blank" rel="noopener">Open</a></div>`).join("")}</div>`;
@@ -175,6 +194,8 @@
       win.addEventListener("click", async (e) => {
         const g = (s) => e.target.closest(s);
         if (g("[data-st-open]")) { window.openApp(g("[data-st-open]").dataset.stOpen); return; }
+        if (g("[data-st-add]")) { const n = g("[data-st-add]").dataset.stAdd; setInstalled(n, true); toast(win, `${n} added to your home screen`); render(); return; }
+        if (g("[data-st-rm]")) { const n = g("[data-st-rm]").dataset.stRm; setInstalled(n, false); toast(win, `${n} removed from Nexus`); render(); return; }
         if (g("[data-st-launch]")) { const n = g("[data-st-launch]").dataset.stLaunch; store.set("nexus-android-opened", [n, ...opened().filter((x) => x !== n)].slice(0, 8)); if (isAndroid) { e.preventDefault(); location.href = g("[data-st-launch]").href; } return; }
         if (g("[data-st-search]")) { form.hidden = !form.hidden; if (!form.hidden) form.q.focus(); else { q = ""; form.q.value = ""; render(); } return; }
         if (g("[data-st-install]") && installEvt) { installEvt.prompt(); const r = await installEvt.userChoice.catch(() => null); if (r?.outcome === "accepted") toast(win, "Installing Nexus OS…"); installEvt = null; render(); }
@@ -271,7 +292,7 @@
       win.querySelector("[data-fb-form]").addEventListener("submit", (e) => {
         e.preventDefault(); const f = e.target; const msg = f.msg.value.trim(); if (!msg) return;
         const label = TYPES.find((t) => t[0] === type)[1];
-        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v43` : "";
+        const dev = f.dev.checked ? `\n\n---\nRating: ${stars ? "★".repeat(stars) + "☆".repeat(5 - stars) : "not given"}\nBrowser: ${navigator.userAgent}\nScreen: ${screen.width}×${screen.height} @${devicePixelRatio}x\nNexus: v44` : "";
         const title = `[${type === "bug" ? "Bug" : type === "idea" ? "Idea" : "Thanks"}] ${msg.split("\n")[0].slice(0, 70)}`;
         window.open(`${REPO}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(msg + dev)}${type === "bug" ? "&labels=bug" : type === "idea" ? "&labels=enhancement" : ""}`, "_blank", "noopener");
         const h = store.get("nexus-feedback", []); h.unshift({ id: uid(), type, msg, stars, at: Date.now() }); store.set("nexus-feedback", h.slice(0, 20));
