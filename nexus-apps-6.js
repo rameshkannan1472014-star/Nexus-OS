@@ -184,7 +184,7 @@
           box.innerHTML = `<div class="nx-card nx-st-hero"><span class="nx-tile t-green">${ic("smartphone")}</span><div><strong>Add apps to Nexus</strong><span><b>Install</b> puts the app on your Nexus home screen. Tapping it opens ${isAndroid ? "the app on your phone, or its website if your phone doesn't have it" : "its website (on an Android phone it opens the real app)"}.</span></div></div>
             ${rec.length && !q ? `<div class="nx-section-title">Recently opened</div><div class="nx-list">${rec.map(row).join("")}</div><div class="nx-section-title">All apps</div>` : ""}<div class="nx-list">${ANDROID.filter((a) => m(a[0] + a[1])).map(row).join("")}</div>`;
         } else {
-          box.innerHTML = `<div class="nx-list">${WEB.filter((a) => m(a[0] + a[1])).map(([n, d, u, col, l]) => `<div class="nx-row"><span class="nx-st-ic" style="background:${col}">${esc(l)}</span><span class="nx-row-main"><strong>${esc(n)}</strong><span>${esc(d)}</span></span><a class="nx-btn sm ghost" href="${u}" target="_blank" rel="noopener">Open</a></div>`).join("")}</div>`;
+          box.innerHTML = `<div class="nx-list">${WEB.filter((a) => m(a[0] + a[1])).map(([n, d, u, col, l]) => `<div class="nx-row"><span class="nx-st-ic" style="background:${col}">${esc(l)}</span><span class="nx-row-main"><strong>${esc(n)}</strong><span>${esc(d)}</span></span><button class="nx-btn sm ghost" type="button" data-st-web="${esc(n)}" data-st-url="${esc(u)}">Open in Nexus</button></div>`).join("")}</div>`;
         }
       };
       render(); this._tab = (k) => { tab = k; render(); };
@@ -194,6 +194,7 @@
       win.addEventListener("click", async (e) => {
         const g = (s) => e.target.closest(s);
         if (g("[data-st-open]")) { window.openApp(g("[data-st-open]").dataset.stOpen); return; }
+        if (g("[data-st-web]")) { const b = g("[data-st-web]"); if (window.NexusApps?.openUrl) window.NexusApps.openUrl(b.dataset.stUrl); else toast(win, "Nexus Browser is unavailable. Reopen Nexus OS and try again."); return; }
         if (g("[data-st-add]")) { const n = g("[data-st-add]").dataset.stAdd; setInstalled(n, true); toast(win, `${n} added to your home screen`); render(); return; }
         if (g("[data-st-rm]")) { const n = g("[data-st-rm]").dataset.stRm; setInstalled(n, false); toast(win, `${n} removed from Nexus`); render(); return; }
         if (g("[data-st-launch]")) { const n = g("[data-st-launch]").dataset.stLaunch; store.set("nexus-android-opened", [n, ...opened().filter((x) => x !== n)].slice(0, 8)); if (isAndroid) { e.preventDefault(); location.href = g("[data-st-launch]").href; } return; }
