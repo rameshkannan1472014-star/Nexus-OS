@@ -222,9 +222,11 @@ async function searchMusic(query){
    const title=document.createElement("strong");title.textContent=track.trackName||"Untitled track";
    const artist=document.createElement("span");artist.textContent=(track.artistName||"Unknown artist")+" · "+(track.collectionName||"");
    info.append(title,artist);
-   const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.src=track.previewUrl||"";audio.setAttribute("aria-label","Preview "+(track.trackName||"track"));
+   const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.setAttribute("playsinline","");audio.setAttribute("aria-label","Play preview of "+(track.trackName||"track"));
+   const previewUrl=typeof track.previewUrl==="string"?track.previewUrl.replace(/^http:/i,"https:"):"";
+   if(previewUrl){audio.src=previewUrl;audio.addEventListener("error",()=>{let note=card.querySelector(".music-playback-note");if(!note){note=document.createElement("span");note.className="hint music-playback-note";card.append(note)}note.textContent="This preview is unavailable right now. Try another track or Open track."},{once:true});audio.addEventListener("playing",()=>{const note=card.querySelector(".music-playback-note");if(note)note.remove()})}
    const link=document.createElement("a");link.href=track.trackViewUrl||"#";link.target="_blank";link.rel="noopener noreferrer";link.textContent="Open track";
-   card.append(img,info);if(track.previewUrl)card.append(audio);else{const no=document.createElement("span");no.className="hint";no.textContent="No preview";card.append(no)}card.append(link);box.append(card);
+   card.append(img,info);if(previewUrl)card.append(audio);else{const no=document.createElement("span");no.className="hint";no.textContent="No preview";card.append(no)}card.append(link);box.append(card);
   });
  }catch(error){box.innerHTML="<p>Music search could not connect. Check your internet and try again.</p>";}
 }
