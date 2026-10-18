@@ -179,12 +179,26 @@
     M.mode = M.mode === "yt" ? "yt" : "none"; M.loading = "Finding the full song…"; mRefresh();
     const slow = setTimeout(() => { if (tok === M.token && M.loading) { M.loading = "Still searching — almost there…"; mRefresh(true); } }, 6000);
     try {
-      const ids = await songIds(t); if (tok !== M.token) return;
-      if (!ids.length) throw new Error("none");
+      // Do not leave the user waiting on third-party video search. Start a playable
+      // preview if full-track lookup is slow; the user can tap another track anytime.
+      const ids = await Promise.race([
+        songIds(t),
+        new Promise((resolve) => setTimeout(() => resolve([]), 8000))
+      ]);
+      if (tok !== M.token) return;
+      if (!ids.length) {
+        mPreview(t, "Full playback is taking too long — playing the available preview.");
+        return;
+      }
       M.loading = "Starting…"; await ytPlay(ids); if (tok !== M.token) return; setTimeout(prefetchQueue, 1500);
-      setTimeout(() => { if (tok === M.token && M.mode === "yt" && YP.state !== 1 && YP.state !== 3) { M.loading = ""; mRefresh(true); } }, 6000);
-    } catch (_) { if (tok === M.token) mPreview(t, "Full song not available right now — playing a 30-second preview."); }
-    finally { clearTimeout(slow); }
+      setTimeout(() => {
+        if (tok === M.token && M.mode === "yt" && YP.state !== 1 && YP.state !== 3) {
+          mPreview(t, "The full player did not start — playing the available preview.");
+        }
+      }, 10000);
+    } catch (_) {
+      if (tok === M.token) mPreview(t, "Full song not available right now — playing the available preview.");
+    } finally { clearTimeout(slow); }
     mRefresh();
   }
   function mStep(d) {
