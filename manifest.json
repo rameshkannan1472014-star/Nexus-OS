@@ -1,20 +1,50 @@
 {
-  "id": "./",
   "name": "Nexus OS",
-  "short_name": "Nexus OS",
-  "description": "A futuristic personal workspace with a system-wide AI companion.",
-  "start_url": "./",
+  "short_name": "Nexus",
+  "description": "A futuristic operating system with a system-wide AI companion",
+  "start_url": "./?v=26",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#10121b",
-  "theme_color": "#10121b",
+  "display_override": ["standalone", "window-controls-overlay"],
+  "orientation": "portrait-primary",
+  "background_color": "#0a0e17",
+  "theme_color": "#0a0e17",
+  "lang": "en",
+  "categories": ["productivity", "utilities", "lifestyle"],
   "icons": [
     {
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Nexus AI",
+      "short_name": "AI",
+      "description": "Open the floating AI companion",
+      "url": "./?open=ai",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Browser",
+      "short_name": "Browser",
+      "url": "./?open=browser",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Notes",
+      "short_name": "Notes",
+      "url": "./?open=notes",
+      "icons": [{ "src": "./icon.svg", "sizes": "any" }]
+    }
+  ],
+  "prefer_related_applications": false
 }
