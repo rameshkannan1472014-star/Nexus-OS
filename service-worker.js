@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexus-os-v46";
+const CACHE_NAME = "nexus-os-v47";
 const APP_SHELL = [
   "./",
   "./index.html?v=46",
@@ -7,7 +7,7 @@ const APP_SHELL = [
   "./nexus-apps.css?v=46",
   "./nexus-apps-more.css?v=46",
   "./nexus-apps.js?v=46",
-  "./nexus-apps-2.js?v=46",
+  "./nexus-apps-2.js?v=47",
   "./nexus-apps-3.js?v=46",
   "./nexus-apps-4.js?v=46",
   "./nexus-apps-5.js?v=46",
