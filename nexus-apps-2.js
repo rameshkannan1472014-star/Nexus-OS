@@ -154,9 +154,33 @@
   };
   function mStop() { M.token++; M.audio.pause(); try { YP.player?.stopVideo(); } catch (_) {} M.mode = "none"; M.loading = ""; M.idx = -1; const hs = document.getElementById("music-status"); if (hs) hs.textContent = "Nothing playing"; mRefresh(); }
   function mPreview(t, msg) {
-    try { YP.player?.stopVideo(); } catch (_) {} M.mode = "preview"; M.loading = ""; M.audio.src = t.preview; M.audio.play().catch(() => {});
-    if (msg) { const w = document.querySelector("#app-layer .nx-music"); if (w) toast(w, msg); } mRefresh();
+    try { YP.player?.stopVideo(); } catch (_) {}
+    M.mode = "preview"; M.loading = "";
+    M.audio.pause(); M.audio.removeAttribute("src"); M.audio.load();
+    const preview = typeof t.preview === "string" ? t.preview.replace(/^http:/i, "https:") : "";
+    if (!preview) {
+      const w = document.querySelector("#app-layer .nx-music");
+      if (w) toast(w, "No playable preview is available for this track. Try another result.");
+      mRefresh(); return;
+    }
+    M.audio.src = preview; M.audio.load();
+    M.audio.play().then(() => {
+      M.loading = "";
+      if (msg) { const w = document.querySelector("#app-layer .nx-music"); if (w) toast(w, msg); }
+      mRefresh();
+    }).catch(() => {
+      const w = document.querySelector("#app-layer .nx-music");
+      if (w) toast(w, "Preview could not start. Tap Play again or choose another track.");
+      mRefresh();
+    });
+    if (msg) { const w = document.querySelector("#app-layer .nx-music"); if (w) toast(w, msg); }
+    mRefresh();
   }
+  M.audio.addEventListener("error", () => {
+    if (M.mode !== "preview") return;
+    const w = document.querySelector("#app-layer .nx-music");
+    if (w) toast(w, "This preview is unavailable. Try another track.");
+  });
   async function mPlay(queue, idx) {
     M.queue = queue; M.idx = idx; const t = mCur(); if (!t) return; const tok = ++M.token;
     N.radio?.stop(); M.audio.pause(); try { YP.player?.pauseVideo(); } catch (_) {}
