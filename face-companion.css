@@ -1,0 +1,139 @@
+/* Nexus OS — Floating Face Companion */
+.face-companion {
+  position: fixed;
+  right: 18px;
+  bottom: 120px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  touch-action: none;
+  font-family: inherit;
+}
+
+.face-companion-bubble {
+  max-width: 210px;
+  background: rgba(20, 24, 40, 0.92);
+  border: 1px solid rgba(120, 140, 255, 0.35);
+  color: #e8ecff;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.face-companion-bubble.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.face-companion-avatar {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 140, 255, 0.6);
+  background: radial-gradient(circle at 35% 30%, #2a3358, #10121b 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  cursor: grab;
+  box-shadow: 0 6px 20px rgba(40, 60, 160, 0.5);
+  transition: transform 0.2s ease, border-color 0.3s ease;
+  position: relative;
+}
+
+.face-companion-avatar:active { cursor: grabbing; }
+
+.face-companion-avatar.watching {
+  border-color: #4ade80;
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.55);
+}
+
+.face-companion-avatar.react { animation: fc-pop 0.45s ease; }
+
+@keyframes fc-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.22) rotate(-6deg); }
+  100% { transform: scale(1); }
+}
+
+.face-companion-status {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #64748b;
+  border: 2px solid #10121b;
+}
+
+.face-companion-avatar.watching .face-companion-status { background: #4ade80; }
+
+.face-companion-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.face-companion-avatar.talking .fc-face { animation: fc-pop 0.6s ease infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .face-companion-avatar, .face-companion-avatar.react,
+  .face-companion-avatar.talking .fc-face, .fc-face .fc-eyes { animation: none; }
+}
+
+.face-companion-actions button {
+  background: rgba(20, 24, 40, 0.9);
+  border: 1px solid rgba(120, 140, 255, 0.35);
+  color: #cdd6ff;
+  border-radius: 999px;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.face-companion-actions button:hover { border-color: #7c8cff; }
+
+.face-companion-preview {
+  position: fixed;
+  left: 12px;
+  bottom: 120px;
+  z-index: 9999;
+  width: 120px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 140, 255, 0.4);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background: #000;
+}
+
+.face-companion-preview video {
+  width: 100%;
+  display: block;
+  transform: scaleX(-1);
+}
+
+.face-companion-preview small {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  color: #9aa6d0;
+  padding: 3px 0;
+  background: rgba(16, 18, 27, 0.9);
+}
+
+.fc-face { width: 64px; height: 64px; display: block; pointer-events: none; }
+.fc-face .fc-eyes { transform-origin: 50px 45px; animation: fc-blink 4s infinite; }
+@keyframes fc-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.face-companion-avatar { animation: fc-float 3s ease-in-out infinite; }
+@keyframes fc-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
