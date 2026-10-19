@@ -135,12 +135,11 @@
   ];
   const isAndroid = /Android/i.test(navigator.userAgent);
   const play = (id) => "https://play.google.com/store/apps/details?id=" + id;
-  // Android Chrome: an intent with the app's package opens the installed app; if it isn't installed, Chrome goes to the website instead of the Play Store.
-  function appLaunch([, , pkg, , , link, web]) {
-    if (!isAndroid || !link) return web;
-    const u = new URL(link.includes("://") ? link : "https://" + link); const scheme = u.protocol.replace(":", "");
-    const rest = link.replace(/^[a-z]+:\/\//i, "");
-    return `intent://${rest}#Intent;scheme=${scheme};package=${pkg};S.browser_fallback_url=${encodeURIComponent(web)};end`;
+  // Launch the installed Android package directly; browsers fall back to its website when the app is unavailable.
+  function appLaunch([, , pkg, , , , web]) {
+    const fallback = web || play(pkg);
+    if (!isAndroid || !pkg) return fallback;
+    return `intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${pkg};S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
   }
   const opened = () => store.get("nexus-android-opened", []);
   const installed = () => store.get("nexus-phone-apps", []);
