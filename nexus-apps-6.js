@@ -135,10 +135,14 @@
   ];
   const isAndroid = /Android/i.test(navigator.userAgent);
   const play = (id) => "https://play.google.com/store/apps/details?id=" + id;
-  // Launch the installed Android package directly; browsers fall back to its website when the app is unavailable.
-  function appLaunch([, , pkg, , , , web]) {
+  // Use registered desktop app protocols when available, and launch Android packages directly on Android.
+  function appLaunch([, , pkg, , , link, web]) {
     const fallback = web || play(pkg);
-    if (!isAndroid || !pkg) return fallback;
+    if (!isAndroid) {
+      const scheme = String(link || "").match(/^([a-z][a-z\d+.-]*):/i)?.[1]?.toLowerCase();
+      return scheme && scheme !== "http" && scheme !== "https" ? link : fallback;
+    }
+    if (!pkg) return fallback;
     return `intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=${pkg};S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
   }
   const opened = () => store.get("nexus-android-opened", []);
