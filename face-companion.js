@@ -284,8 +284,23 @@
     var newBtn = el("button", null, "⟳");
     newBtn.setAttribute("aria-label", "Start a new chat");
     newBtn.title = "Start a new chat";
+    var voiceBtn = el("button", null, state.voiceEnabled ? "🔊" : "🔇");
+    voiceBtn.id = "fc-voice-btn";
+    voiceBtn.type = "button";
+    voiceBtn.title = state.voiceEnabled ? "Mute voice" : "Turn voice on";
+    voiceBtn.setAttribute("aria-label", voiceBtn.title);
+    voiceBtn.setAttribute("aria-pressed", String(state.voiceEnabled));
+    voiceBtn.addEventListener("click", toggleVoice);
+    var camBtn = el("button", null, "📷");
+    camBtn.id = "fc-cam-btn";
+    camBtn.type = "button";
+    camBtn.title = "Let me see your face";
+    camBtn.setAttribute("aria-label", "Let me see your face");
+    camBtn.addEventListener("click", toggleCamera);
     var closeBtn = el("button", null, "✕");
     closeBtn.setAttribute("aria-label", "Close chat");
+    head.appendChild(voiceBtn);
+    head.appendChild(camBtn);
     head.appendChild(newBtn);
     head.appendChild(closeBtn);
 
