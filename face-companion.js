@@ -70,105 +70,110 @@
     surprised: ["M28 26 Q35 22 42 26", "M58 26 Q65 22 72 26"],
     fearful: ["M28 32 L42 27", "M58 27 L72 32"]
   };
+  /* Ramesh's own design: a rounded body with two dark bars for the face,
+     and two straps that hang from the top and bottom like little arms.
+     Drawn as SVG so it stays sharp and can blink, talk and react. */
   function faceSVG(expr) {
-    var mouth = MOUTHS[expr] || MOUTHS.idle;
-    var filled = expr === "happy" || expr === "surprised";
-    var eyeH = expr === "surprised" || expr === "fearful" ? 9 : (expr === "happy" ? 4 : 7);
-    var brows = BROWS[expr] || [];
-    var b = brows.map(function (d) { return "<path d='" + d + "' stroke='#9fb4ff' stroke-width='3' stroke-linecap='round' fill='none'/>"; }).join("");
+    var e = expr || "idle";
+    var eyeH = e === "surprised" || e === "fearful" ? 5.5 : (e === "happy" ? 2.4 : 4);
+    var eyeY = 30;
+    var mouth = e === "happy" ? "M40 44 Q50 52 60 44"
+      : e === "sad" ? "M41 47 Q50 41 59 47"
+      : e === "surprised" ? "M46 45 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0"
+      : e === "angry" ? "M42 46 L58 46"
+      : e === "fearful" ? "M42 46 Q46 43 50 46 Q54 49 58 46"
+      : "M43 45 L57 45";
+    var mouthFill = e === "happy" || e === "surprised" ? "#5eead4" : "none";
+    var brows = {
+      sad: ["M38 24 L46 22", "M54 22 L62 24"],
+      angry: ["M38 21 L46 25", "M54 25 L62 21"],
+      surprised: ["M38 20 Q42 17 46 20", "M54 20 Q58 17 62 20"]
+    }[e] || [];
+    var browSvg = brows.map(function (d) {
+      return "<path d='" + d + "' stroke='#9fb4ff' stroke-width='2.2' stroke-linecap='round' fill='none'/>";
+    }).join("");
     return "<svg class='fc-face' viewBox='0 0 100 100' aria-hidden='true'>" +
-      "<line x1='50' y1='4' x2='50' y2='14' stroke='#7c8cff' stroke-width='3'/><circle cx='50' cy='4' r='4' fill='#4ade80'/>" +
-      "<rect x='14' y='14' width='72' height='74' rx='24' fill='#dfe6ff'/>" +
-      "<rect x='20' y='22' width='60' height='58' rx='18' fill='#141a33'/>" + b +
-      "<g class='fc-eyes'><ellipse cx='37' cy='45' rx='6' ry='" + eyeH + "' fill='#5eead4'/><ellipse cx='63' cy='45' rx='6' ry='" + eyeH + "' fill='#5eead4'/></g>" +
-      "<path d='" + mouth + "' stroke='#5eead4' stroke-width='3.5' stroke-linecap='round' fill='" + (filled ? "#5eead4" : "none") + "'/>" +
-      (expr === "sad" ? "<ellipse cx='30' cy='56' rx='2.5' ry='4' fill='#60a5fa'/>" : "") +
+      "<g class='fc-strap fc-strap-top'>" +
+        "<path d='M44 20 Q36 4 54 2' stroke='#8b97c9' stroke-width='6' stroke-linecap='round' fill='none'/>" +
+        "<path d='M44 20 Q36 4 54 2' stroke='#c9d3f5' stroke-width='3' stroke-linecap='round' fill='none'/>" +
+      "</g>" +
+      "<rect x='26' y='18' width='48' height='64' rx='12' fill='#dfe6ff'/>" +
+      "<rect x='30' y='23' width='40' height='54' rx='9' fill='#12182e'/>" +
+      browSvg +
+      "<g class='fc-eyes'>" +
+        "<rect x='36' y='" + (eyeY - eyeH / 2) + "' width='11' height='" + eyeH + "' rx='" + (eyeH / 2) + "' fill='#5eead4'/>" +
+        "<rect x='53' y='" + (eyeY - eyeH / 2) + "' width='11' height='" + eyeH + "' rx='" + (eyeH / 2) + "' fill='#5eead4'/>" +
+      "</g>" +
+      "<path class='fc-mouth' d='" + mouth + "' stroke='#5eead4' stroke-width='2.6' stroke-linecap='round' fill='" + mouthFill + "'/>" +
+      (e === "sad" ? "<ellipse cx='33' cy='39' rx='1.8' ry='3' fill='#60a5fa'/>" : "") +
+      "<g class='fc-strap fc-strap-bottom'>" +
+        "<path d='M56 80 Q64 96 46 98' stroke='#8b97c9' stroke-width='6' stroke-linecap='round' fill='none'/>" +
+        "<path d='M56 80 Q64 96 46 98' stroke='#c9d3f5' stroke-width='3' stroke-linecap='round' fill='none'/>" +
+      "</g>" +
       "</svg>";
   }
 
   /* ---------- Top AI bar: avatar + input, pinned, takes no page space ---------- */
   function buildBar() {
+    /* The face alone, in the top centre. Nothing else sits in this bar. */
     var bar = el("div", "fc-bar");
     bar.id = "fc-bar";
-    bar.setAttribute("role", "search");
 
     var avatar = el("div", "fc-bar-avatar", faceSVG("idle") + "<span class='face-companion-status'></span>");
     avatar.id = "fc-avatar";
-    avatar.title = "Nexus Buddy — tap to talk, hold for personality";
+    avatar.title = "Nexus Buddy — double tap to talk, hold for personality";
     avatar.setAttribute("role", "button");
     avatar.setAttribute("tabindex", "0");
-    avatar.setAttribute("aria-label", "Nexus Buddy — tap to talk, hold for personality");
-
-    var form = el("form", "fc-bar-form");
-    form.id = "fc-bar-form";
-    var input = el("input");
-    input.type = "text";
-    input.id = "fc-bar-input";
-    input.placeholder = "Ask me anything…";
-    input.autocomplete = "off";
-    input.maxLength = 800;
-    input.setAttribute("aria-label", "Ask your Nexus companion");
-    input.setAttribute("enterkeyhint", "send");
-    var send = el("button", "fc-bar-send", "➤");
-    send.type = "submit";
-    send.setAttribute("aria-label", "Send");
-    var mic = el("button", "fc-bar-mic", "🎤");
-    mic.type = "button";
-    mic.setAttribute("aria-label", "Speak to your companion");
-    form.appendChild(input);
-    form.appendChild(mic);
-    form.appendChild(send);
-
-    var voiceBtn = el("button", "fc-bar-voice", "🔇");
-    voiceBtn.id = "fc-voice-btn";
-    voiceBtn.type = "button";
-    voiceBtn.title = "Turn voice on";
-    voiceBtn.setAttribute("aria-label", "Turn voice on");
-    voiceBtn.setAttribute("aria-pressed", "false");
-
-    var camBtn = el("button", "fc-bar-cam", "📷");
-    camBtn.id = "fc-cam-btn";
-    camBtn.type = "button";
-    camBtn.title = "Let me see your face";
-    camBtn.setAttribute("aria-label", "Let me see your face");
+    avatar.setAttribute("aria-label", "Nexus Buddy — double tap to talk, hold for personality");
 
     bar.appendChild(avatar);
-    bar.appendChild(form);
-    bar.appendChild(camBtn);
-    bar.appendChild(voiceBtn);
     document.body.appendChild(bar);
 
     /* The page starts below the bar, so the bar never covers content. */
     document.documentElement.style.setProperty("--fc-bar-h", "56px");
     applyBarHeight();
 
-    /* Tap = talk, long-press = personality. */
+    /* Double tap = live talk. Hold = personality. One tap does nothing,
+       so you can never open it by accident. */
     var holdTimer = null;
-    function startHold(e) {
+    var taps = 0;
+    var tapTimer = null;
+    var held = false;
+
+    avatar.addEventListener("pointerdown", function (e) {
       if (e) e.preventDefault();
-      holdTimer = setTimeout(function () { holdTimer = null; openPersonalityPicker(); }, 650);
-    }
-    function endHold(e) {
-      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; toggleChat(); }
-    }
-    avatar.addEventListener("pointerdown", startHold);
-    avatar.addEventListener("pointerup", endHold);
-    avatar.addEventListener("pointerleave", function () { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } });
-    avatar.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleChat(); } });
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      sendToCompanion(text);
+      held = false;
+      holdTimer = setTimeout(function () {
+        holdTimer = null;
+        held = true;
+        openPersonalityPicker();
+      }, 650);
     });
-
-    input.addEventListener("focus", function () { openChat(false); });
-
-    mic.addEventListener("click", startListening);
-    camBtn.addEventListener("click", toggleCamera);
-    voiceBtn.addEventListener("click", toggleVoice);
+    avatar.addEventListener("pointerup", function () {
+      if (held) return;                       /* that was a long press */
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+      taps++;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(function () { taps = 0; }, 420);
+      if (taps >= 2) {
+        taps = 0;
+        clearTimeout(tapTimer);
+        startLiveTalk();
+      }
+    });
+    avatar.addEventListener("pointerleave", function () {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+    });
+    avatar.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startLiveTalk(); }
+    });
+    /* Double tap on a touchscreen also fires dblclick on some browsers. */
+    avatar.addEventListener("dblclick", function (e) { e.preventDefault(); startLiveTalk(); });
+    /* Voice and camera live in the chat header now; the bar holds the face only. */
+    var voiceBtn = document.getElementById("fc-voice-btn");
+    if (voiceBtn) voiceBtn.addEventListener("click", toggleVoice);
+    var camBtn = document.getElementById("fc-cam-btn");
+    if (camBtn) camBtn.addEventListener("click", toggleCamera);
   }
 
   /* Measure the bar (incl. the phone's safe-area inset) and reserve that space. */
@@ -206,14 +211,21 @@
       rec.lang = "en-IN";
       rec.interimResults = false;
       rec.maxAlternatives = 1;
-      input.placeholder = "Listening…";
+      var resting = "Type, or tap 🎤 to speak…";
+      input.placeholder = "Listening… speak now";
+      var fb = document.getElementById("fc-bubble");
+      if (fb) { fb.textContent = "Listening… 🎤"; fb.classList.add("show"); }
       rec.onresult = function (e) {
         var text = (e.results[0][0].transcript || "").trim();
-        input.placeholder = "Ask me anything…";
+        input.placeholder = resting;
         if (text) sendToCompanion(text);
       };
-      rec.onerror = function () { input.placeholder = "Ask me anything…"; };
-      rec.onend = function () { input.placeholder = "Ask me anything…"; };
+      rec.onerror = function () {
+        input.placeholder = resting;
+        var fb2 = document.getElementById("fc-bubble");
+        if (fb2) { fb2.textContent = "I couldn't hear that — try typing?"; fb2.classList.add("show"); }
+      };
+      rec.onend = function () { input.placeholder = resting; };
       rec.start();
     } catch (_) { input.placeholder = "Ask me anything…"; }
   }
@@ -303,8 +315,31 @@
     var log = el("div", "fc-chat-log");
     log.id = "fc-chat-log";
 
+    /* Typing still works — the input lives inside the panel, out of the way
+       until you need it. */
+    var form = el("form", "fc-chat-form");
+    form.id = "fc-bar-form";
+    var input = el("input");
+    input.type = "text";
+    input.id = "fc-bar-input";
+    input.placeholder = "Type, or tap 🎤 to speak…";
+    input.autocomplete = "off";
+    input.maxLength = 800;
+    input.setAttribute("aria-label", "Message your Nexus companion");
+    input.setAttribute("enterkeyhint", "send");
+    var mic = el("button", null, "🎤");
+    mic.type = "button";
+    mic.setAttribute("aria-label", "Speak to your companion");
+    var send = el("button", null, "➤");
+    send.type = "submit";
+    send.setAttribute("aria-label", "Send");
+    form.appendChild(input);
+    form.appendChild(mic);
+    form.appendChild(send);
+
     panel.appendChild(head);
     panel.appendChild(log);
+    panel.appendChild(form);
     document.body.appendChild(panel);
 
     newBtn.addEventListener("click", function () {
@@ -312,6 +347,23 @@
       openChat(true);
     });
     closeBtn.addEventListener("click", closeChat);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      sendToCompanion(text);
+    });
+    mic.addEventListener("click", startListening);
+  }
+
+  /* Double tap on the face = live talk: open the chat and start listening. */
+  function startLiveTalk() {
+    openChat(true);
+    var line = brainCall("onGreet", null);
+    if (line) addMsg("me", line);
+    setTimeout(startListening, 250);
   }
 
   function addMsg(role, text) {
