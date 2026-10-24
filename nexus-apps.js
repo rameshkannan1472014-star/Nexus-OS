@@ -330,6 +330,10 @@
   const YT_CACHE_MIN = 30;
   const ytState = { mode: "home", query: "", next: "", channel: null };
   async function ytSearch(params) {
+    /* v51: search straight from the browser (the Render API is suspended). */
+    if (window.NexusYouTube && window.NexusYouTube.search) {
+      return window.NexusYouTube.search(params);
+    }
     const key = "nexus-yt-cache:" + JSON.stringify(params);
     const cached = store.get(key, null);
     if (cached && Date.now() - cached.at < YT_CACHE_MIN * 60000) return cached.data;
@@ -441,8 +445,8 @@
     const isShorts = mode === "shorts";
     const target = win.querySelector(isShorts ? "[data-yt-shorts-grid]" : "[data-yt-feed]");
     if (!target) return;
-    const slowTimer = setTimeout(() => { const n = target.querySelector("[data-yt-wait]"); if (n) n.hidden = false; }, 4000);
-    if (!append) target.innerHTML = ytSkeleton(isShorts) + `<p class="nx-note" data-yt-wait hidden>Waking up the Nexus server — the first search can take up to a minute.</p>`;
+    const slowTimer = setTimeout(() => { const n = target.querySelector("[data-yt-wait]"); if (n) n.hidden = false; }, 6000);
+    if (!append) target.innerHTML = ytSkeleton(isShorts) + `<p class="nx-note" data-yt-wait hidden>Still loading…</p>`;
     else target.querySelector("[data-yt-more]")?.remove();
     const q = ytQuery();
     try {
@@ -454,18 +458,16 @@
         if (!append) target.innerHTML = html || `<div class="nx-empty" style="grid-column:1/-1">No Shorts found.</div>`; else target.insertAdjacentHTML("beforeend", html);
         if (ytState.next) target.insertAdjacentHTML("beforeend", `<button class="nx-btn ghost block" style="grid-column:1/-1" type="button" data-yt-more>Load more Shorts</button>`);
       } else {
-        const [videos, shorts] = await Promise.all([
-          ytSearch({ q, mode: "videos", pageToken: append ? ytState.next : "" }),
-          append ? Promise.resolve(null) : ytSearch({ q: q + " #shorts", mode: "shorts" }).catch(() => null)
-        ]);
+        /* v51: the main list first, Shorts afterwards — waiting on both made
+           the app feel stuck, and the second call was often the slow one. */
+        const videos = await ytSearch({ q, mode: "videos", pageToken: append ? ytState.next : "" });
+        const shorts = null;
         const items = (videos.items || []).filter((i) => ytValid(i.videoId));
         ytState.next = videos.nextPageToken || "";
         if (!append) {
           if (!items.length) { target.innerHTML = `<div class="nx-empty">${ic("search")}<strong>No videos found</strong>Try a different search.</div>`; return; }
           const [first, ...rest] = items;
-          const shortItems = (shorts?.items || []).filter((i) => ytValid(i.videoId)).slice(0, 8);
           target.innerHTML = ytCard(first, "featured") +
-            (shortItems.length ? `<div class="nx-section-title"><span style="display:flex;align-items:center;gap:6px">${ic("shorts", "sm")} Shorts</span><button type="button" data-nx-nav="shorts">See all</button></div><div class="nx-yt-shorts">${shortItems.map((i) => ytCard(i, "short")).join("")}</div>` : "") +
             `<div class="nx-yt-list" data-yt-list>${rest.map((i) => ytCard(i, "item")).join("")}</div>`;
         } else {
           target.querySelector("[data-yt-list]")?.insertAdjacentHTML("beforeend", items.map((i) => ytCard(i, "item")).join(""));
@@ -1423,7 +1425,8 @@
     });
     if (changed) { remSave(list); const w = document.querySelector("#app-layer .nx-reminder"); if (w) remRender(w); }
   }
-  setInterval(remCheck, 15000);
+  /* v51: a lighter timer — every 30s, and nothing at all while the tab is hidden. */
+  setInterval(function () { if (!document.hidden) remCheck(); }, 30000);
   setTimeout(remCheck, 2500);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) remCheck(); });
   const remState = { filter: "all", view: "home", calMonth: null, calSel: null, showDone: false };

@@ -619,7 +619,7 @@
   }
 
   function detectLoop() {
-    if (!state.detecting || !state.video) return;
+    if (!state.detecting || !state.video || document.hidden) return;
     var options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.4 });
     faceapi.detectSingleFace(state.video, options).withFaceExpressions()
       .then(function (result) {
@@ -708,7 +708,7 @@
       window.addEventListener(ev, touch, { passive: true });
     });
     setInterval(function () {
-      if (document.hidden || state.watching) return;
+      if (document.hidden || state.watching) return;   /* paused while the tab is hidden */
       var mins = Math.floor((Date.now() - lastAct) / 60000);
       if (mins < 3 || Date.now() - state.lastSpeakAt < 60000) return;
       var key = "idle" + mins;

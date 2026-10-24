@@ -699,3 +699,76 @@ body.nx-picking .app { cursor: grab; }
 /* Open apps feel quicker: shorter window transition */
 #app-layer .nx-app { animation-duration: 0.22s; }
 @media (prefers-reduced-motion: reduce) { .app.nx-picked { animation: none; } }
+
+/* ---------- Control Center v51: compact by default ---------- */
+.nx-cc-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 12px 0 6px; }
+.nx-cc-big {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 4px 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(120, 140, 255, 0.2);
+  background: rgba(26, 33, 54, 0.95);
+  color: #dbe3ff;
+  cursor: pointer;
+}
+.nx-cc-big span { font-size: 18px; }
+.nx-cc-big b { font-size: 11.5px; font-weight: 650; }
+.nx-cc-big small { font-size: 9.5px; color: #8794c4; }
+.nx-cc-big.is-on { background: linear-gradient(145deg, var(--nx-accent, #7c8cff), #4b48a8); border-color: transparent; color: #fff; }
+.nx-cc-big.is-off { opacity: 0.75; }
+
+.nx-cc-top { display: flex; align-items: flex-start; justify-content: space-between; }
+.nx-cc-topbtns { display: flex; gap: 6px; }
+.nx-cc-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(120, 140, 255, 0.28);
+  background: rgba(24, 30, 50, 0.9);
+  color: #cdd6ff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.nx-cc-shortcuts { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 14px 0 10px; }
+.nx-cc-shortcuts button {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 9px 2px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 140, 255, 0.16);
+  background: rgba(22, 28, 46, 0.9);
+  color: #dbe3ff;
+  cursor: pointer;
+}
+.nx-cc-shortcuts span { font-size: 18px; }
+.nx-cc-shortcuts small { font-size: 9px; color: #93a1cc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+
+.nx-cc-rem {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(120, 140, 255, 0.18);
+  background: rgba(24, 30, 50, 0.9);
+  color: #e8ecff;
+  text-align: left;
+  cursor: pointer;
+}
+.nx-cc-rem i { margin-left: auto; font-style: normal; color: #4ade80; font-size: 14px; }
+.nx-cc-rem.empty { opacity: 0.8; }
+.nx-cc-tile b { font-size: 11.5px; }
+.nx-cc-tile { flex-direction: row; align-items: center; gap: 6px; padding: 11px 10px; }
+
+/* Bottom bar: system buttons on the left, app shortcuts after a divider */
+.dock { gap: 4px; }
+.dock .dock-sys { background: rgba(255, 255, 255, 0.04); }
+.dock .dock-sep { width: 1px; align-self: stretch; margin: 4px 3px; background: rgba(120, 140, 255, 0.22); }
+.dock button { width: 42px; height: 42px; font-size: 19px; }
+
+/* Performance: heavy effects are dropped on phones */
+@media (max-width: 720px) {
+  .fc-bar, .dock, .nx-cc, .face-companion-chat, .face-companion-bubble { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .nx-cc-scrim { backdrop-filter: none !important; }
+  .fc-bar-avatar.talking .fc-face { animation: none; }
+  .app, .dock button { transition: transform 0.1s ease; }
+}
+/* Do not animate what is off-screen or hidden */
+.nx-app[hidden], [hidden] { animation: none !important; }

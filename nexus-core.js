@@ -233,13 +233,12 @@
 
   /* ---------------- dock / bottom buttons ---------------- */
 
+  /* The bar is the system bar: Back · Home · Recent, like a phone.
+     A short row of app shortcuts sits in the middle. */
   var DOCK_DEFAULT = [
     { app: "browser", icon: "🌐", label: "Browser" },
-    { app: "files", icon: "📁", label: "Files" },
-    { app: "reminder", icon: "🔔", label: "Reminders" },
     { app: "ai", icon: "🤖", label: "AI" },
-    { app: "gallery", icon: "🖼️", label: "Gallery" },
-    { app: "settings", icon: "⚙️", label: "Settings" }
+    { app: "reminder", icon: "🔔", label: "Reminders" }
   ];
   var DOCK_CHOICES = DOCK_DEFAULT.concat([
     { app: "music", icon: "♫", label: "Music" },
@@ -261,14 +260,17 @@
     var nav = document.querySelector(".dock");
     if (!nav) return;
     var items = getDock();
-    var html = items.map(function (it) {
+    var apps = items.map(function (it) {
       var cls = it.app === "ai" ? "dock-ai" : "";
       return '<button data-app="' + it.app + '" class="' + cls + '" aria-label="' + it.label + '">' + it.icon + "</button>";
     }).join("");
-    html += '<button data-system-nav="home" aria-label="Home" title="Home">⌂</button>' +
-      '<button data-system-nav="back" aria-label="Back" title="Back">‹</button>' +
-      '<button data-system-nav="recent" aria-label="Recent apps" title="Recent apps">▢</button>';
-    nav.innerHTML = html;
+    /* System buttons always: Back, Home, Recent — in that order. */
+    nav.innerHTML =
+      '<button class="dock-sys" data-system-nav="back" aria-label="Back" title="Back">‹</button>' +
+      '<button class="dock-sys" data-system-nav="home" aria-label="Home" title="Home">⌂</button>' +
+      '<button class="dock-sys" data-system-nav="recent" aria-label="Recent apps" title="Recent apps">▢</button>' +
+      '<span class="dock-sep" aria-hidden="true"></span>' +
+      apps;
   }
 
   /* ---------------- holidays and school events ---------------- */

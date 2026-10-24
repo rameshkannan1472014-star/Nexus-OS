@@ -54,22 +54,31 @@
   document.addEventListener("click", function (e) {
     var fs = e.target.closest("[data-yt-fs]");
     if (fs) {
+      e.preventDefault();
+      e.stopPropagation();
       var player = fs.closest(".nx-yt-player");
-      if (player) {
-        enter(player, function () { /* nothing to restore */ });
-      }
+      if (player) enter(player);
       return;
     }
-    var frame = e.target.closest(".nx-browser-frame");
-    if (frame) {
-      /* handled by the browser app's own button */
-    }
+    /* Never swallow a click inside the YouTube player: the app's own
+       buttons (close, subscribe) must keep working. */
   });
 
   /* Double-tap the video area to go fullscreen (phones). */
   document.addEventListener("dblclick", function (e) {
     var player = e.target.closest(".nx-yt-player");
     if (player && !player.classList.contains("nx-fs")) enter(player);
+  });
+
+  /* Leaving fullscreen must never break the player underneath. */
+  document.addEventListener("fullscreenchange", function () {
+    document.querySelectorAll(".nx-yt-player.nx-fs").forEach(function (el) {
+      if (!document.fullscreenElement) {
+        el.classList.remove("nx-fs");
+        var x = document.querySelector(".nx-fs-exit");
+        if (x && x.parentNode) x.parentNode.removeChild(x);
+      }
+    });
   });
 
   /* ---- Browser pages: a "Fill screen" control ---- */
@@ -89,7 +98,14 @@
       shell.appendChild(btn);
     });
   }
-  document.addEventListener("click", function () { setTimeout(addBrowserFullscreenButton, 400); });
+  /* Only look for a browser page when one is actually opened. */
+  var mo = new MutationObserver(function () {
+    if (document.querySelector(".nx-browser-frame")) addBrowserFullscreenButton();
+  });
+  document.addEventListener("DOMContentLoaded", function () {
+    var layer = document.getElementById("app-layer");
+    if (layer) mo.observe(layer, { childList: true, subtree: true });
+  });
 
   window.NexusFullscreen = { enter: enter, leave: leave, refresh: addBrowserFullscreenButton };
 })();
