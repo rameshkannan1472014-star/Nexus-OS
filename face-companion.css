@@ -944,3 +944,80 @@ body.nx-picking .app { cursor: grab; }
 /* Keep the head inside the screen while it stands up */
 .fc-bar { --fc-bar-h: 92px; }
 .fc-bar-avatar { margin-top: 8px; }
+
+/* ============================================================
+   v60 — the face lives at the LEFT EDGE, not the top
+   ============================================================ */
+:root { --fc-bar-h: 0px; }
+
+body { padding-top: 0 !important; }
+#app-layer .nx-app, #app-layer .app-window { padding-top: 0 !important; }
+.nx-cc { top: 0 !important; max-height: 92dvh; }
+.nx-cc-scrim { top: 0 !important; }
+
+.fc-bar {
+  position: fixed;
+  left: 2px;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  width: 46px;
+  height: auto;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  pointer-events: none;
+  z-index: 9600;
+}
+.fc-bar-avatar {
+  pointer-events: auto;
+  width: 44px;
+  height: 58px;
+  margin: 0;
+  animation: fc-side 3.6s ease-in-out infinite;
+  transform-origin: 0% 50%;
+}
+.fc-bar-avatar .fc-face { width: 44px; height: 58px; }
+/* It leans out from the edge and back, like someone peeking in */
+@keyframes fc-side {
+  0%   { transform: translateX(-4px) scaleY(0.97); }
+  45%  { transform: translateX(4px) scaleY(1.02); }
+  55%  { transform: translateX(4px) scaleY(1.02); }
+  100% { transform: translateX(-4px) scaleY(0.97); }
+}
+.fc-bar-avatar.talking { animation-duration: 1.6s; }
+.fc-bar-avatar.listening .fc-bars { filter: drop-shadow(0 0 5px #4ade80); }
+
+/* Chat opens beside it, not under a top bar */
+.face-companion-chat {
+  top: auto;
+  bottom: 14px;
+  left: 54px;
+  right: 10px;
+  margin: 0;
+  max-height: min(58vh, 440px);
+}
+.fc-chat-form button.is-live { background: #4ade80; color: #07120b; }
+
+/* Small, unobtrusive: a sliver of the face peeking from the edge */
+.fc-bar { left: -8px; width: 38px; }
+.fc-bar-avatar { width: 38px; height: 50px; }
+.fc-bar-avatar .fc-face { width: 38px; height: 50px; }
+@keyframes fc-side {
+  0%   { transform: translateX(-3px) scaleY(0.97); }
+  45%  { transform: translateX(7px) scaleY(1.02); }
+  55%  { transform: translateX(7px) scaleY(1.02); }
+  100% { transform: translateX(-3px) scaleY(0.97); }
+}
+
+/* Leave a slim lane on the left so the face never sits on an app icon */
+#os { padding-left: 30px !important; }
+@media (max-width: 720px) {
+  #os { padding-left: 26px !important; }
+  .app-grid { padding-left: 2px; }
+}

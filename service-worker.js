@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexus-os-v59";
+const CACHE_NAME = "nexus-os-v60";
 const APP_SHELL = [
   "./",
   "./index.html?v=48",
@@ -21,7 +21,7 @@ const APP_SHELL = [
   "./nexus-fullscreen.js?v=1",
   "./nexus-layout.js?v=1",
   "./nexus-control-center.js?v=2",
-  "./face-companion.js?v=10",
+  "./face-companion.js?v=11",
   "./manifest.json",
   "./icon.svg"
 ];

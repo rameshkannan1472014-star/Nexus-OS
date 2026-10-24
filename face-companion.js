@@ -92,7 +92,8 @@
 
   /* ---------- Top AI bar: avatar + input, pinned, takes no page space ---------- */
   function buildBar() {
-    /* The face alone, in the top centre. Nothing else sits in this bar. */
+    /* The face floats at the LEFT EDGE of the screen, over the margin, so it
+       never covers the page. Nothing else lives in this container. */
     var bar = el("div", "fc-bar");
     bar.id = "fc-bar";
 
@@ -106,12 +107,11 @@
     bar.appendChild(avatar);
     document.body.appendChild(bar);
 
-    /* The page starts below the bar, so the bar never covers content. */
-    document.documentElement.style.setProperty("--fc-bar-h", "56px");
-    applyBarHeight();
+    /* No reserved space: it sits in the side margin. */
+    document.documentElement.style.setProperty("--fc-bar-h", "0px");
 
-    /* Double tap = live talk. Hold = personality. One tap does nothing,
-       so you can never open it by accident. */
+    /* Double tap = live talk (and double tap again to stop).
+       Hold = personality. One tap does nothing. */
     var holdTimer = null;
     var taps = 0;
     var tapTimer = null;
@@ -127,16 +127,12 @@
       }, 650);
     });
     avatar.addEventListener("pointerup", function () {
-      if (held) return;                       /* that was a long press */
+      if (held) return;
       if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
       taps++;
       clearTimeout(tapTimer);
       tapTimer = setTimeout(function () { taps = 0; }, 420);
-      if (taps >= 2) {
-        taps = 0;
-        clearTimeout(tapTimer);
-        startLiveTalk();
-      }
+      if (taps >= 2) { taps = 0; clearTimeout(tapTimer); startLiveTalk(); }
     });
     avatar.addEventListener("pointerleave", function () {
       if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
@@ -144,21 +140,13 @@
     avatar.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); startLiveTalk(); }
     });
-    /* Double tap on a touchscreen also fires dblclick on some browsers. */
     avatar.addEventListener("dblclick", function (e) { e.preventDefault(); startLiveTalk(); });
-    /* Voice and camera live in the chat header now; the bar holds the face only. */
-    var voiceBtn = document.getElementById("fc-voice-btn");
-    if (voiceBtn) voiceBtn.addEventListener("click", toggleVoice);
-    var camBtn = document.getElementById("fc-cam-btn");
-    if (camBtn) camBtn.addEventListener("click", toggleCamera);
   }
 
   /* Measure the bar (incl. the phone's safe-area inset) and reserve that space. */
   function applyBarHeight() {
-    var bar = document.getElementById("fc-bar");
-    if (!bar) return;
-    var h = Math.round(bar.getBoundingClientRect().height);
-    if (h > 0) document.documentElement.style.setProperty("--fc-bar-h", h + "px");
+    /* The face floats in the side margin, so it reserves no page space. */
+    document.documentElement.style.setProperty("--fc-bar-h", "0px");
   }
 
   function toggleVoice() {
@@ -179,30 +167,75 @@
   }
 
   /* Speak into the bar instead of typing. */
-  function startListening() {
+  /* Live talk: it keeps listening, message after message, until you stop it.
+     After each answer it waits for the voice to finish, then listens again. */
+  var live = { on: false, rec: null, restartTimer: null };
+
+  function liveRestart(delay) {
+    if (!live.on) return;
+    clearTimeout(live.restartTimer);
+    live.restartTimer = setTimeout(function () {
+      if (!live.on) return;
+      if ("speechSynthesis" in window && window.speechSynthesis.speaking) { liveRestart(500); return; }
+      startListening(true);
+    }, delay || 700);
+  }
+
+  function stopLiveTalk() {
+    live.on = false;
+    clearTimeout(live.restartTimer);
+    try { if (live.rec) live.rec.stop(); } catch (_) {}
+    live.rec = null;
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    var fb = document.getElementById("fc-bubble");
+    if (fb) { fb.textContent = "Live talk off."; fb.classList.add("show"); }
+    var avatar = document.getElementById("fc-avatar");
+    if (avatar) avatar.classList.remove("listening");
+    var mic = document.querySelector(".fc-chat-form button[aria-label='Speak to your companion']");
+    if (mic) mic.classList.remove("is-live");
+  }
+
+  function startListening(again) {
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var input = document.getElementById("fc-bar-input");
-    if (!SR || !input) { speak("Voice input isn't supported in this browser."); return; }
+    if (!SR || !input) { speak("Voice input isn't supported in this browser. You can type to me instead."); return; }
     try {
+      if (live.rec) { try { live.rec.abort(); } catch (_) {} }
       var rec = new SR();
-      rec.lang = "en-IN";
+      live.rec = rec;
+      rec.lang = (window.NexusCore && NexusCore.lang === "ta") ? "ta-IN" : (window.NexusCore && NexusCore.lang === "hi") ? "hi-IN" : "en-IN";
       rec.interimResults = false;
       rec.maxAlternatives = 1;
+      rec.continuous = false;
       var resting = "Type, or tap 🎤 to speak…";
       input.placeholder = "Listening… speak now";
-      var fb = document.getElementById("fc-bubble");
-      if (fb) { fb.textContent = "Listening… 🎤"; fb.classList.add("show"); }
+      var avatar = document.getElementById("fc-avatar");
+      if (avatar) avatar.classList.add("listening");
+      var mic = document.querySelector(".fc-chat-form button[aria-label='Speak to your companion']");
+      if (mic) mic.classList.add("is-live");
       rec.onresult = function (e) {
         var text = (e.results[0][0].transcript || "").trim();
         input.placeholder = resting;
-        if (text) sendToCompanion(text);
+        if (text) {
+          sendToCompanion(text);
+          if (live.on) liveRestart(2600);   /* give the answer time to play */
+        } else if (live.on) liveRestart(600);
       };
-      rec.onerror = function () {
+      rec.onerror = function (ev) {
         input.placeholder = resting;
-        var fb2 = document.getElementById("fc-bubble");
-        if (fb2) { fb2.textContent = "I couldn't hear that — try typing?"; fb2.classList.add("show"); }
+        if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed")) {
+          stopLiveTalk();
+          speak("I need microphone permission to hear you. Allow it and try again.");
+          return;
+        }
+        if (live.on) liveRestart(1200);
       };
-      rec.onend = function () { input.placeholder = resting; };
+      rec.onend = function () {
+        input.placeholder = resting;
+        if (avatar) avatar.classList.remove("listening");
+        /* In live talk, keep the loop going after every message. */
+        if (live.on) liveRestart(800);
+      };
       rec.start();
     } catch (_) { input.placeholder = "Ask me anything…"; }
   }
@@ -364,10 +397,13 @@
       }
       refreshVoices();
     }
+    if (live.on) { stopLiveTalk(); return; }
+    live.on = true;
     openChat(true);
     var line = brainCall("onGreet", null);
     if (line) addMsg("me", line);
-    setTimeout(startListening, 250);
+    sayInBar("Live talk — speak whenever you like");
+    setTimeout(function () { startListening(true); }, 250);
   }
 
   function addMsg(role, text) {
@@ -534,7 +570,7 @@
       input.placeholder = text.replace(/\s+/g, " ").slice(0, 90);
       clearTimeout(state.barTimer);
       state.barTimer = setTimeout(function () {
-        if (input) input.placeholder = "Ask me anything…";
+        if (input) input.placeholder = "Type, or tap 🎤 to speak…";
       }, 4200);
     }
   }
