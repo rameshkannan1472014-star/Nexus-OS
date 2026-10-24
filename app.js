@@ -240,10 +240,17 @@ async function searchYouTube(query, append=false){
  if(!append){box.replaceChildren();youtubeNextPageToken="";}if(player)player.hidden=true;
  message.hidden=false;message.textContent=append?"Loading more videos…":"Searching YouTube inside Nexus OS…";
  try{
-  const endpoint=NEXUS_API_BASE+"/api/youtube/search?q="+encodeURIComponent(query.trim())+"&mode="+encodeURIComponent(youtubeMode)+(youtubeChannelId?"&channelId="+encodeURIComponent(youtubeChannelId):"")+(append&&youtubeNextPageToken?"&pageToken="+encodeURIComponent(youtubeNextPageToken):"");
-  const response=await fetch(endpoint);
-  const data=await response.json();
-  if(!response.ok)throw new Error(data.detail||"YouTube search is unavailable.");
+    /* v51: the old search used the Render API, which is suspended. When the
+     browser search module is loaded, use it instead. */
+  let data;
+  if(window.NexusYouTube && window.NexusYouTube.search){
+    data=await window.NexusYouTube.search({q:query.trim(), mode:youtubeMode, pageToken:append?youtubeNextPageToken:""});
+  } else {
+    const endpoint=NEXUS_API_BASE+"/api/youtube/search?q="+encodeURIComponent(query.trim())+"&mode="+encodeURIComponent(youtubeMode)+(youtubeChannelId?"&channelId="+encodeURIComponent(youtubeChannelId):"")+(append&&youtubeNextPageToken?"&pageToken="+encodeURIComponent(youtubeNextPageToken):"");
+    const response=await fetch(endpoint);
+    data=await response.json();
+    if(!response.ok)throw new Error(data.detail||"YouTube search is unavailable.");
+  }
   if(!Array.isArray(data.items)||!data.items.length){message.textContent="No videos found. Try another search.";return;}
   youtubeNextPageToken=data.nextPageToken||"";const more=$("#youtube-load-more");if(more){more.hidden=!youtubeNextPageToken;more.textContent=youtubeMode==="shorts"?"Load more Shorts":"Load more videos";}
   message.textContent=youtubeMode==="shorts"?"Shorts · swipe up/down to browse. Tap a video to use its player controls; it will not force full screen.":"Videos · scroll for more, or tap a channel name to browse its videos.";

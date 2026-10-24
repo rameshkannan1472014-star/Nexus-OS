@@ -138,11 +138,12 @@
      Nexus server joins only if they're slow (it can take ~30 s to wake up). */
   const okLen = (sec) => !sec || (sec > 60 && sec < 900);
   async function tryJson(url, ms) { const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), ms); try { const r = await fetch(url, { signal: ctl.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); } finally { clearTimeout(tm); } }
+  /* v51: the working mirror first (kavin.rocks is dead from a browser), and
+     the Nexus server is no longer used — Render suspended it. */
   const SRC = [
-    async (q) => (await tryJson(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(q)}`, 8000)).items?.filter((x) => x.type === "stream" && okLen(x.duration)).map((x) => (x.url || "").split("v=")[1]) || [],
-    async (q) => (await tryJson(`https://vid.puffyan.us/api/v1/search?q=${encodeURIComponent(q)}`, 8000)).filter((x) => okLen(x.lengthSeconds)).map((x) => x.videoId) || [],
     async (q) => ((await tryJson(`https://api.piped.private.coffee/search?filter=videos&q=${encodeURIComponent(q)}`, 8000)).items || []).filter((x) => x.type === "stream" && okLen(x.duration)).map((x) => (x.url || "").split("v=")[1]),
-    async (q, ctl) => { await new Promise((r) => setTimeout(r, 1000)); if (ctl.done) throw new Error("skip"); const u = new URL(N.API_BASE + "/api/youtube/search"); u.searchParams.set("q", q); const d = await tryJson(u, 20000); return (d.items || []).map((x) => x.videoId); }
+    async (q) => (await tryJson(`https://pipedapi.adminforge.de/search?q=${encodeURIComponent(q)}`, 7000)).items?.filter((x) => x.type === "stream" && okLen(x.duration)).map((x) => (x.url || "").split("v=")[1]) || [],
+    async (q) => (await tryJson(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(q)}`, 7000)).items?.filter((x) => x.type === "stream" && okLen(x.duration)).map((x) => (x.url || "").split("v=")[1]) || []
   ];
   const searching = {};
   async function songIds(t, light) {
@@ -161,8 +162,7 @@
     searching[t.id] = go; try { return await go; } finally { delete searching[t.id]; }
   }
   function prefetchNext() { if (!M.full) return; const n = M.queue[M.idx + 1]; if (n && !store.get("nx-song:" + n.id, null)) songIds(n).catch(() => {}); }
-  const wake = () => { if (Date.now() - (M.woke || 0) > 540e3) { M.woke = Date.now(); fetch(N.API_BASE + "/health").then(() => { M.warm = true; }).catch(() => {}); } };
-  wake(); setInterval(() => { if (document.visibilityState === "visible") wake(); }, 600e3);
+  /* v51: no server pings — the API is gone, and the failed requests were noise. */
 
   /* ---- unified controls ---- */
   const E = {
@@ -203,7 +203,7 @@
       let ids = await songIds(t);
       if (!ids.length) {
         // Try direct YouTube search via embed/search fallback
-        const res = await tryJson(`https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(t.title + " " + t.artist)}`, 10000);
+        const res = await tryJson(`https://api.piped.private.coffee/search?filter=videos&q=${encodeURIComponent(t.title + " " + t.artist)}`, 10000);
         ids = (res.items || []).filter(x => x.type === "stream").map(x => (x.url || "").split("v=")[1]).filter(id => /^[\w-]{11}$/.test(id));
       }
       if (tok !== M.token) return;

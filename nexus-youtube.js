@@ -133,34 +133,51 @@
 
   /* ---- mirrors, used only if YouTube itself fails ---- */
 
+  /* The instance that actually answers a browser request comes first. */
   var PIPED = [
+    "https://api.piped.private.coffee",
     "https://pipedapi.kavin.rocks",
-    "https://pipedapi.adminforge.de",
-    "https://api.piped.private.coffee"
+    "https://pipedapi.adminforge.de"
   ];
+  var pipedGood = null;
   var INVIDIOUS = [
     "https://inv.nadeko.net",
     "https://invidious.nerdvpn.de",
     "https://yewtu.be"
   ];
 
-  function fromPiped(q, mode) {
-    var base = PIPED[Math.floor(Math.random() * PIPED.length)];   /* one mirror, short timeout */
-    var filter = mode === "shorts" ? "videos" : "videos";
-    return fetch(base + "/search?q=" + encodeURIComponent(q) + "&filter=" + filter, { signal: timeout(6000) })
-      .then(function (r) { if (!r.ok) throw new Error("piped"); return r.json(); })
-      .then(function (d) {
-        var items = (d.items || []).map(function (it) {
-          var id = (it.url || "").split("v=")[1] || "";
-          return {
-            videoId: id, title: it.title || "", channel: it.uploaderName || "",
-            channelId: (it.uploaderUrl || "").replace("/channel/", ""),
-            thumbnail: it.thumbnail || ""
-          };
-        }).filter(function (x) { return /^[a-zA-Z0-9_-]{11}$/.test(x.videoId); });
-        if (!items.length) throw new Error("piped-empty");
-        return { items: items.slice(0, 20), nextPageToken: d.nextpage || "" };
-      });
+  function parsePiped(d) {
+    var items = (d.items || []).map(function (it) {
+      var id = (it.url || "").split("v=")[1] || "";
+      return {
+        videoId: id,
+        title: it.title || "",
+        channel: it.uploaderName || "",
+        channelId: (it.uploaderUrl || "").replace("/channel/", ""),
+        /* Piped's image proxy refuses to be hotlinked, so always point at
+           YouTube's own thumbnail host — it loads on every device. */
+        thumbnail: id ? "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg" : ""
+      };
+    }).filter(function (x) { return /^[a-zA-Z0-9_-]{11}$/.test(x.videoId); });
+    if (!items.length) throw new Error("piped-empty");
+    return { items: items.slice(0, 20), nextPageToken: d.nextpage || "" };
+  }
+
+  /* Try the known-good instance first, then the others, each with a short
+     timeout so a dead mirror cannot hold the whole search up. */
+  async function fromPiped(q, mode) {
+    var bases = pipedGood ? [pipedGood].concat(PIPED.filter(function (b) { return b !== pipedGood; })) : PIPED.slice();
+    var lastErr = null;
+    for (var i = 0; i < bases.length; i++) {
+      try {
+        var r = await fetch(bases[i] + "/search?q=" + encodeURIComponent(q) + "&filter=videos", { signal: timeout(7000) });
+        if (!r.ok) throw new Error("piped " + r.status);
+        var out = parsePiped(await r.json());
+        pipedGood = bases[i];
+        return out;
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error("piped");
   }
 
   function fromInvidious(q) {
