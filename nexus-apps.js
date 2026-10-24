@@ -487,6 +487,7 @@
     box.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.videoId)}?autoplay=1&playsinline=1&rel=0" title="${esc(item.title)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
       <div class="nx-yt-now"><span class="nx-avatar">${ytInitial(item.channel)}</span><div><strong>${esc(item.title)}</strong><span>${esc(item.channel || "YouTube")}</span></div>
       ${item.channelId ? `<button class="nx-btn sm ${subbed ? "ghost" : ""}" type="button" data-yt-sub="${esc(JSON.stringify({ id: item.channelId, name: item.channel }))}">${subbed ? "Subscribed" : "Subscribe"}</button>` : ""}
+      <button class="nx-icon-btn" type="button" data-yt-fs aria-label="Full screen">⛶</button>
       <button class="nx-icon-btn" type="button" data-yt-close aria-label="Close player">${ic("x")}</button></div>`;
     box.hidden = false;
     win.querySelector(".nx-body").scrollTo({ top: 0, behavior: "smooth" });
@@ -1377,6 +1378,8 @@
     const title = "Reminder";
     const body = r.text;
     showBanner(r);
+    /* Notifications duck the sound instead of cutting it. */
+    try { window.NexusCore && window.NexusCore.sound && window.NexusCore.sound.duck(2400); } catch (_) {}
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     try {
       const reg = await navigator.serviceWorker?.getRegistration?.();

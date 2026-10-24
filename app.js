@@ -338,7 +338,7 @@ $("#control-center")?.addEventListener("click",e=>{
  tile.classList.toggle("active");
  const state=$("#"+type+"-state"); if(state) state.textContent=(tile.classList.contains("active")?"On":"Off")+" · simulated";
 });
-$("#brightness-slider")?.addEventListener("input",e=>{const value=Number(e.target.value);$("#brightness-value").textContent=value+"%";document.documentElement.style.filter="brightness("+Math.min(1.1,value/100)+")";});
+$("#brightness-slider")?.addEventListener("input",e=>{const value=Number(e.target.value);const o=$("#brightness-value");if(o)o.textContent=value+"%";document.documentElement.style.filter="brightness("+Math.min(1.1,value/100)+")";});
 
 
 $("#global-search").addEventListener("input", event => {
@@ -587,10 +587,12 @@ $$("[data-control]").forEach(function (button) {
     $("#network-status").textContent = quickState.airplane || !quickState.wifi ? "● Offline mode" : "● Online";
   });
 });
-$("#brightness-slider").addEventListener("input", function (event) {
+const brightnessSlider = $("#brightness-slider");
+if (brightnessSlider) brightnessSlider.addEventListener("input", function (event) {
   const value = Number(event.target.value);
   document.documentElement.style.setProperty("--screen-brightness", value / 100);
-  $("#brightness-value").textContent = value + "%";
+  const out = $("#brightness-value");
+  if (out) out.textContent = value + "%";
 });
 $("#app-layer").addEventListener("change", function (event) {
   if (event.target.id === "files-picker") {

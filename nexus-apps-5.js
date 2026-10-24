@@ -303,9 +303,11 @@
   const CA = { date: ymd(new Date()) };
   function caDay(k) {
     const ev = events().filter((e) => e.date === k).map((e) => ({ kind: "event", id: e.id, title: e.title, time: e.time, color: e.color }));
+    /* Public holidays and festivals for Tamil Nadu. */
+    const hd = (window.NexusCore && window.NexusCore.holidaysOn(k) || []).map((h) => ({ kind: "holiday", title: h.title, time: "", color: "#38a3ff" }));
     const pl = plan().filter((x) => x.date === k).map((x) => ({ kind: "plan", title: x.title, time: x.start, color: x.color }));
     const rm = store.get("nexus-reminders-v2", []).filter((r) => ymd(new Date(r.time)) === k).map((r) => ({ kind: "reminder", title: r.text, time: pad(new Date(r.time).getHours()) + ":" + pad(new Date(r.time).getMinutes()), color: "#f59e0b" }));
-    return [...ev, ...pl, ...rm].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    return [...hd, ...ev, ...pl, ...rm].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   }
   function caRender(win) {
     const sel = parseYmd(CA.date);
@@ -313,7 +315,7 @@
     const list = caDay(CA.date);
     win.querySelector("[data-ca-main]").innerHTML = `<div class="nx-card" style="padding:12px">${monthGrid(sel.getFullYear(), sel.getMonth(), (k) => caDay(k).map((x) => x.color), CA.date, "data-ca-d")}</div>
       <div class="nx-section-title">${sel.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}</div>
-      ${list.length ? `<div class="nx-list">${list.map((x) => `<button type="button" class="nx-row nx-ca-ev" style="--c:${x.color}" ${x.kind === "event" ? `data-ca-edit="${x.id}"` : `data-ca-go="${x.kind}"`}><span class="nx-ca-bar"></span><span class="nx-row-main"><strong>${esc(x.title)}</strong><span>${x.time ? hm12(x.time) : "All day"} · ${x.kind === "event" ? "Event" : x.kind === "plan" ? "Day Planner" : "Reminder"}</span></span>${ic("chev", "sm")}</button>`).join("")}</div>` : `<div class="nx-card nx-empty">${ic("calendar")}<strong>No events</strong>Tap + to add a birthday, exam or trip.</div>`}`;
+      ${list.length ? `<div class="nx-list">${list.map((x) => `<button type="button" class="nx-row nx-ca-ev" style="--c:${x.color}" ${x.kind === "event" ? `data-ca-edit="${x.id}"` : x.kind === "holiday" ? `data-ca-holiday` : `data-ca-go="${x.kind}"`}><span class="nx-ca-bar"></span><span class="nx-row-main"><strong>${esc(x.title)}</strong><span>${x.time ? hm12(x.time) : "All day"} · ${x.kind === "event" ? "Event" : x.kind === "holiday" ? "Holiday" : x.kind === "plan" ? "Day Planner" : "Reminder"}</span></span>${x.kind === "holiday" ? "" : ic("chev", "sm")}</button>`).join("")}</div>` : `<div class="nx-card nx-empty">${ic("calendar")}<strong>No events</strong>Tap + to add a birthday, exam or trip.</div>`}`;
   }
   function caSheet(win, ev, done) {
     ev = ev || { title: "", date: CA.date, time: "", color: COLS[0], note: "" };

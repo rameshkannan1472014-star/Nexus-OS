@@ -35,32 +35,15 @@
     </section>
     <section class="home-panels"><article class="home-panel quick-tools"><h2><span>ϟ</span> Quick Tools</h2><div class="quick-grid"><button data-app="terminal"><b>›_</b><span>Terminal</span></button><button data-app="maps"><b>📍</b><span>Maps</span></button><button data-app="messages"><b>▤</b><span>Messages</span></button><button data-app="call"><b>☎</b><span>Phone</span></button><button data-app="feedback"><b>●</b><span>Contacts</span></button><button data-app="radio"><b>♫</b><span>FM Radio</span></button></div></article><article class="home-panel home-ai"><h2><span>✦</span> AI Assistant <button data-app="ai" aria-label="Open AI Assistant">›</button></h2><div class="ai-welcome"><div class="ai-avatar">🤖</div><div><strong>Nexus AI</strong><span>How can I help you today?</span></div></div><button class="ai-ask" data-app="ai">☏ &nbsp; Ask anything</button><div class="ai-actions"><button data-app="generator">▧ &nbsp; Generate image</button><button data-app="terminal">‹/› &nbsp; Help me code</button></div></article></section>
     <section class="home-bottom-panels"><article class="home-panel recent-panel"><h2>◷ &nbsp; Recent Apps <button data-action="show-all-apps">›</button></h2><div class="recent-apps"><button data-app="browser"><b>🌐</b><span>Browser</span></button><button data-app="gallery"><b>✿</b><span>Gallery</span></button><button data-app="youtube"><b>▶</b><span>YouTube</span></button><button data-app="files"><b>📁</b><span>Files</span></button></div></article><article class="home-panel storage-panel"><h2>▤ &nbsp; Storage</h2><div class="storage-track"><span></span></div><div class="storage-meta"><strong>14.2 GB / 64 GB</strong><span>22%</span></div></article></section>
-    <section class="section-heading"><h2>At a glance</h2><span>YOUR DASHBOARD</span></section>
-    <section class="widgets">
-      <article class="widget"><p>🌦️ Weather</p><strong id="weather-summary">Weather at a glance</strong><span id="weather-detail">Open Weather to check a city forecast.</span><button class="text-button" data-app="weather">Check weather ↗</button></article>
-      <article class="widget"><p>📅 Today</p><strong id="next-task">No tasks yet</strong><span>Your day planner will appear here.</span><button class="text-button" data-app="calendar">Open planner ↗</button></article>
-      <article class="widget"><p>🎵 Now playing</p><strong id="music-status">Nothing playing</strong><span>A simple music-player placeholder.</span><button class="text-button" data-app="music">Open music ↗</button></article>
-    </section>
     <button id="ai-companion" class="ai-companion" aria-label="Open Nexus AI"><span class="ai-face">🤖</span><span><b>Nexus AI</b><small>Tap to ask</small></span><span class="online-dot"></span></button>
     <nav class="dock" aria-label="Quick apps">
       <button data-app="browser" aria-label="Browser">🌐</button><button data-app="files" aria-label="Files">📁</button><button data-app="terminal" aria-label="Terminal">⌨️</button><button data-app="ai" class="dock-ai" aria-label="Nexus AI">🤖</button><button data-app="gallery" aria-label="Gallery">🖼️</button><button data-app="settings" aria-label="Settings">⚙️</button>
     <button data-system-nav="home" aria-label="Home" title="Home">⌂</button><button data-system-nav="back" aria-label="Back" title="Back">‹</button><button data-system-nav="recent" aria-label="Recent apps" title="Recent apps">▢</button></nav>
   </main>
   <div id="app-layer" aria-live="polite"></div>
-  <section id="control-center" class="control-center" aria-label="Control Center" hidden>
-    <div class="control-head"><div><p class="eyebrow">NEXUS OS</p><h2>Control Center</h2></div><button id="control-center-close" class="close-window" type="button" aria-label="Close Control Center">×</button></div>
-    <p id="control-date" class="control-date">Quick settings</p>
-    <div class="control-tiles">
-      <button class="control-tile active" data-control="wifi" type="button"><span>⌁</span><b>Wi-Fi</b><small id="wifi-state">On · simulated</small></button>
-      <button class="control-tile active" data-control="bluetooth" type="button"><span>ᛒ</span><b>Bluetooth</b><small id="bluetooth-state">On · simulated</small></button>
-      <button class="control-tile" data-control="airplane" type="button"><span>✈</span><b>Airplane mode</b><small id="airplane-state">Off · simulated</small></button>
-      <button class="control-tile active" data-control="theme" type="button"><span>◐</span><b>Appearance</b><small id="theme-state">Dark mode</small></button>
-    </div>
-    <div class="control-slider"><label for="brightness-slider">☀ Screen brightness</label><input id="brightness-slider" type="range" min="65" max="115" value="100"><output id="brightness-value">100%</output></div>
-    <button class="control-wide" data-control="music" type="button">🎵 Open Music Player</button>
-    <p class="control-note">Wi-Fi, Bluetooth and airplane toggles are visual demos; they cannot change Android's real system settings.</p>
-  </section>
+  <section id="control-center" class="control-center" aria-label="Control Center" hidden></section>
 
+  <script src="./nexus-core.js?v=1"></script>
   <script src="./app.js?v=46"></script>
   <script src="./nexus-apps.js?v=46"></script>
   <script src="./nexus-apps-2.js?v=47"></script>
@@ -72,6 +55,8 @@
   <script src="./nexus-ai-control.js?v=46"></script>
   <script src="./companion-screen.js?v=1"></script>
   <script src="./nexus-companion-brain.js?v=1"></script>
+  <script src="./nexus-fullscreen.js?v=1"></script>
+  <script src="./nexus-control-center.js?v=1"></script>
   <script src="./face-companion.js?v=6"></script>
   <script>
     if ("serviceWorker" in navigator && location.protocol === "https:") {
