@@ -137,3 +137,145 @@
 @keyframes fc-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 .face-companion-avatar { animation: fc-float 3s ease-in-out infinite; }
 @keyframes fc-float { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+
+/* ---------- Companion chat panel (v5) ---------- */
+.face-companion-chat {
+  position: fixed;
+  right: 12px;
+  bottom: 120px;
+  width: min(330px, calc(100vw - 24px));
+  max-height: min(460px, calc(100vh - 170px));
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  background: rgba(14, 18, 32, 0.97);
+  border: 1px solid rgba(120, 140, 255, 0.35);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+.face-companion-chat.open { display: flex; }
+
+.fc-chat-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(120, 140, 255, 0.18);
+  font-size: 13px;
+  color: #e8ecff;
+}
+.fc-chat-head strong { font-weight: 600; }
+.fc-chat-head .fc-chat-sub { font-size: 11px; color: #8f9bd0; }
+.fc-chat-head button {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: #8f9bd0;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.fc-chat-head button:hover { color: #cdd6ff; }
+
+.fc-chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.fc-msg {
+  max-width: 86%;
+  padding: 7px 11px;
+  border-radius: 14px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+.fc-msg.them {
+  align-self: flex-end;
+  background: #4f5bd5;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.fc-msg.me {
+  align-self: flex-start;
+  background: rgba(38, 46, 74, 0.95);
+  color: #e8ecff;
+  border-bottom-left-radius: 4px;
+}
+.fc-msg.typing { color: #8f9bd0; font-style: italic; }
+
+.fc-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid rgba(120, 140, 255, 0.18);
+}
+.fc-chat-form input {
+  flex: 1;
+  background: rgba(24, 30, 52, 0.95);
+  border: 1px solid rgba(120, 140, 255, 0.3);
+  border-radius: 999px;
+  color: #e8ecff;
+  padding: 8px 13px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.fc-chat-form input:focus { border-color: #7c8cff; }
+.fc-chat-form button {
+  background: #4f5bd5;
+  border: 0;
+  color: #fff;
+  width: 36px;
+  border-radius: 50%;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ---------- Personality picker ---------- */
+.fc-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 6, 14, 0.72);
+  padding: 20px;
+}
+.fc-picker.open { display: flex; }
+.fc-picker-card {
+  background: #11162a;
+  border: 1px solid rgba(120, 140, 255, 0.35);
+  border-radius: 20px;
+  padding: 18px;
+  width: min(330px, 100%);
+  color: #e8ecff;
+}
+.fc-picker-card h3 { margin: 0 0 4px; font-size: 16px; }
+.fc-picker-card p { margin: 0 0 14px; font-size: 12.5px; color: #8f9bd0; line-height: 1.4; }
+.fc-pick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  background: rgba(24, 30, 52, 0.9);
+  border: 1px solid rgba(120, 140, 255, 0.22);
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  color: #e8ecff;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.fc-pick:hover, .fc-pick.is-on { border-color: #7c8cff; background: rgba(79, 91, 213, 0.25); }
+.fc-pick span { font-size: 18px; }
+.fc-pick small { display: block; color: #8f9bd0; font-size: 11px; margin-top: 2px; }

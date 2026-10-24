@@ -98,6 +98,10 @@
     avatar.title = "Nexus Face Buddy — drag me, or use the buttons";
 
     var actions = el("div", "face-companion-actions");
+    var chatBtn = el("button", null, "💬 Talk");
+    chatBtn.id = "fc-chat-btn";
+    chatBtn.title = "Talk to me";
+    chatBtn.setAttribute("aria-label", "Talk to me");
     var camBtn = el("button", null, "📷 Watch me");
     camBtn.id = "fc-cam-btn";
     var hiBtn = el("button", null, "◉ Screen");
@@ -109,6 +113,7 @@
     voiceBtn.title = "Turn voice on";
     voiceBtn.setAttribute("aria-label", "Turn voice on");
     voiceBtn.setAttribute("aria-pressed", "false");
+    actions.appendChild(chatBtn);
     actions.appendChild(camBtn);
     actions.appendChild(hiBtn);
     actions.appendChild(voiceBtn);
@@ -118,8 +123,11 @@
     wrap.appendChild(actions);
     document.body.appendChild(wrap);
 
+    buildChatPanel();
+
     makeDraggable(wrap, avatar);
 
+    chatBtn.addEventListener("click", toggleChat);
     camBtn.addEventListener("click", toggleCamera);
     hiBtn.addEventListener("click", function () { talkScreen(true); });
     voiceBtn.addEventListener("click", function () {
@@ -135,6 +143,163 @@
       window.speechSynthesis.cancel();
       if (state.voiceEnabled) talkScreen(true);
     });
+  }
+
+  /* ---------- Brain bridge (works without nexus-companion-brain.js) ---------- */
+  function brain() { return window.NexusCompanionBrain || null; }
+
+  function brainCall(fn, fallback) {
+    var b = brain();
+    if (!b || typeof b[fn] !== "function") return fallback;
+    try { return b[fn](); } catch (_) { return fallback; }
+  }
+
+  /* ---------- Chat panel ---------- */
+  function buildChatPanel() {
+    var panel = el("div", "face-companion-chat");
+    panel.id = "fc-chat";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "Chat with your Nexus companion");
+
+    var head = el("div", "fc-chat-head");
+    head.appendChild(el("span", null, "🤖"));
+    var titleBox = el("div");
+    titleBox.appendChild(el("strong", null, "Nexus Buddy"));
+    var sub = el("div", "fc-chat-sub");
+    sub.textContent = "remembers you";
+    titleBox.appendChild(sub);
+    head.appendChild(titleBox);
+    var closeBtn = el("button", null, "✕");
+    closeBtn.setAttribute("aria-label", "Close chat");
+    head.appendChild(closeBtn);
+
+    var log = el("div", "fc-chat-log");
+    log.id = "fc-chat-log";
+
+    var form = el("form", "fc-chat-form");
+    var input = el("input");
+    input.type = "text";
+    input.placeholder = "Say something…";
+    input.autocomplete = "off";
+    input.maxLength = 800;
+    input.setAttribute("aria-label", "Message your companion");
+    var send = el("button", null, "➤");
+    send.type = "submit";
+    send.setAttribute("aria-label", "Send");
+    form.appendChild(input);
+    form.appendChild(send);
+
+    panel.appendChild(head);
+    panel.appendChild(log);
+    panel.appendChild(form);
+    document.body.appendChild(panel);
+
+    closeBtn.addEventListener("click", function () { panel.classList.remove("open"); });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      sendToCompanion(text);
+    });
+  }
+
+  function addMsg(role, text) {
+    var log = document.getElementById("fc-chat-log");
+    if (!log) return null;
+    var node = el("div", "fc-msg " + role);
+    node.textContent = text;
+    log.appendChild(node);
+    log.scrollTop = log.scrollHeight;
+    return node;
+  }
+
+  function toggleChat() {
+    var panel = document.getElementById("fc-chat");
+    if (!panel) return;
+    var opening = !panel.classList.contains("open");
+    panel.classList.remove("open");
+    if (!opening) return;
+    panel.classList.add("open");
+    var log = document.getElementById("fc-chat-log");
+    if (log && !log.childElementCount) {
+      var b = brain();
+      var hello = b && typeof b.onGreet === "function" ? b.onGreet() : null;
+      addMsg("me", hello || "Hi! I'm here. What's up?");
+      if (b && typeof b.summary === "function") {
+        var sub = document.querySelector(".fc-chat-sub");
+        if (sub) sub.textContent = b.summary();
+      }
+    }
+    var input = panel.querySelector("input");
+    if (input) setTimeout(function () { input.focus(); }, 120);
+  }
+
+  function sendToCompanion(text) {
+    addMsg("them", text);
+    var typing = addMsg("me typing", "…");
+    var b = brain();
+    var mood = state.lastExpression && state.lastExpression !== "away" ? state.lastExpression : null;
+
+    function answer(reply) {
+      if (typing && typing.parentNode) typing.parentNode.removeChild(typing);
+      var out = typeof reply === "string" ? reply : (reply && reply.text) || "…";
+      addMsg("me", out);
+      speak(out);
+      if (mood && mood !== "neutral" && Math.random() < 0.5) react(mood, out);
+      else react(null, out);
+    }
+
+    if (b && typeof b.ask === "function") {
+      var p = b.ask(text);
+      if (p && typeof p.then === "function") p.then(answer).catch(function () { answer("Something broke in my head there. Say that again?"); });
+      else answer(p);
+      return;
+    }
+
+    /* No brain loaded: keep the old instant behaviour. */
+    setTimeout(function () { answer(replyLineFor(text)); }, 500);
+  }
+
+  function replyLineFor(text) {
+    var t = String(text).toLowerCase();
+    if (/sad|lonely|alone|tired|stress/.test(t)) return "I'm here with you. Want to talk about it?";
+    if (/hi|hello|hey/.test(t)) return "Hey! Good to see you.";
+    if (/thank/.test(t)) return "Anytime.";
+    return "Tell me more — I'm listening.";
+  }
+
+  /* ---------- Personality picker ---------- */
+  function openPersonalityPicker() {
+    var b = brain();
+    if (!b) { speak("Personality settings need the brain file loaded."); return; }
+    var wrap = el("div", "fc-picker");
+    var card = el("div", "fc-picker-card");
+    card.appendChild(el("h3", null, "How should I behave?"));
+    card.appendChild(el("p", null, "Pick one. You can change it any time by long-pressing my face."));
+    var opts = b.PERSONALITIES || {};
+    Object.keys(opts).forEach(function (key) {
+      var o = opts[key];
+      var btn = el("button", "fc-pick" + (b.personality === key ? " is-on" : ""));
+      btn.type = "button";
+      var em = el("span", null, o.emoji);
+      var txt = el("div");
+      txt.appendChild(document.createTextNode(o.label));
+      var small = el("small", null, (o.style || "").split(" — ")[0]);
+      txt.appendChild(small);
+      btn.appendChild(em);
+      btn.appendChild(txt);
+      btn.addEventListener("click", function () {
+        b.personality = key;
+        wrap.classList.remove("open");
+        react(null, "Okay — " + o.label.toLowerCase() + " it is. " + o.emoji);
+      });
+      card.appendChild(btn);
+    });
+    wrap.appendChild(card);
+    wrap.addEventListener("click", function (e) { if (e.target === wrap) wrap.classList.remove("open"); });
+    document.body.appendChild(wrap);
+    wrap.classList.add("open");
   }
 
   function makeDraggable(wrap, handle) {
@@ -158,13 +323,27 @@
       wrap.style.right = right + "px";
       wrap.style.bottom = bottom + "px";
     });
+    var holdTimer = null;
     handle.addEventListener("pointerup", function () {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
       if (!moved) {
-        react(null, state.watching
-          ? "I'm watching your expressions! Smile at me 😄"
-          : "Tap “📷 Watch me” so I can see your face!");
+        var line = brainCall("onGreet", null);
+        if (!line) {
+          line = state.watching
+            ? "I'm watching your expressions! Smile at me 😄"
+            : "Tap “💬 Talk” to chat, or “📷 Watch me” so I can see your face!";
+        }
+        react(null, line);
       }
       startX = startY = null;
+    });
+    /* Long-press = personality settings. */
+    handle.addEventListener("pointerdown", function () {
+      holdTimer = setTimeout(function () {
+        holdTimer = null;
+        moved = true;
+        openPersonalityPicker();
+      }, 700);
     });
   }
 
@@ -328,7 +507,12 @@
             Date.now() - state.lastSpeakAt > 4000) {
           state.lastExpression = best;
           state.lastSpeakAt = Date.now();
-          react(best);
+          var brainLine = null;
+          var b = brain();
+          if (b && typeof b.onMood === "function") {
+            try { brainLine = b.onMood(best); } catch (_) { brainLine = null; }
+          }
+          react(best, brainLine || undefined);
         } else {
           state.lastExpression = best;
         }
@@ -378,11 +562,38 @@
     });
   }
 
+  /* ---------- Idle nudge: it notices when you go quiet ---------- */
+  function watchIdle() {
+    var lastAct = Date.now();
+    function touch() { lastAct = Date.now(); }
+    ["click", "keydown", "touchstart", "pointermove"].forEach(function (ev) {
+      window.addEventListener(ev, touch, { passive: true });
+    });
+    setInterval(function () {
+      if (document.hidden || state.watching) return;
+      var mins = Math.floor((Date.now() - lastAct) / 60000);
+      if (mins < 3 || Date.now() - state.lastSpeakAt < 60000) return;
+      var key = "idle" + mins;
+      if (state.lastIdleKey === key) return;
+      state.lastIdleKey = key;
+      var b = brain();
+      if (!b || typeof b.onIdle !== "function") return;
+      var line = null;
+      try { line = b.onIdle(mins); } catch (_) { line = null; }
+      if (line) react(null, line);
+    }, 30000);
+  }
+
   function init() {
     if (document.getElementById("face-companion")) return;
     buildUI();
     watchScreen();
+    watchIdle();
+    var b = brain();
+    if (b && typeof b.boot === "function") { try { b.boot(); } catch (_) {} }
     setTimeout(function () {
+      var line = brainCall("onGreet", null);
+      if (line) { react(null, line); return; }
       if (!state.lastScreenKey) talkScreen(true);
     }, 1500);
   }
