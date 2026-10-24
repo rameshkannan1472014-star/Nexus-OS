@@ -853,3 +853,64 @@ body.nx-picking .app { cursor: grab; }
 .nx-cc:not(.show) { visibility: hidden; pointer-events: none; transform: translateY(-102%); }
 .nx-cc-scrim:not(.show) { visibility: hidden; }
 .fc-bar { z-index: 9700; }
+
+/* v55 — face sized like the drawing, and the voice button visible in chat */
+.fc-bar { --fc-bar-h: 84px; height: calc(var(--fc-bar-h) + 4px); }
+.fc-bar-avatar { width: 58px; height: 76px; }
+.fc-bar-avatar .fc-face { width: 58px; height: 76px; }
+.fc-body { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)); }
+/* The bars breathe a little so the face feels alive */
+/* The bars only change HEIGHT — a transform on an SVG rect would move it
+   sideways on some browsers, which made the face look wrong. */
+.fc-bar-avatar .fc-bar-up, .fc-bar-avatar .fc-bar-low { transition: height 0.25s ease, y 0.25s ease; }
+.fc-bar-avatar.talking .fc-bar-up { animation: fc-bar-talk 0.5s ease-in-out infinite; }
+.fc-bar-avatar.talking .fc-bar-low { animation: fc-bar-talk 0.5s ease-in-out infinite reverse; }
+@keyframes fc-bar-talk {
+  0%, 100% { height: 9px; }
+  50% { height: 14px; }
+}
+.fc-bar-avatar.talking .fc-strap-top { transform-origin: 38px 30px; animation: fc-swing 1.2s ease-in-out infinite; }
+.fc-bar-avatar.talking .fc-strap-bottom { transform-origin: 62px 100px; animation: fc-swing 1.2s ease-in-out infinite reverse; }
+.fc-bar-avatar.watching .fc-bars { filter: drop-shadow(0 0 4px #4ade80); }
+@media (prefers-reduced-motion: reduce) {
+  .fc-bar-avatar .fc-bar-up, .fc-bar-avatar .fc-bar-low,
+  .fc-bar-avatar.talking .fc-bar-up, .fc-bar-avatar.talking .fc-bar-low { animation: none; }
+}
+
+
+/* The bars must be two separate shapes, never merged or moved */
+.fc-bar-avatar .fc-bar { transform: none !important; transform-box: fill-box; }
+.fc-bar-avatar .fc-bar-up, .fc-bar-avatar .fc-bar-low { animation: none; }
+.fc-bar-avatar.talking .fc-bar-up { animation: fc-bar-talk 0.5s ease-in-out infinite; }
+.fc-bar-avatar.talking .fc-bar-low { animation: fc-bar-talk 0.5s ease-in-out infinite reverse; }
+
+
+/* The SVG keeps its own proportions; the box must not squash it */
+.fc-bar-avatar .fc-face { aspect-ratio: 100 / 140; height: 76px; width: auto; }
+.fc-bar-avatar { display: flex; align-items: flex-start; justify-content: center; }
+.fc-bar-avatar svg { overflow: visible; }
+
+
+/* Height is set by CSS, so the bar animation is measured, not stretched */
+.fc-bar-avatar .fc-bar { transition: none; }
+.fc-bar-avatar.talking .fc-bar-up { animation: none; }
+.fc-bar-avatar.talking .fc-bar-low { animation: none; }
+
+
+/* Final rule for the two bars: fixed size, only their height changes */
+#fc-avatar svg .fc-bar,
+.fc-bar-avatar svg .fc-bar {
+  transform: none !important;
+  transform-box: fill-box;
+  transform-origin: center;
+  height: 9px;
+  animation: none !important;
+  transition: none;
+}
+#fc-avatar.talking svg .fc-bar-up { animation: none !important; height: 13px; }
+#fc-avatar.talking svg .fc-bar-low { animation: none !important; height: 13px; }
+#fc-avatar svg .fc-bar { animation: fc-bars-alive 2.6s ease-in-out infinite !important; }
+@keyframes fc-bars-alive {
+  0%, 100% { height: 9px; }
+  50% { height: 10.5px; }
+}

@@ -70,46 +70,23 @@
     surprised: ["M28 26 Q35 22 42 26", "M58 26 Q65 22 72 26"],
     fearful: ["M28 32 L42 27", "M58 27 L72 32"]
   };
-  /* Ramesh's own design: a rounded body with two dark bars for the face,
-     and two straps that hang from the top and bottom like little arms.
-     Drawn as SVG so it stays sharp and can blink, talk and react. */
+  /* Ramesh's drawing, exactly: a tall rectangle, two dark bars inside it,
+     a strap curving up from the top and one curving down from the bottom.
+     Nothing else — the bars are the only thing that moves. */
   function faceSVG(expr) {
     var e = expr || "idle";
-    var eyeH = e === "surprised" || e === "fearful" ? 5.5 : (e === "happy" ? 2.4 : 4);
-    var eyeY = 30;
-    var mouth = e === "happy" ? "M40 44 Q50 52 60 44"
-      : e === "sad" ? "M41 47 Q50 41 59 47"
-      : e === "surprised" ? "M46 45 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0"
-      : e === "angry" ? "M42 46 L58 46"
-      : e === "fearful" ? "M42 46 Q46 43 50 46 Q54 49 58 46"
-      : "M43 45 L57 45";
-    var mouthFill = e === "happy" || e === "surprised" ? "#5eead4" : "none";
-    var brows = {
-      sad: ["M38 24 L46 22", "M54 22 L62 24"],
-      angry: ["M38 21 L46 25", "M54 25 L62 21"],
-      surprised: ["M38 20 Q42 17 46 20", "M54 20 Q58 17 62 20"]
-    }[e] || [];
-    var browSvg = brows.map(function (d) {
-      return "<path d='" + d + "' stroke='#9fb4ff' stroke-width='2.2' stroke-linecap='round' fill='none'/>";
-    }).join("");
-    return "<svg class='fc-face' viewBox='0 0 100 100' aria-hidden='true'>" +
-      "<g class='fc-strap fc-strap-top'>" +
-        "<path d='M44 20 Q36 4 54 2' stroke='#8b97c9' stroke-width='6' stroke-linecap='round' fill='none'/>" +
-        "<path d='M44 20 Q36 4 54 2' stroke='#c9d3f5' stroke-width='3' stroke-linecap='round' fill='none'/>" +
+    var barW = e === "sad" ? 26 : e === "happy" || e === "surprised" ? 30 : 28;
+    var tilt = e === "sad" ? -5 : e === "happy" ? 4 : e === "angry" ? 6 : 0;
+    var upY = e === "surprised" ? 44 : e === "happy" ? 46 : 48;
+    var loY = e === "surprised" ? 70 : e === "happy" ? 70 : 72;
+    return "<svg class='fc-face' viewBox='0 0 100 140' preserveAspectRatio='xMidYMid meet' aria-hidden='true'>" +
+      "<path class='fc-strap fc-strap-top' d='M44 40 C40 16 50 8 62 10' stroke='#cfd8ee' stroke-width='7' stroke-linecap='round' fill='none'/>" +
+      "<rect class='fc-body' x='24' y='36' width='52' height='74' rx='3' fill='#dfe6f4'/>" +
+      "<g class='fc-bars' transform='rotate(" + tilt + " 50 74)'>" +
+        "<rect class='fc-bar fc-bar-up' x='" + (50 - barW / 2) + "' y='" + upY + "' width='" + barW + "' height='9' rx='4.5' fill='#7c879d'/>" +
+        "<rect class='fc-bar fc-bar-low' x='" + (50 - barW / 2) + "' y='" + loY + "' width='" + barW + "' height='9' rx='4.5' fill='#7c879d'/>" +
       "</g>" +
-      "<rect x='26' y='18' width='48' height='64' rx='12' fill='#dfe6ff'/>" +
-      "<rect x='30' y='23' width='40' height='54' rx='9' fill='#12182e'/>" +
-      browSvg +
-      "<g class='fc-eyes'>" +
-        "<rect x='36' y='" + (eyeY - eyeH / 2) + "' width='11' height='" + eyeH + "' rx='" + (eyeH / 2) + "' fill='#5eead4'/>" +
-        "<rect x='53' y='" + (eyeY - eyeH / 2) + "' width='11' height='" + eyeH + "' rx='" + (eyeH / 2) + "' fill='#5eead4'/>" +
-      "</g>" +
-      "<path class='fc-mouth' d='" + mouth + "' stroke='#5eead4' stroke-width='2.6' stroke-linecap='round' fill='" + mouthFill + "'/>" +
-      (e === "sad" ? "<ellipse cx='33' cy='39' rx='1.8' ry='3' fill='#60a5fa'/>" : "") +
-      "<g class='fc-strap fc-strap-bottom'>" +
-        "<path d='M56 80 Q64 96 46 98' stroke='#8b97c9' stroke-width='6' stroke-linecap='round' fill='none'/>" +
-        "<path d='M56 80 Q64 96 46 98' stroke='#c9d3f5' stroke-width='3' stroke-linecap='round' fill='none'/>" +
-      "</g>" +
+      "<path class='fc-strap fc-strap-bottom' d='M56 110 C60 134 50 142 38 140' stroke='#cfd8ee' stroke-width='7' stroke-linecap='round' fill='none'/>" +
       "</svg>";
   }
 
@@ -360,6 +337,18 @@
 
   /* Double tap on the face = live talk: open the chat and start listening. */
   function startLiveTalk() {
+    /* Live talk means it answers out loud, like a friend on a call. */
+    if (!state.voiceEnabled && "speechSynthesis" in window) {
+      state.voiceEnabled = true;
+      var vb = document.getElementById("fc-voice-btn");
+      if (vb) {
+        vb.textContent = "🔊";
+        vb.title = "Mute voice";
+        vb.setAttribute("aria-label", "Mute voice");
+        vb.setAttribute("aria-pressed", "true");
+      }
+      refreshVoices();
+    }
     openChat(true);
     var line = brainCall("onGreet", null);
     if (line) addMsg("me", line);
@@ -535,6 +524,42 @@
     }
   }
 
+  /* A friend's voice, not a cartoon: an adult English-Indian voice when the
+     phone has one, spoken a touch slower and lower than the default. */
+  var VOICE_PREF = ["Google UK English Female", "Google US English", "Samantha", "Microsoft Neerja Online (Natural) - English (India)",
+    "Microsoft Heera - English (India)", "Veena", "Rishi", "Google UK English Male", "Microsoft Ravi - English (India)"];
+  var pickedVoice = null;
+
+  function pickVoice() {
+    if (!("speechSynthesis" in window)) return null;
+    var voices = window.speechSynthesis.getVoices() || [];
+    if (!voices.length) return null;
+    /* 1) an explicitly preferred name */
+    for (var i = 0; i < VOICE_PREF.length; i++) {
+      var v = voices.filter(function (x) { return x.name === VOICE_PREF[i]; })[0];
+      if (v) return v;
+    }
+    /* 2) any Indian English voice that is not a child/small voice */
+    var inEn = voices.filter(function (x) {
+      return /en[-_]IN/i.test(x.lang) && !/child|kid|junior|baby/i.test(x.name);
+    });
+    if (inEn.length) return inEn[0];
+    /* 3) any adult English voice */
+    var en = voices.filter(function (x) {
+      return /^en/i.test(x.lang) && !/child|kid|junior|baby/i.test(x.name);
+    });
+    return en[0] || voices[0];
+  }
+
+  function refreshVoices() {
+    pickedVoice = pickVoice();
+  }
+  if ("speechSynthesis" in window) {
+    refreshVoices();
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+    setTimeout(refreshVoices, 600);
+  }
+
   function speak(text, holdMs) {
     sayInBar(text);
     var bubble = document.getElementById("fc-bubble");
@@ -543,14 +568,27 @@
     bubble.classList.add("show");
     if (state.voiceEnabled && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
-      var utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-IN";
-      utterance.rate = 1;
-      utterance.onstart = function () { document.getElementById("fc-avatar").classList.add("talking"); };
-      function done() { document.getElementById("fc-avatar").classList.remove("talking"); }
+      var clean = String(text).replace(/[*_`#>]/g, "").replace(/\[\[.*?\]\]/g, "").replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu, "").trim();
+      if (!clean) return;
+      var utterance = new SpeechSynthesisUtterance(clean);
+      var v = pickedVoice || pickVoice();
+      if (v) { utterance.voice = v; pickedVoice = v; }
+      utterance.lang = (v && v.lang) || (window.NexusCore && NexusCore.lang === "ta" ? "ta-IN" : NexusCore && NexusCore.lang === "hi" ? "hi-IN" : "en-IN");
+      utterance.rate = 0.94;      /* unhurried, like someone talking to you */
+      utterance.pitch = 0.92;     /* a little lower than default — not a child */
+      utterance.volume = 1;
+      utterance.onstart = function () { var a = document.getElementById("fc-avatar"); if (a) a.classList.add("talking"); };
+      function done() { var a = document.getElementById("fc-avatar"); if (a) a.classList.remove("talking"); }
       utterance.onend = done;
       utterance.onerror = done;
       window.speechSynthesis.speak(utterance);
+      /* Some Android builds pause long utterances; this nudges it along. */
+      var keepAlive = setTimeout(function () {
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
+      }, 10000);
     }
     clearTimeout(state.bubbleTimer);
     state.bubbleTimer = setTimeout(function () {
