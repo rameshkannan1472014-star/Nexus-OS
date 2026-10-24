@@ -279,3 +279,128 @@
 .fc-pick:hover, .fc-pick.is-on { border-color: #7c8cff; background: rgba(79, 91, 213, 0.25); }
 .fc-pick span { font-size: 18px; }
 .fc-pick small { display: block; color: #8f9bd0; font-size: 11px; margin-top: 2px; }
+
+/* ============================================================
+   v6 — the companion lives in a pinned top bar, like a search bar
+   ============================================================ */
+:root { --fc-bar-h: 56px; }
+
+.fc-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--fc-bar-h);
+  padding: 0 10px;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: content-box;
+  background: linear-gradient(180deg, rgba(10, 14, 26, 0.98), rgba(10, 14, 26, 0.92));
+  border-bottom: 1px solid rgba(120, 140, 255, 0.22);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  font-family: inherit;
+}
+
+/* Page content starts under the bar — nothing is covered. */
+body { padding-top: calc(var(--fc-bar-h) + env(safe-area-inset-top)); }
+
+.fc-bar-avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(120, 140, 255, 0.55);
+  background: radial-gradient(circle at 35% 30%, #2a3358, #10121b 75%);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  overflow: visible;
+  position: relative;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.fc-bar-avatar .fc-face { width: 36px; height: 36px; display: block; }
+.fc-bar-avatar.react { animation: fc-pop 0.45s ease; }
+.fc-bar-avatar.watching { border-color: #4ade80; box-shadow: 0 0 14px rgba(74, 222, 128, 0.55); }
+.fc-bar-avatar.talking .fc-face { animation: fc-pop 0.6s ease infinite; }
+
+.fc-bar-form {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 42px;
+  padding: 0 6px 0 14px;
+  border: 1px solid rgba(120, 140, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(22, 28, 46, 0.95);
+}
+.fc-bar-form:focus-within { border-color: #7c8cff; box-shadow: 0 0 0 3px rgba(124, 140, 255, 0.15); }
+.fc-bar-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #e8ecff;
+  font-size: 14px;
+  font-family: inherit;
+}
+.fc-bar-form input::placeholder { color: #8794c4; }
+.fc-bar-form button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: #aab6e8;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.fc-bar-form button:hover { background: rgba(120, 140, 255, 0.16); color: #fff; }
+.fc-bar-send { background: #4f5bd5 !important; color: #fff !important; }
+
+.fc-bar-cam, .fc-bar-voice {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(120, 140, 255, 0.28);
+  background: rgba(22, 28, 46, 0.95);
+  color: #cdd6ff;
+  font-size: 15px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.fc-bar-cam:hover, .fc-bar-voice:hover { border-color: #7c8cff; }
+
+/* Chat panel hangs from the bar */
+.face-companion-chat {
+  top: calc(var(--fc-bar-h) + env(safe-area-inset-top) + 8px);
+  bottom: auto;
+  right: 10px;
+  left: 10px;
+  width: auto;
+  max-width: 520px;
+  margin-left: auto;
+  max-height: min(52vh, 420px);
+  z-index: 8999;
+}
+.face-companion-chat.open { display: flex; }
+
+@media (max-width: 420px) {
+  .fc-bar { gap: 6px; padding: 0 8px; }
+  .fc-bar-voice { display: none; }
+  .fc-bar-form input { font-size: 13.5px; }
+}
+
+/* Legacy floating widget is no longer built; keep styles for safety. */

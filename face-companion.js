@@ -86,7 +86,144 @@
       "</svg>";
   }
 
+  /* ---------- Top AI bar: avatar + input, pinned, takes no page space ---------- */
+  function buildBar() {
+    var bar = el("div", "fc-bar");
+    bar.id = "fc-bar";
+    bar.setAttribute("role", "search");
+
+    var avatar = el("div", "fc-bar-avatar", faceSVG("idle") + "<span class='face-companion-status'></span>");
+    avatar.id = "fc-avatar";
+    avatar.title = "Nexus Buddy — tap to talk, hold for personality";
+    avatar.setAttribute("role", "button");
+    avatar.setAttribute("tabindex", "0");
+    avatar.setAttribute("aria-label", "Nexus Buddy — tap to talk, hold for personality");
+
+    var form = el("form", "fc-bar-form");
+    form.id = "fc-bar-form";
+    var input = el("input");
+    input.type = "text";
+    input.id = "fc-bar-input";
+    input.placeholder = "Ask me anything…";
+    input.autocomplete = "off";
+    input.maxLength = 800;
+    input.setAttribute("aria-label", "Ask your Nexus companion");
+    input.setAttribute("enterkeyhint", "send");
+    var send = el("button", "fc-bar-send", "➤");
+    send.type = "submit";
+    send.setAttribute("aria-label", "Send");
+    var mic = el("button", "fc-bar-mic", "🎤");
+    mic.type = "button";
+    mic.setAttribute("aria-label", "Speak to your companion");
+    form.appendChild(input);
+    form.appendChild(mic);
+    form.appendChild(send);
+
+    var voiceBtn = el("button", "fc-bar-voice", "🔇");
+    voiceBtn.id = "fc-voice-btn";
+    voiceBtn.type = "button";
+    voiceBtn.title = "Turn voice on";
+    voiceBtn.setAttribute("aria-label", "Turn voice on");
+    voiceBtn.setAttribute("aria-pressed", "false");
+
+    var camBtn = el("button", "fc-bar-cam", "📷");
+    camBtn.id = "fc-cam-btn";
+    camBtn.type = "button";
+    camBtn.title = "Let me see your face";
+    camBtn.setAttribute("aria-label", "Let me see your face");
+
+    bar.appendChild(avatar);
+    bar.appendChild(form);
+    bar.appendChild(camBtn);
+    bar.appendChild(voiceBtn);
+    document.body.appendChild(bar);
+
+    /* The page starts below the bar, so the bar never covers content. */
+    document.documentElement.style.setProperty("--fc-bar-h", "56px");
+    applyBarHeight();
+
+    /* Tap = talk, long-press = personality. */
+    var holdTimer = null;
+    function startHold(e) {
+      if (e) e.preventDefault();
+      holdTimer = setTimeout(function () { holdTimer = null; openPersonalityPicker(); }, 650);
+    }
+    function endHold(e) {
+      if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; toggleChat(); }
+    }
+    avatar.addEventListener("pointerdown", startHold);
+    avatar.addEventListener("pointerup", endHold);
+    avatar.addEventListener("pointerleave", function () { if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; } });
+    avatar.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleChat(); } });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      sendToCompanion(text);
+    });
+
+    input.addEventListener("focus", function () { openChat(false); });
+
+    mic.addEventListener("click", startListening);
+    camBtn.addEventListener("click", toggleCamera);
+    voiceBtn.addEventListener("click", toggleVoice);
+  }
+
+  /* Measure the bar (incl. the phone's safe-area inset) and reserve that space. */
+  function applyBarHeight() {
+    var bar = document.getElementById("fc-bar");
+    if (!bar) return;
+    var h = Math.round(bar.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty("--fc-bar-h", h + "px");
+  }
+
+  function toggleVoice() {
+    var voiceBtn = document.getElementById("fc-voice-btn");
+    if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+      speak("Voice isn't available in this browser. I'll keep talking in the bubble.");
+      return;
+    }
+    state.voiceEnabled = !state.voiceEnabled;
+    if (voiceBtn) {
+      voiceBtn.textContent = state.voiceEnabled ? "🔊" : "🔇";
+      voiceBtn.title = state.voiceEnabled ? "Mute voice" : "Turn voice on";
+      voiceBtn.setAttribute("aria-label", voiceBtn.title);
+      voiceBtn.setAttribute("aria-pressed", String(state.voiceEnabled));
+    }
+    window.speechSynthesis.cancel();
+    if (state.voiceEnabled) speak("Voice on.");
+  }
+
+  /* Speak into the bar instead of typing. */
+  function startListening() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var input = document.getElementById("fc-bar-input");
+    if (!SR || !input) { speak("Voice input isn't supported in this browser."); return; }
+    try {
+      var rec = new SR();
+      rec.lang = "en-IN";
+      rec.interimResults = false;
+      rec.maxAlternatives = 1;
+      input.placeholder = "Listening…";
+      rec.onresult = function (e) {
+        var text = (e.results[0][0].transcript || "").trim();
+        input.placeholder = "Ask me anything…";
+        if (text) sendToCompanion(text);
+      };
+      rec.onerror = function () { input.placeholder = "Ask me anything…"; };
+      rec.onend = function () { input.placeholder = "Ask me anything…"; };
+      rec.start();
+    } catch (_) { input.placeholder = "Ask me anything…"; }
+  }
+
   function buildUI() {
+    buildBar();
+    buildChatPanel();
+  }
+
+  function buildLegacyUI() {
     var wrap = el("div", "face-companion");
     wrap.id = "face-companion";
 
@@ -123,26 +260,12 @@
     wrap.appendChild(actions);
     document.body.appendChild(wrap);
 
-    buildChatPanel();
-
     makeDraggable(wrap, avatar);
 
     chatBtn.addEventListener("click", toggleChat);
     camBtn.addEventListener("click", toggleCamera);
     hiBtn.addEventListener("click", function () { talkScreen(true); });
-    voiceBtn.addEventListener("click", function () {
-      if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-        speak("Voice isn't available in this browser. I'll keep talking in the bubble.");
-        return;
-      }
-      state.voiceEnabled = !state.voiceEnabled;
-      voiceBtn.textContent = state.voiceEnabled ? "🔊" : "🔇";
-      voiceBtn.title = state.voiceEnabled ? "Mute voice" : "Turn voice on";
-      voiceBtn.setAttribute("aria-label", voiceBtn.title);
-      voiceBtn.setAttribute("aria-pressed", String(state.voiceEnabled));
-      window.speechSynthesis.cancel();
-      if (state.voiceEnabled) talkScreen(true);
-    });
+    voiceBtn.addEventListener("click", toggleVoice);
   }
 
   /* ---------- Brain bridge (works without nexus-companion-brain.js) ---------- */
@@ -169,39 +292,26 @@
     sub.textContent = "remembers you";
     titleBox.appendChild(sub);
     head.appendChild(titleBox);
+    var newBtn = el("button", null, "⟳");
+    newBtn.setAttribute("aria-label", "Start a new chat");
+    newBtn.title = "Start a new chat";
     var closeBtn = el("button", null, "✕");
     closeBtn.setAttribute("aria-label", "Close chat");
+    head.appendChild(newBtn);
     head.appendChild(closeBtn);
 
     var log = el("div", "fc-chat-log");
     log.id = "fc-chat-log";
 
-    var form = el("form", "fc-chat-form");
-    var input = el("input");
-    input.type = "text";
-    input.placeholder = "Say something…";
-    input.autocomplete = "off";
-    input.maxLength = 800;
-    input.setAttribute("aria-label", "Message your companion");
-    var send = el("button", null, "➤");
-    send.type = "submit";
-    send.setAttribute("aria-label", "Send");
-    form.appendChild(input);
-    form.appendChild(send);
-
     panel.appendChild(head);
     panel.appendChild(log);
-    panel.appendChild(form);
     document.body.appendChild(panel);
 
-    closeBtn.addEventListener("click", function () { panel.classList.remove("open"); });
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      sendToCompanion(text);
+    newBtn.addEventListener("click", function () {
+      if (log) log.innerHTML = "";
+      openChat(true);
     });
+    closeBtn.addEventListener("click", closeChat);
   }
 
   function addMsg(role, text) {
@@ -214,25 +324,40 @@
     return node;
   }
 
-  function toggleChat() {
+  function openChat(force) {
     var panel = document.getElementById("fc-chat");
-    if (!panel) return;
-    var opening = !panel.classList.contains("open");
-    panel.classList.remove("open");
-    if (!opening) return;
+    var bar = document.getElementById("fc-bar");
+    if (!panel || !bar) return;
     panel.classList.add("open");
+    bar.classList.add("is-open");
     var log = document.getElementById("fc-chat-log");
     if (log && !log.childElementCount) {
       var b = brain();
       var hello = b && typeof b.onGreet === "function" ? b.onGreet() : null;
       addMsg("me", hello || "Hi! I'm here. What's up?");
-      if (b && typeof b.summary === "function") {
-        var sub = document.querySelector(".fc-chat-sub");
-        if (sub) sub.textContent = b.summary();
-      }
+      var sub = panel.querySelector(".fc-chat-sub");
+      if (sub && b && typeof b.summary === "function") sub.textContent = b.summary();
     }
-    var input = panel.querySelector("input");
-    if (input) setTimeout(function () { input.focus(); }, 120);
+    var input = bar.querySelector("input");
+    if (input && force !== false) setTimeout(function () { input.focus(); }, 120);
+  }
+
+  function closeChat() {
+    var panel = document.getElementById("fc-chat");
+    var bar = document.getElementById("fc-bar");
+    if (panel) panel.classList.remove("open");
+    if (bar) {
+      bar.classList.remove("is-open");
+      var input = bar.querySelector("input");
+      if (input) input.blur();
+    }
+  }
+
+  function toggleChat() {
+    var panel = document.getElementById("fc-chat");
+    if (!panel) return;
+    if (panel.classList.contains("open")) closeChat();
+    else openChat(true);
   }
 
   function sendToCompanion(text) {
@@ -347,7 +472,19 @@
     });
   }
 
+  function sayInBar(text) {
+    var input = document.getElementById("fc-bar-input");
+    if (input && !input.matches(":focus")) {
+      input.placeholder = text.replace(/\s+/g, " ").slice(0, 90);
+      clearTimeout(state.barTimer);
+      state.barTimer = setTimeout(function () {
+        if (input) input.placeholder = "Ask me anything…";
+      }, 4200);
+    }
+  }
+
   function speak(text, holdMs) {
+    sayInBar(text);
     var bubble = document.getElementById("fc-bubble");
     if (!bubble) return;
     bubble.textContent = text;
@@ -420,7 +557,7 @@
 
   function startWatching() {
     var btn = document.getElementById("fc-cam-btn");
-    btn.textContent = "⏳ Loading…";
+    if (btn) btn.textContent = "⏳";
     speak("Warming up my eyes… 👀");
 
     ensureModels().then(function () {
@@ -447,7 +584,7 @@
 
       state.watching = true;
       document.getElementById("fc-avatar").classList.add("watching");
-      btn.textContent = "🙈 Stop";
+      if (btn) btn.textContent = "🙈";
       react("happy", "I can see you now! Smile, frown, look surprised — I'll react!");
       video.addEventListener("playing", function () {
         if (!state.detecting) {
@@ -456,7 +593,7 @@
         }
       });
     }).catch(function (err) {
-      btn.textContent = "📷 Watch me";
+      if (btn) btn.textContent = "📷";
       state.watching = false;
       speak("😢 " + (err && err.name === "NotAllowedError"
         ? "Camera permission was denied. Allow it to let me see you!"
@@ -476,7 +613,8 @@
     if (preview) preview.remove();
     state.video = null;
     document.getElementById("fc-avatar").classList.remove("watching");
-    document.getElementById("fc-cam-btn").textContent = "📷 Watch me";
+    var camBtn = document.getElementById("fc-cam-btn");
+    if (camBtn) camBtn.textContent = "📷";
     react(null, "Okay, eyes closed. 🙈 Tap “Watch me” anytime!");
   }
 
@@ -580,7 +718,7 @@
       if (!b || typeof b.onIdle !== "function") return;
       var line = null;
       try { line = b.onIdle(mins); } catch (_) { line = null; }
-      if (line) react(null, line);
+      if (line) { sayInBar(line); addMsg("me", line); }
     }, 30000);
   }
 
@@ -591,9 +729,12 @@
     watchIdle();
     var b = brain();
     if (b && typeof b.boot === "function") { try { b.boot(); } catch (_) {} }
+    setTimeout(applyBarHeight, 300);
+    window.addEventListener("resize", applyBarHeight);
+    window.addEventListener("orientationchange", function () { setTimeout(applyBarHeight, 250); });
     setTimeout(function () {
       var line = brainCall("onGreet", null);
-      if (line) { react(null, line); return; }
+      if (line) { sayInBar(line); return; }
       if (!state.lastScreenKey) talkScreen(true);
     }, 1500);
   }
