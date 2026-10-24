@@ -994,7 +994,7 @@
     { name: "Scratch", url: "https://scratch.mit.edu/", tile: "t-yellow", glyph: "S" },
     { name: "News", url: "https://www.google.com/search?igu=1&tbm=nws&q=India+news", tile: "t-red", glyph: "N" }
   ];
-  const br = { tabs: [], cur: 0 };
+  const br = { tabs: [], cur: 0, incognito: store.get("nexus-br-incognito", false) };
   function brNewTab(url) { const t = { id: uid(), url: null, title: "New tab", hist: [], idx: -1 }; br.tabs.push(t); br.cur = br.tabs.length - 1; if (url) brPush(t, url); return t; }
   function brPush(t, url) { t.hist = t.hist.slice(0, t.idx + 1); t.hist.push(url); t.idx = t.hist.length - 1; t.url = url; t.title = brHost(url); }
   const brTab = () => br.tabs[br.cur];
@@ -1029,6 +1029,7 @@
       <div class="nx-browser-bar" data-br-bar hidden><span>Page blank? Some sites don't allow other apps to show them.</span><button class="nx-btn sm ghost" type="button" data-br-outside>${ic("external", "sm")} Open</button></div>`,
     init(win) {
       win.classList.add("nx-browser");
+      win.classList.toggle("is-incognito", !!br.incognito);
       if (!br.tabs.length) brNewTab();
       const form = win.querySelector("[data-br-form]");
       form.addEventListener("submit", (e) => { e.preventDefault(); const u = brNormalize(form.q.value); if (!u) { toast(win, "Type a web address or search words"); return; } form.q.blur(); brGo(win, u); });
@@ -1118,11 +1119,21 @@
       ${t.url ? `<button type="button" class="nx-row" data-m="bm"><span class="nx-tile t-yellow">${ic("star", "sm")}</span><span class="nx-row-main"><strong>${marked ? "Remove bookmark" : "Bookmark this page"}</strong></span></button>
       <button type="button" class="nx-row" data-m="copy"><span class="nx-tile t-blue">${ic("copy", "sm")}</span><span class="nx-row-main"><strong>Copy link</strong></span></button>
       <button type="button" class="nx-row" data-m="out"><span class="nx-tile t-green">${ic("external", "sm")}</span><span class="nx-row-main"><strong>Open in your phone's browser</strong></span></button>` : ""}
-      <button type="button" class="nx-row" data-m="new"><span class="nx-tile t-violet">${ic("plus", "sm")}</span><span class="nx-row-main"><strong>New tab</strong></span></button></div>
+      <button type="button" class="nx-row" data-m="new"><span class="nx-tile t-violet">${ic("plus", "sm")}</span><span class="nx-row-main"><strong>New tab</strong></span></button>
+      <button type="button" class="nx-row" data-m="incog"><span class="nx-tile t-slate">🕶️</span><span class="nx-row-main"><strong>${br.incognito ? "Leave Incognito" : "Incognito mode"}</strong><span>${br.incognito ? "History is being kept again" : "Browse without saving history"}</span></span></button></div>
       ${hist.length ? `<div class="nx-section-title">Recent <button type="button" data-m="clearhist">Clear</button></div><div class="nx-list">${hist.map((h) => `<button type="button" class="nx-row" data-br-url="${esc(h.url)}"><span class="nx-tile t-slate">${ic("history", "sm")}</span><span class="nx-row-main"><strong>${esc(h.title)}</strong><span>${esc(h.url)}</span></span></button>`).join("")}</div>` : ""}`, (panel) => {
       panel.addEventListener("click", async (e) => {
         const u = e.target.closest("[data-br-url]"); if (u) { closeSheet(win); brGo(win, u.dataset.brUrl); return; }
         const m = e.target.closest("[data-m]")?.dataset.m; if (!m) return;
+        if (m === "incog") {
+          br.incognito = !br.incognito;
+          store.set("nexus-br-incognito", br.incognito);
+          if (br.incognito) store.set("nexus-br-history", []);
+          closeSheet(win);
+          brRender(win);
+          toast(win, br.incognito ? "Incognito on — nothing is saved" : "Incognito off");
+          return;
+        }
         if (m === "bm") { store.set("nexus-br-bookmarks", marked ? bms.filter((b) => b.url !== t.url) : [{ url: t.url, title: t.title }, ...bms]); toast(win, marked ? "Bookmark removed" : "Bookmarked"); }
         if (m === "copy") { try { await navigator.clipboard.writeText(t.url); toast(win, "Link copied"); } catch (_) { toast(win, "Couldn't copy the link"); } }
         if (m === "out") window.open(t.url, "_blank", "noopener");

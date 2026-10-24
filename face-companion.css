@@ -678,3 +678,24 @@ html { scroll-behavior: smooth; }
 #app-layer .nx-app, #app-layer .app-window { padding-top: calc(var(--fc-bar-h) + env(safe-area-inset-top)) !important; }
 #app-layer .nx-app .nx-head { margin-top: 4px; }
 #app-layer .nx-app .nx-body { padding-bottom: 96px; }
+
+/* Long-press to rearrange home icons (v50) */
+.app.nx-picked {
+  outline: 2px solid var(--nx-accent, #7c8cff);
+  outline-offset: -2px;
+  background: rgba(124, 140, 255, 0.14);
+  animation: nx-picked-pulse 1.1s ease-in-out infinite;
+}
+@keyframes nx-picked-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.94); }
+}
+body.nx-picking .app { cursor: grab; }
+
+/* Incognito browser */
+.nx-browser.is-incognito .nx-address { border-color: #6b7280; background: #14161c; }
+.nx-browser.is-incognito .nx-head { background: #14161c; }
+
+/* Open apps feel quicker: shorter window transition */
+#app-layer .nx-app { animation-duration: 0.22s; }
+@media (prefers-reduced-motion: reduce) { .app.nx-picked { animation: none; } }

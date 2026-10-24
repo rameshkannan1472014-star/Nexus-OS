@@ -18,6 +18,7 @@ const APP_SHELL = [
   "./companion-screen.js?v=1",
   "./nexus-companion-brain.js?v=1",
   "./nexus-fullscreen.js?v=1",
+  "./nexus-layout.js?v=1",
   "./nexus-control-center.js?v=1",
   "./face-companion.js?v=6",
   "./manifest.json",

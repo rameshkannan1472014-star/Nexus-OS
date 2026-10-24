@@ -229,6 +229,11 @@
 
   /* ---------- what it knows, as text for a prompt ---------- */
 
+  function langName() {
+    var code = (window.NexusCore && window.NexusCore.lang) || "en";
+    return code === "ta" ? "Tamil" : code === "hi" ? "Hindi" : "English";
+  }
+
   function memoryBlock() {
     var s = load(), lines = [];
     var name = s.name || "";
@@ -314,17 +319,22 @@
       "- Use what you remember about them when it's relevant, but don't recite their life back at them.\n" +
       "- If they seem sad or in distress, drop the jokes entirely, be warm and simple, and gently suggest talking to a real person they trust if it sounds serious.\n" +
       "- Never claim to be human. Never invent memories you don't have.\n" +
-      "- You can control Nexus OS: to run a device action, output [[do: <command>]] where command is like 'open camera', 'set alarm 7 am', 'play Anirudh songs', 'remind me to study at 7 pm', 'weather in Chennai'.\n" +
-      "- If they ask you to remember something, they are telling you a fact about their life: acknowledge it briefly and naturally.\n\n" +
+      "- You can control Nexus OS: to run a device action, output [[do: <command>]] where command is like 'open camera', 'set alarm 7 am', 'play Anirudh songs', 'remind me to study at 7 pm', 'weather in Chennai', 'open settings', 'set wallpaper galaxy', 'timer 10 minutes'.\n" +
+      "- If they ask you to remember something, they are telling you a fact about their life: acknowledge it briefly and naturally.\n" +
+      "- You are part of the OS: if they ask about Nexus itself (apps, settings, wallpaper, themes, language, reminders, control centre, bottom bar), answer with what Nexus can do and offer the action.\n" +
+      "- Reply in " + langName() + " unless they write in another language.\n" +
+      "- If they are bored, sad, angry or lonely: first acknowledge the feeling in one short line, then offer one concrete small thing (a game, a song, a two-minute break, a question about their day). Never give a lecture.\n" +
+      "- Never repeat the same comforting sentence twice in a row. Vary your wording.\n\n" +
       (mem ? "What you remember:\n" + mem + "\n" : "") +
       "Current time: " + new Date().toLocaleString("en-IN") + " (" + partOfDay() + ").";
   }
 
+  var history = [];
+
   function fetchLLM(text) {
-    var msgs = [
-      { role: "system", content: systemPrompt() },
-      { role: "user", content: String(text).slice(0, 1500) }
-    ];
+    var msgs = [{ role: "system", content: systemPrompt() }]
+      .concat(history.slice(-6))
+      .concat([{ role: "user", content: String(text).slice(0, 1500) }]);
     var ctl = new AbortController();
     var timer = setTimeout(function () { ctl.abort(); }, 20000);
     return fetch("https://text.pollinations.ai/openai", {
@@ -363,7 +373,7 @@
   /* Detect things worth remembering from what the user says. */
   function harvest(text) {
     var t = String(text || "");
-    var m;
+    var m, note = null;
     if ((m = t.match(/\b(?:my name is|call me|i am|i'm)\s+([A-Z][a-z]{2,15})\b/))) {
       var nm = m[1];
       if (!/^(Sad|Happy|Bored|Tired|Fine|Good|Not|Sorry|Going|Here)$/i.test(nm)) {
@@ -378,6 +388,33 @@
     if ((m = t.match(/\bmy (?:friend|mother|mom|father|dad|brother|sister|teacher|amma|appa)\s+([A-Z][a-z]{2,15})\b/))) learn("person", m[0].replace(/^my /i, ""));
     if ((m = t.match(/\bi(?:'m| am) (?:studying|learning|working on|preparing)\s+(.{2,60})/i))) learn("doing", m[1]);
     if ((m = t.match(/\b(?:exam|test|board exam)s?\s+(?:is |on |next )?(.{2,40})/i))) learn("doing", "exam " + m[1]);
+    if (m && /remember|don't forget|note/i.test(t)) note = "Got it — I'll remember that.";
+    if (!note && /\bi (?:love|like) /i.test(t)) note = "Noted. I'll remember you like that.";
+    if (!note && /\bmy name is\b/i.test(t)) note = "Nice to meet you properly. I'll remember that.";
+    if (note) { var st = load(); st.__learnedNote = note; save(); }
+  }
+
+  /* Answers that work with no internet: memory, time, maths, small talk. */
+  function offlineReply(text) {
+    var s = load(), t = String(text || "").toLowerCase().trim();
+    var m;
+    if (/\bwhat do you (know|remember)\b|\bmy memory\b/.test(t)) return Brain.summary();
+    if ((m = t.match(/\bforget (?:that |about )?(.{2,60})/))) return Brain.forget(m[1]);
+    if (/\bforget everything\b|\bclear (?:my )?memory\b/.test(t)) return Brain.forget(null);
+    if (/\bwhat(?:'s| is) the time\b|^time$/.test(t)) return "It's " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + ".";
+    if (/\bwhat(?:'s| is) (?:the )?date\b|\bwhat day\b/.test(t)) return "Today is " + new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" }) + ".";
+    if ((m = t.match(/^(?:what is |what's |calculate |calc )?([\d\s.+\-*/^()%]+)$/)) && /\d/.test(m[1])) {
+      try { return m[1].trim() + " = " + Function("return (" + m[1] + ")")(); } catch (_) {}
+    }
+    if (/\bwho are you\b|\byour name\b/.test(t)) return "I'm your Nexus companion — I live in this OS and I remember you.";
+    return null;
+  }
+
+  function offlineFallback() {
+    return pick([
+      "My brain's offline right now — bad signal? I can still do things like \"open camera\" or \"set alarm 7 am\".",
+      "Can't reach the internet. But I'm still here, and I still remember you."
+    ]);
   }
 
   /* ---------- public API ---------- */
@@ -478,20 +515,27 @@
       var local = localReply(text);
       if (local) return Promise.resolve({ text: local, local: true });
 
+      if (s.__learnedNote) {
+        var note = s.__learnedNote;
+        s.__learnedNote = null;
+        return Promise.resolve({ text: note, local: true });
+      }
+
+      /* Things it can answer itself, even with no internet. */
+      var offlineQuick = offlineReply(text);
+      if (offlineQuick) return Promise.resolve({ text: offlineQuick, local: true });
+
       waiting = true;
       return fetchLLM(text).then(function (raw) {
         waiting = false;
-        return { text: runCommands(raw), local: false };
+        var clean = runCommands(raw);
+        history.push({ role: "user", content: String(text).slice(0, 400) });
+        history.push({ role: "assistant", content: String(clean).slice(0, 600) });
+        if (history.length > 12) history = history.slice(-12);
+        return { text: clean, local: false };
       }).catch(function () {
         waiting = false;
-        return {
-          text: pick([
-            "My brain's offline right now — bad signal? I can still do things like \"open camera\" or \"set alarm 7 am\".",
-            "Can't reach the internet. But I'm still here, and I still remember you."
-          ]),
-          local: true,
-          offline: true
-        };
+        return { text: offlineFallback(), local: true, offline: true };
       });
     },
 
