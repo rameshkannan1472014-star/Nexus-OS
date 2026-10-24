@@ -315,7 +315,7 @@
       <div data-view="lib" hidden><div data-m-lib></div></div>
       <div class="nx-card nx-m-mode"><span class="nx-row-main"><strong>Play full songs</strong><span>Uses the YouTube player. Turn off to hear 30-second previews (uses less data).</span></span><button type="button" class="nx-switch" data-m-full aria-checked="${M.full}" aria-label="Play full songs"></button></div><p class="nx-note">Song info from iTunes. Full songs are streamed by YouTube. On phones, YouTube pauses when you leave the browser or lock the screen.</p>`,
     init(win) {
-      win.classList.add("nx-music"); wake(); if (M.full) ytWarm();
+      win.classList.add("nx-music"); if (M.full) ytWarm();
       win.querySelector(".nx-tabs").hidden = true;
       win.querySelector("[data-m-player]").innerHTML = mPlayer();
       if (M.queue.length) mUpNext(win);
