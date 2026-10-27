@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#10121b">
+  <meta name="theme-color" content="#f3f3f1">
   <meta name="description" content="A futuristic personal workspace with a system-wide AI companion.">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,10 +12,11 @@
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./style.css?v=46">
+  <link rel="stylesheet" href="./style.css?v=47">
   <link rel="stylesheet" href="./nexus-apps.css?v=46">
-  <link rel="stylesheet" href="./nexus-apps-more.css?v=46">
+  <link rel="stylesheet" href="./nexus-apps-more.css?v=47">
   <link rel="stylesheet" href="./face-companion.css?v=12">
+  <link rel="stylesheet" href="./launcher-reference.css?v=3">
 </head>
 <body>
   <main id="os">
@@ -26,21 +27,60 @@
     <section class="home-brand"><div class="brand-mark"><i></i><i></i><i></i><i></i></div><div class="brand-copy"><h1>Nexus OS</h1><p>Smarter · Faster · Yours</p></div><button class="home-ai-button" data-app="ai" aria-label="Open AI Assistant">✦<small>AI</small></button></section>
     <section class="search home-search"><label class="sr-only" for="global-search">Search apps</label><span>⌕</span><input id="global-search" type="search" placeholder="Search apps, files, web…" autocomplete="off"></section>
     <section class="weather-hero" data-app="weather" role="button" tabindex="0" aria-label="Open weather"><div class="weather-art"></div><div class="weather-time"><strong id="hero-clock">--:--</strong><span id="hero-date">Loading date…</span></div><div class="hero-weather-icon">🌤️</div><div class="hero-weather-copy"><strong id="hero-temp">Weather</strong><span id="hero-condition">Tap to check forecast</span><small>📍 Your location</small></div><div class="hero-high-low"><span>H: —°</span><span>L: —°</span></div></section>
-    <section class="section-heading app-section-heading"><h2>Your apps</h2><span id="app-count">33 APPS</span></section>
+    <section class="reference-dashboard" aria-label="Home dashboard">
+      <article class="reference-clock-card">
+        <div class="reference-time"><strong id="reference-clock">--:--</strong><span id="reference-date">Loading date…</span></div>
+        <button class="reference-player" type="button" data-app="music" aria-label="Open music player"><span class="reference-album">♫</span><span class="reference-track"><b>Album Cover</b><small>The Song · Tap to play music</small></span><span class="reference-play">▶</span><span class="reference-heart">♥</span></button>
+      </article>
+      <article class="reference-calendar-card">
+        <button class="reference-calendar-title" type="button" data-app="calendar"><strong id="reference-month">Calendar</strong><span>›</span></button>
+        <div class="reference-calendar-grid" id="reference-calendar" aria-label="This month's calendar"></div>
+        <div class="reference-socials" aria-label="Social shortcuts"><a href="https://www.pinterest.com/" target="_blank" rel="noopener noreferrer" aria-label="Pinterest">℘</a><a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">f</a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">◎</a><a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X">𝕏</a><a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">in</a><a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube">▶</a></div>
+      </article>
+    </section>
+    <section class="section-heading app-section-heading"><h2>Your apps</h2><span id="app-count">39 APPS</span></section>
     <section class="app-grid" aria-label="Applications">
       <button class="app" data-app="youtube"><span class="app-icon red">▶</span><span>YouTube</span></button><button class="app" data-app="browser"><span class="app-icon blue">🌐</span><span>Browser</span></button><button class="app" data-app="files"><span class="app-icon blue">📁</span><span>Files</span></button><button class="app" data-app="gallery"><span class="app-icon violet">✿</span><span>Gallery</span></button><button class="app" data-app="camera"><span class="app-icon slate">📷</span><span>Camera</span></button>
       <button class="app" data-app="notes"><span class="app-icon yellow">▤</span><span>Notes</span></button><button class="app" data-app="calculator"><span class="app-icon slate">▦</span><span>Calculator</span></button><button class="app" data-app="settings"><span class="app-icon slate">⚙</span><span>Settings</span></button><button class="app" data-app="security"><span class="app-icon green">⬡</span><span>Security</span></button><button class="app" data-app="store"><span class="app-icon violet">▣</span><span>Store</span></button>
-      <button class="app" data-app="music"><span class="app-icon pink">♫</span><span>Music</span></button><button class="app" data-app="weather"><span class="app-icon blue">🌤️</span><span>Weather</span></button><button class="app" data-app="calendar"><span class="app-icon red">📅</span><span>Calendar</span></button><button class="app" data-app="clock"><span class="app-icon dark">◷</span><span>Clock</span></button><button class="app more-app" data-action="show-all-apps"><span class="app-icon dark">⠿</span><span>More</span></button>
+      <button class="app" data-app="music"><span class="app-icon pink">♫</span><span>Music</span></button><button class="app" data-app="weather"><span class="app-icon blue">🌤️</span><span>Weather</span></button><button class="app" data-app="calendar"><span class="app-icon red">📅</span><span>Calendar</span></button><button class="app" data-app="clock"><span class="app-icon dark">◷</span><span>Clock</span></button><button class="app" data-app="joy"><span class="app-icon pink">❤</span><span>Joy</span></button><button class="app more-app" data-action="show-all-apps"><span class="app-icon dark">⠿</span><span>More</span></button>
       <button class="app extra-app" data-app="terminal"><span class="app-icon dark">⌨</span><span>Terminal</span></button><button class="app extra-app" data-app="maps"><span class="app-icon sky">📍</span><span>Maps</span></button><button class="app extra-app" data-app="messages"><span class="app-icon blue">💬</span><span>Messages</span></button><button class="app extra-app" data-app="call"><span class="app-icon green">📞</span><span>Phone</span></button><button class="app extra-app" data-app="widgets"><span class="app-icon blue">▦</span><span>Widgets</span></button><button class="app extra-app" data-app="reminder"><span class="app-icon green">🔔</span><span>Reminder</span></button><button class="app extra-app" data-app="news"><span class="app-icon red">📰</span><span>News</span></button><button class="app extra-app" data-app="themes"><span class="app-icon violet">🎨</span><span>Themes</span></button><button class="app extra-app" data-app="paint"><span class="app-icon pink">🖌️</span><span>Paint</span></button><button class="app extra-app" data-app="pdf"><span class="app-icon red">📄</span><span>PDF Viewer</span></button><button class="app extra-app" data-app="generator"><span class="app-icon orange">✨</span><span>Photo & Video</span></button><button class="app extra-app" data-app="books"><span class="app-icon yellow">📚</span><span>Book Reader</span></button><button class="app extra-app" data-app="games"><span class="app-icon orange">🧩</span><span>Games</span></button><button class="app extra-app" data-app="casting"><span class="app-icon dark">📺</span><span>Mirror Casting</span></button><button class="app extra-app" data-app="shop"><span class="app-icon green">🛍️</span><span>Shop Finder</span></button><button class="app extra-app" data-app="sos"><span class="app-icon red">🆘</span><span>SOS</span></button><button class="app extra-app" data-app="planner"><span class="app-icon green">🗓️</span><span>Day Planner</span></button><button class="app extra-app" data-app="feedback"><span class="app-icon blue">✉️</span><span>Feedback</span></button><button class="app extra-app" data-app="radio"><span class="app-icon pink">📻</span><span>FM Radio</span></button>
     </section>
-    <section class="home-panels"><article class="home-panel quick-tools"><h2><span>ϟ</span> Quick Tools</h2><div class="quick-grid"><button data-app="terminal"><b>›_</b><span>Terminal</span></button><button data-app="maps"><b>📍</b><span>Maps</span></button><button data-app="messages"><b>▤</b><span>Messages</span></button><button data-app="call"><b>☎</b><span>Phone</span></button><button data-app="feedback"><b>●</b><span>Contacts</span></button><button data-app="radio"><b>♫</b><span>FM Radio</span></button></div></article><article class="home-panel home-ai"><h2><span>✦</span> AI Assistant <button data-app="ai" aria-label="Open AI Assistant">›</button></h2><div class="ai-welcome"><div class="ai-avatar">🤖</div><div><strong>Nexus AI</strong><span>How can I help you today?</span></div></div><button class="ai-ask" data-app="ai">☏ &nbsp; Ask anything</button><div class="ai-actions"><button data-app="generator">▧ &nbsp; Generate image</button><button data-app="terminal">‹/› &nbsp; Help me code</button></div></article></section>
-    <section class="home-bottom-panels"><article class="home-panel recent-panel"><h2>◷ &nbsp; Recent Apps <button data-action="show-all-apps">›</button></h2><div class="recent-apps"><button data-app="browser"><b>🌐</b><span>Browser</span></button><button data-app="gallery"><b>✿</b><span>Gallery</span></button><button data-app="youtube"><b>▶</b><span>YouTube</span></button><button data-app="files"><b>📁</b><span>Files</span></button></div></article><article class="home-panel storage-panel"><h2>▤ &nbsp; Storage</h2><div class="storage-track"><span></span></div><div class="storage-meta"><strong>14.2 GB / 64 GB</strong><span>22%</span></div></article></section>
+    <section class="home-panels home-panels-legacy"><article class="home-panel quick-tools"><h2><span>ϟ</span> Quick Tools</h2><div class="quick-grid"><button data-app="terminal"><b>›_</b><span>Terminal</span></button><button data-app="maps"><b>📍</b><span>Maps</span></button><button data-app="messages"><b>▤</b><span>Messages</span></button><button data-app="call"><b>☎</b><span>Phone</span></button><button data-app="feedback"><b>●</b><span>Contacts</span></button><button data-app="radio"><b>♫</b><span>FM Radio</span></button></div></article><article class="home-panel home-ai"><h2><span>✦</span> AI Assistant <button data-app="ai" aria-label="Open AI Assistant">›</button></h2><div class="ai-welcome"><div class="ai-avatar">🤖</div><div><strong>Nexus AI</strong><span>How can I help you today?</span></div></div><button class="ai-ask" data-app="ai">☏ &nbsp; Ask anything</button><div class="ai-actions"><button data-app="generator">▧ &nbsp; Generate image</button><button data-app="terminal">‹/› &nbsp; Help me code</button></div></article></section>
+    <section class="home-bottom-panels home-panels-legacy"><article class="home-panel recent-panel"><h2>◷ &nbsp; Recent Apps <button data-action="show-all-apps">›</button></h2><div class="recent-apps"><button data-app="browser"><b>🌐</b><span>Browser</span></button><button data-app="gallery"><b>✿</b><span>Gallery</span></button><button data-app="youtube"><b>▶</b><span>YouTube</span></button><button data-app="files"><b>📁</b><span>Files</span></button></div></article><article class="home-panel storage-panel"><h2>▤ &nbsp; Storage</h2><div class="storage-track"><span></span></div><div class="storage-meta"><strong>14.2 GB / 64 GB</strong><span>22%</span></div></article></section>
     <button id="ai-companion" class="ai-companion" aria-label="Open Nexus AI"><span class="ai-face">🤖</span><span><b>Nexus AI</b><small>Tap to ask</small></span><span class="online-dot"></span></button>
     <nav class="dock" aria-label="Quick apps">
-      <button data-app="browser" aria-label="Browser">🌐</button><button data-app="files" aria-label="Files">📁</button><button data-app="terminal" aria-label="Terminal">⌨️</button><button data-app="ai" class="dock-ai" aria-label="Nexus AI">🤖</button><button data-app="gallery" aria-label="Gallery">🖼️</button><button data-app="settings" aria-label="Settings">⚙️</button>
-    <button data-system-nav="home" aria-label="Home" title="Home">⌂</button><button data-system-nav="back" aria-label="Back" title="Back">‹</button><button data-system-nav="recent" aria-label="Recent apps" title="Recent apps">▢</button></nav>
+      <button data-app="ai" aria-label="Nexus AI">✦</button><button data-app="messages" aria-label="Messages">☏</button><button data-app="browser" aria-label="Browser">🌐</button><button data-app="call" aria-label="Phone">📞</button>
+    </nav>
   </main>
   <div id="app-layer" aria-live="polite"></div>
+  <script>
+    (function () {
+      var now = new Date();
+      var clock = document.getElementById("reference-clock");
+      var date = document.getElementById("reference-date");
+      var month = document.getElementById("reference-month");
+      var calendar = document.getElementById("reference-calendar");
+      function paintClock() {
+        var d = new Date();
+        if (clock) clock.textContent = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+        if (date) date.textContent = d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      }
+      paintClock(); window.setInterval(paintClock, 30000);
+      if (month) month.textContent = now.toLocaleDateString([], { month: "long", year: "numeric" });
+      if (calendar) {
+        var first = new Date(now.getFullYear(), now.getMonth(), 1);
+        var total = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        var labels = ["M", "T", "W", "T", "F", "S", "S"];
+        calendar.innerHTML = labels.map(function (x) { return '<span class="calendar-weekday">' + x + '</span>'; }).join("");
+        var offset = (first.getDay() + 6) % 7;
+        for (var blank = 0; blank < offset; blank++) calendar.insertAdjacentHTML("beforeend", '<span class="calendar-blank" aria-hidden="true"></span>');
+        for (var day = 1; day <= total; day++) {
+          var isToday = day === now.getDate();
+          calendar.insertAdjacentHTML("beforeend", '<span class="calendar-day' + (isToday ? ' is-today' : '') + '"' + (isToday ? ' aria-current="date"' : '') + '>' + day + '</span>');
+        }
+      }
+    })();
+  </script>
   <section id="control-center" class="control-center" aria-label="Control Center" hidden></section>
 
   <script src="./nexus-core.js?v=2"></script>
@@ -52,6 +92,7 @@
   <script src="./nexus-apps-5.js?v=46"></script>
   <script src="./nexus-apps-6.js?v=46"></script>
   <script src="./nexus-apps-7.js?v=46"></script>
+  <script src="./nexus-apps-8.js?v=1"></script>
   <script src="./nexus-youtube.js?v=2"></script>
   <script src="./nexus-ai-control.js?v=46"></script>
   <script src="./companion-screen.js?v=1"></script>

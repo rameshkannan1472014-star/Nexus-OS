@@ -1,11 +1,13 @@
-const CACHE_NAME = "nexus-os-v60";
+const CACHE_NAME = "nexus-os-v61";
 const APP_SHELL = [
   "./",
-  "./index.html?v=48",
+  "./index.html?v=49",
   "./style.css?v=46",
   "./app.js?v=47",
   "./nexus-apps.css?v=46",
-  "./nexus-apps-more.css?v=46",
+  "./nexus-apps-more.css?v=47",
+  "./launcher-reference.css?v=3",
+  "./nexus-apps-8.js?v=1",
   "./nexus-apps.js?v=46",
   "./nexus-apps-2.js?v=49",
   "./nexus-apps-3.js?v=46",
@@ -67,4 +69,4 @@ self.addEventListener("fetch", (event) => {
       return Response.error();
     })
   );
-});
+}
