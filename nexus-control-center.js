@@ -1,10 +1,7 @@
 /* ==========================================================================
-   Nexus OS — Control Center (v51)
-   Rebuilt after feedback: the first version was too crowded. Now it opens
-   with just what you reach for — brightness, volume, the three switches,
-   next reminder and a row of app shortcuts. Everything else (language,
-   wallpapers, accent, bottom-bar buttons, toggles) lives behind "More".
-   Open it by dragging down from the top edge, or tapping ☷.
+   Nexus OS — Control Center (v52)
+   A compact Nexus sheet: four large toggles, paired level controls, the next
+   reminder and app shortcuts. Open it by dragging down or tapping the button.
    ========================================================================== */
 (function () {
   "use strict";
@@ -21,7 +18,7 @@
   var startY = null;
   var dragFrom = null;
   var dragOrigin = null;
-  var mode = "mini"; // mini | full
+  var mode = "mini";
 
   function el(tag, cls, html) {
     var n = document.createElement(tag);
@@ -53,8 +50,7 @@
 
   function beginPanelDrag(event) {
     if (!open || !event.target.closest(".nx-cc-grip")) return;
-    dragFrom = event.clientY;
-    dragOrigin = event.clientY;
+    dragFrom = dragOrigin = event.clientY;
     cc.dataset.dragging = "true";
     if (cc.setPointerCapture && event.pointerId != null) {
       try { cc.setPointerCapture(event.pointerId); } catch (_) {}
@@ -97,49 +93,45 @@
     return d.toLocaleDateString([], { day: "numeric", month: "short" }) + " " + time;
   }
 
-  /* ---------- the compact panel ---------- */
-
   function renderMini() {
     var snd = Core.sound;
     var rem = nextReminder();
     var shortcuts = (Core.getDock() || []).slice(0, 5);
+    var bright = store.get("nexus-brightness", 100);
 
     cc.innerHTML =
       '<div class="nx-cc-grip"></div>' +
-      '<div class="nx-cc-top">' +
-        '<div><p class="nx-cc-date">' + esc(new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" })) + "</p>" +
-        '<h2>' + Core.t("control_center") + "</h2></div>" +
-        '<div class="nx-cc-topbtns">' +
-          '<button class="nx-cc-icon" type="button" data-cc-more aria-label="More controls">⋯</button>' +
-          '<button class="nx-cc-icon" type="button" data-cc-close aria-label="Close">✕</button>' +
-        "</div>" +
-      "</div>" +
+      '<div class="nx-cc-top"><div><p class="nx-cc-date">' +
+        esc(new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" })) +
+        '</p><h2>' + Core.t("control_center") + '</h2></div><div class="nx-cc-topbtns">' +
+        '<button class="nx-cc-icon" type="button" data-cc-more aria-label="More controls">⋯</button>' +
+        '<button class="nx-cc-icon" type="button" data-cc-close aria-label="Close">✕</button></div></div>' +
 
       '<div class="nx-cc-quick">' +
-        '<button class="nx-cc-big' + (snd.muted ? " is-off" : "") + '" type="button" data-cc-mute>' +
-          '<span>' + (snd.muted ? "🔕" : "🔊") + "</span><b>" + (snd.muted ? "Muted" : snd.volume + "%") + "</b><small>Sound</small></button>" +
-        '<button class="nx-cc-big' + (Core.light ? "" : " is-on") + '" type="button" data-cc-theme>' +
-          '<span>◐</span><b>' + (Core.light ? "Light" : "Dark") + "</b><small>Theme</small></button>" +
-        '<button class="nx-cc-big" type="button" data-cc-lang>' +
-          '<span>🌐</span><b>' + esc(Core.langInfo().native) + "</b><small>Language</small></button>" +
-        '<button class="nx-cc-big" type="button" data-cc-fullscreen>' +
-          '<span>⛶</span><b>Screen</b><small>Fill</small></button>' +
-      "</div>" +
+        '<button class="nx-cc-big' + (snd.muted ? " is-off" : "") + '" type="button" data-cc-mute><span>' +
+          (snd.muted ? "🔇" : "🔊") + '</span><b>' + (snd.muted ? "Muted" : snd.volume + "%") + '</b><small>Sound</small></button>' +
+        '<button class="nx-cc-big' + (Core.light ? " is-on" : "") + '" type="button" data-cc-theme><span>◐</span><b>' +
+          (Core.light ? "Light" : "Dark") + '</b><small>Theme</small></button>' +
+        '<button class="nx-cc-big" type="button" data-cc-lang><span>🌐</span><b>' +
+          esc(Core.langInfo().native) + '</b><small>Language</small></button>' +
+        '<button class="nx-cc-big" type="button" data-cc-fullscreen><span>⛶</span><b>Screen</b><small>Fill</small></button>' +
+      '</div>' +
 
-      '<div class="nx-cc-slider"><label>☀ Brightness</label><output>' + store.get("nexus-brightness", 100) + "%</output>" +
-        '<input type="range" data-cc-range="brightness" min="55" max="115" value="' + store.get("nexus-brightness", 100) + '" aria-label="Brightness"></div>' +
-      '<div class="nx-cc-slider"><label>🔊 Volume</label><output>' + snd.volume + "%</output>" +
-        '<input type="range" data-cc-range="volume" min="0" max="100" value="' + snd.volume + '" aria-label="Volume"></div>' +
+      '<div class="nx-cc-slider"><span>☀</span><label>Brightness</label><input type="range" data-cc-range="brightness" min="55" max="115" value="' +
+        bright + '" aria-label="Brightness"><output>' + bright + '%</output></div>' +
+      '<div class="nx-cc-slider"><span>♪</span><label>Volume</label><input type="range" data-cc-range="volume" min="0" max="100" value="' +
+        snd.volume + '" aria-label="Volume"><output>' + snd.volume + '%</output></div>' +
 
-      '<div class="nx-cc-shortcuts">' +
-        shortcuts.map(function (s) {
-          return '<button type="button" data-cc-open="' + s.app + '"><span>' + s.icon + "</span><small>" + esc(s.label) + "</small></button>";
-        }).join("") +
-      "</div>" +
+      '<button type="button" class="nx-cc-rem' + (rem ? "" : " empty") + '" data-cc-' +
+        (rem ? 'rem="' + esc(rem.id) + '"' : 'open="reminder"') + '><span class="nx-cc-rem-dot"></span><span><b>' +
+        esc(rem ? rem.text : Core.t("no_reminders")) + '</b><small>' +
+        esc(rem ? fmtTime(rem.time) : "Tap to add one") + '</small></span>' +
+        (rem ? '<i>✓</i>' : '') + '</button>' +
 
-      (rem
-        ? '<button type="button" class="nx-cc-rem" data-cc-rem="' + esc(rem.id) + '"><span class="nx-cc-rem-dot"></span><span><b>' + esc(rem.text) + "</b><small>" + esc(fmtTime(rem.time)) + "</small></span><i>✓</i></button>"
-        : '<button type="button" class="nx-cc-rem empty" data-cc-open="reminder"><span class="nx-cc-rem-dot"></span><span><b>' + Core.t("no_reminders") + "</b><small>Tap to add one</small></span></button>");
+      '<div class="nx-cc-shortcuts">' + shortcuts.map(function (s) {
+        return '<button type="button" data-cc-open="' + s.app + '"><span>' + s.icon + '</span><small>' +
+          esc(s.label) + '</small></button>';
+      }).join("") + '</div>';
 
     wireMini();
   }
@@ -188,8 +180,7 @@
     });
   }
 
-  /* ---------- the full panel ---------- */
-
+  /* The advanced settings stay available, but are not shown by default. */
   function renderFull() {
     var snd = Core.sound;
     cc.innerHTML =
@@ -197,40 +188,40 @@
       '<div class="nx-cc-top"><div><h2>More controls</h2></div><div class="nx-cc-topbtns">' +
         '<button class="nx-cc-icon" type="button" data-cc-back aria-label="Back">‹</button>' +
         '<button class="nx-cc-icon" type="button" data-cc-close aria-label="Close">✕</button></div></div>' +
-
+      '<div class="nx-cc-head"><div class="nx-cc-date">' + esc(new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "short" })) + '</div></div>' +
       '<div class="nx-cc-switches">' +
-        sw("duck", "🔉 Lower sound on alerts", snd.ducking) +
-        sw("mute", "🔕 Mute everything", snd.muted) +
-      "</div>" +
-
+        '<button type="button" class="nx-cc-sw' + (snd.ducking ? " is-on" : "") + '" data-cc-sw="duck"><span>🔉 Lower sound on alerts</span><i></i></button>' +
+        '<button type="button" class="nx-cc-sw' + (snd.muted ? " is-on" : "") + '" data-cc-sw="mute"><span>🔕 Mute everything</span><i></i></button>' +
+      '</div>' +
       '<div class="nx-cc-block"><h3>🌐 ' + Core.t("language") + '</h3><div class="nx-cc-chips">' +
         Core.LANGS.map(function (l) {
-          return '<button type="button" class="nx-cc-chip' + (l.code === Core.lang ? " is-on" : "") + '" data-cc-lang="' + l.code + '">' + esc(l.native) + "</button>";
-        }).join("") + "</div></div>" +
-
+          return '<button type="button" class="nx-cc-chip' + (l.code === Core.lang ? " is-on" : "") + '" data-cc-lang="' + l.code + '">' + esc(l.native) + '</button>';
+        }).join("") + '</div></div>' +
       '<div class="nx-cc-block"><h3>🎨 ' + Core.t("wallpaper") + '</h3><div class="nx-cc-walls">' +
         Core.WALLPAPERS.map(function (w) {
-          return '<button type="button" class="nx-cc-wall' + (w.id === Core.wallpaper ? " is-on" : "") + '" data-cc-wall="' + w.id + '" style="background-image:' + w.css + '" aria-label="' + esc(w.label) + '"><span>' + esc(w.label) + "</span></button>";
-        }).join("") + "</div></div>" +
-
+          return '<button type="button" class="nx-cc-wall' + (w.id === Core.wallpaper ? " is-on" : "") + '" data-cc-wall="' + w.id + '" style="background-image:' + w.css + '"><span>' + esc(w.label) + '</span></button>';
+        }).join("") + '</div></div>' +
       '<div class="nx-cc-block"><h3>✳ ' + Core.t("accent") + '</h3><div class="nx-cc-accents">' +
         Core.ACCENTS.map(function (a) {
           return '<button type="button" class="nx-cc-accent' + (a.id === Core.accent ? " is-on" : "") + '" data-cc-accent="' + a.id + '" style="--c:' + a.color + '" aria-label="' + esc(a.label) + '"></button>';
-        }).join("") + "</div></div>" +
-
+        }).join("") + '</div></div>' +
       '<div class="nx-cc-block"><h3>▤ ' + Core.t("dock") + '</h3><div class="nx-cc-dock">' +
         Core.DOCK_CHOICES.map(function (d) {
           var on = Core.getDock().some(function (x) { return x.app === d.app; });
-          return '<button type="button" class="nx-cc-chip' + (on ? " is-on" : "") + '" data-cc-dock="' + d.app + '">' + d.icon + " " + esc(d.label) + "</button>";
-        }).join("") + "</div></div>" +
-
+          return '<button type="button" class="nx-cc-chip' + (on ? " is-on" : "") + '" data-cc-dock="' + d.app + '">' + d.icon + " " + esc(d.label) + '</button>';
+        }).join("") + '</div></div>' +
       '<div class="nx-cc-block"><h3>⇅ Toggles</h3><div class="nx-cc-tiles">' +
-        tile("wifi", "⌁", "Wi-Fi") + tile("bluetooth", "ᛒ", "Bluetooth") + tile("airplane", "✈", "Airplane") +
-      "</div></div>" +
-
-      '<button type="button" class="nx-cc-wide" data-cc-open="settings">⚙ ' + Core.t("settings") + "</button>" +
+        '<button type="button" class="nx-cc-tile active" data-cc-tile="wifi"><span>⌁</span><b>Wi-Fi</b></button>' +
+        '<button type="button" class="nx-cc-tile active" data-cc-tile="bluetooth"><span>ᛒ</span><b>Bluetooth</b></button>' +
+        '<button type="button" class="nx-cc-tile active" data-cc-tile="airplane"><span>✈</span><b>Airplane</b></button>' +
+      '</div></div>' +
+      '<button type="button" class="nx-cc-wide" data-cc-open="settings">⚙ ' + Core.t("settings") + '</button>' +
       '<p class="nx-cc-note">Wi-Fi, Bluetooth and airplane mode are visual demos — a website cannot change your phone\'s real settings.</p>';
 
+    wireFull();
+  }
+
+  function wireFull() {
     cc.querySelector("[data-cc-close]").addEventListener("click", close);
     cc.querySelector("[data-cc-back]").addEventListener("click", function () { mode = "mini"; render(); });
     cc.querySelectorAll("[data-cc-lang]").forEach(function (b) {
@@ -270,13 +261,6 @@
     });
   }
 
-  function tile(key, icon, label) {
-    return '<button type="button" class="nx-cc-tile active" data-cc-tile="' + key + '"><span>' + icon + "</span><b>" + label + "</b></button>";
-  }
-  function sw(key, label, on) {
-    return '<button type="button" class="nx-cc-sw' + (on ? " is-on" : "") + '" data-cc-sw="' + key + '"><span>' + label + '</span><i></i></button>';
-  }
-
   function render() {
     if (!cc || !Core) return;
     if (mode === "full") renderFull(); else renderMini();
@@ -299,31 +283,24 @@
     document.body.classList.remove("cc-open");
     cc.style.removeProperty("transition");
     cc.style.removeProperty("transform");
-    if (scrim) scrim.style.removeProperty("opacity");
+    scrim.style.removeProperty("opacity");
     dragFrom = dragOrigin = null;
   }
   function toggle() { if (open) close(); else openCC(); }
-
-  /* ---------- gestures: drag down from the top edge ---------- */
 
   function initGesture() {
     document.addEventListener("touchstart", function (e) {
       if (e.touches.length !== 1) return;
       startY = (!open && e.touches[0].clientY < 44) ? e.touches[0].clientY : null;
     }, { passive: true });
-
     document.addEventListener("touchmove", function (e) {
-      if (e.touches.length !== 1) return;
-      if (startY != null && e.touches[0].clientY - startY > 55) {
+      if (startY != null && e.touches.length === 1 && e.touches[0].clientY - startY > 55) {
         startY = null;
         openCC();
         try { navigator.vibrate && navigator.vibrate(12); } catch (_) {}
-        return;
       }
     }, { passive: true });
-
     document.addEventListener("touchend", function () { startY = null; }, { passive: true });
-
     document.addEventListener("mousedown", function (e) { if (!open && e.clientY < 10) openCC(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && open) close(); });
   }
