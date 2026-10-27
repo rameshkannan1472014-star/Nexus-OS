@@ -19,6 +19,8 @@
   var scrim = null;
   var open = false;
   var startY = null;
+  var dragFrom = null;
+  var dragOrigin = null;
   var mode = "mini"; // mini | full
 
   function el(tag, cls, html) {
@@ -43,6 +45,41 @@
     document.body.appendChild(scrim);
     document.body.appendChild(cc);
     scrim.addEventListener("click", close);
+    cc.addEventListener("pointerdown", beginPanelDrag);
+    window.addEventListener("pointermove", movePanelDrag);
+    window.addEventListener("pointerup", endPanelDrag);
+    window.addEventListener("pointercancel", endPanelDrag);
+  }
+
+  function beginPanelDrag(event) {
+    if (!open || !event.target.closest(".nx-cc-grip")) return;
+    dragFrom = event.clientY;
+    dragOrigin = event.clientY;
+    cc.dataset.dragging = "true";
+    if (cc.setPointerCapture && event.pointerId != null) {
+      try { cc.setPointerCapture(event.pointerId); } catch (_) {}
+    }
+    event.preventDefault();
+  }
+
+  function movePanelDrag(event) {
+    if (dragFrom == null || !cc) return;
+    var delta = event.clientY - dragOrigin;
+    if (delta < 0) return;
+    cc.style.transition = "none";
+    cc.style.transform = "translateY(" + delta + "px)";
+    if (scrim) scrim.style.opacity = String(Math.max(0, 1 - delta / Math.max(cc.offsetHeight, 1)));
+  }
+
+  function endPanelDrag(event) {
+    if (dragFrom == null || !cc) return;
+    var delta = event.clientY - dragOrigin;
+    dragFrom = dragOrigin = null;
+    cc.dataset.dragging = "false";
+    cc.style.removeProperty("transition");
+    cc.style.removeProperty("transform");
+    if (scrim) scrim.style.removeProperty("opacity");
+    if (delta > Math.min(100, cc.offsetHeight * 0.22)) close();
   }
 
   function nextReminder() {
@@ -260,6 +297,10 @@
     cc.classList.remove("show");
     scrim.classList.remove("show");
     document.body.classList.remove("cc-open");
+    cc.style.removeProperty("transition");
+    cc.style.removeProperty("transform");
+    if (scrim) scrim.style.removeProperty("opacity");
+    dragFrom = dragOrigin = null;
   }
   function toggle() { if (open) close(); else openCC(); }
 
@@ -269,7 +310,6 @@
     document.addEventListener("touchstart", function (e) {
       if (e.touches.length !== 1) return;
       startY = (!open && e.touches[0].clientY < 44) ? e.touches[0].clientY : null;
-      if (open) cc.dataset.dragFrom = e.touches[0].clientY;
     }, { passive: true });
 
     document.addEventListener("touchmove", function (e) {
@@ -280,13 +320,9 @@
         try { navigator.vibrate && navigator.vibrate(12); } catch (_) {}
         return;
       }
-      if (open && cc.dataset.dragFrom && cc.scrollTop <= 0 && e.touches[0].clientY - Number(cc.dataset.dragFrom) > 90) {
-        cc.dataset.dragFrom = "";
-        close();
-      }
     }, { passive: true });
 
-    document.addEventListener("touchend", function () { startY = null; cc && (cc.dataset.dragFrom = ""); }, { passive: true });
+    document.addEventListener("touchend", function () { startY = null; }, { passive: true });
 
     document.addEventListener("mousedown", function (e) { if (!open && e.clientY < 10) openCC(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape" && open) close(); });
@@ -295,13 +331,15 @@
   function boot() {
     build();
     initGesture();
+    var launcherButton = document.getElementById("launcher-control-open");
+    if (launcherButton) launcherButton.addEventListener("click", toggle);
     var old = document.getElementById("control-center");
     if (old) old.hidden = true;
     var oldBtn = document.getElementById("control-center-open");
     if (oldBtn) oldBtn.remove();
     var status = document.querySelector(".top-bar .status");
     if (status && !document.getElementById("nx-cc-topbtn")) {
-      var b = el("button", "control-center-open", "☷");
+      var b = el("button", "control-center-open", "☷ Control");
       b.id = "nx-cc-topbtn";
       b.type = "button";
       b.setAttribute("aria-label", "Control Center");
