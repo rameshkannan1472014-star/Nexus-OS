@@ -55,9 +55,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 .app-section-heading h2 { color: #25262a; font-size: 12px; font-weight: 700; }
 .app-section-heading > span { color: #8b8c90; font-size: 8px; }
 .app-grid { grid-template-columns: repeat(5,minmax(0,1fr)); gap: 4px 3px; }
-.app { min-height: 76px; gap: 5px; padding: 6px 2px; border-radius: 14px; color: #46474c; font-size: 9px; }
+.app { min-height: 94px; gap: 7px; padding: 7px 2px; border-radius: 14px; color: #46474c; font-size: 10px; }
 .app:hover,.app:focus-visible { transform: translateY(-1px); border-color: #e2e2df; background: rgba(255,255,255,.65); }
-.app-icon { width: 43px; height: 43px; border-radius: 13px; background: linear-gradient(145deg,#fff,#ededeb) !important; color: #27282c; box-shadow: 0 2px 7px rgba(31,32,35,.09), inset 0 1px rgba(255,255,255,.9); font-size: 20px; }
+.app-icon { width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(145deg,#fff,#ededeb) !important; color: #27282c; box-shadow: 0 2px 7px rgba(31,32,35,.09), inset 0 1px rgba(255,255,255,.9); font-size: 25px; }
 .app-section-heading, .app-grid, .reference-dashboard, .home-brand, .home-search { position: relative; z-index: 1; }
 .app-grid .app[hidden] { display: none !important; }
 .app-grid .extra-app { display: none; }
@@ -80,6 +80,6 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
   .reference-album { width: 25px; height: 25px; }
   .reference-play { width: 24px; height: 24px; }
   .app-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
-  .app-icon { width: 46px; height: 46px; }
+  .app-icon { width: 54px; height: 54px; }
 }
 @media (prefers-reduced-motion: reduce) { .reference-socials a:active { transform: none; } }
